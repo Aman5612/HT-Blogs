@@ -3,9 +3,19 @@ import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  template: `
+    <main>
+      <router-outlet></router-outlet>
+    </main>
+  `,
+  styles: [`
+    main {
+      min-height: 100vh;
+      background-color: #f8f9fa;
+    }
+  `]
 })
 export class AppComponent {
   title = 'HT-blogs';
