@@ -1,65 +1,151 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
+import { Component, ViewEncapsulation, AfterViewInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Observable, catchError, map, of, shareReplay, tap, Subject, takeUntil } from 'rxjs';
 import { BlogService, BlogPost } from '../../services/blog.service';
-import { Observable, switchMap, map } from 'rxjs';
 import { SidebarComponent } from '../sidebar/sidebar.component';
-import { TripPlannerComponent } from '../trip-planner/trip-planner.component';
 import { MainContentComponent } from '../main-content/main-content.component';
+import { TripPlannerComponent } from '../trip-planner/trip-planner.component';
+import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
 
 @Component({
   selector: 'app-blog-detail',
   standalone: true,
   imports: [
-    NgIf,
-    AsyncPipe,
-    DatePipe,
+    CommonModule,
+    RouterLink,
     SidebarComponent,
-    TripPlannerComponent,
     MainContentComponent,
+    TripPlannerComponent,
+    MostReadArticlesComponent
   ],
   templateUrl: './blog-detail.component.html',
-  styles: [
-    `
-      main {
-        display: flex;
-        min-height: 100vh;
-        margin-top: 48px;
-        padding: 0 16px;
-        gap: 24px;
-      }
-
-      ::ng-deep app-sidebar {
-        position: sticky;
-        top: 48px;
-        height: calc(100vh - 48px);
-        overflow-y: auto;
-        width: 22%;
-      }
-
-      ::ng-deep app-main-content {
-        flex: 1;
-        overflow-y: auto;
-      }
-
-      ::ng-deep app-trip-planner {
-        width: 28%;
-      }
-    `,
-  ],
+  styleUrls: ['./blog-detail.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
-export class BlogDetailComponent implements OnInit {
-  blog$!: Observable<BlogPost>;
+export class BlogDetailComponent implements AfterViewInit, OnDestroy {
+  blogData$: Observable<BlogPost | null>;
+  error: string | null = null;
+  private currentHighlight: HTMLElement | null = null;
+  private observer: IntersectionObserver | null = null;
+  private destroy$ = new Subject<void>();
+  private contentLoaded = false;
 
   constructor(
     private route: ActivatedRoute,
     private blogService: BlogService
-  ) {}
+  ) {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.error = 'Blog post ID not found.';
+      this.blogData$ = of(null);
+    } else {
+      this.blogData$ = this.blogService.getPost(id).pipe(
+        tap(blog => {
+          if (!blog) {
+            this.error = 'Blog post not found.';
+          } else {
+            this.contentLoaded = true;
+            // Initialize observer after content is loaded
+            setTimeout(() => this.initializeObserver(), 300);
+          }
+        }),
+        catchError(error => {
+          console.error('Error fetching blog post:', error);
+          this.error = 'Failed to load blog post. Please try again later.';
+          return of(null);
+        }),
+        shareReplay({ bufferSize: 1, refCount: true }),
+        takeUntil(this.destroy$)
+      );
+    }
+  }
 
-  ngOnInit() {
-    // Keep the service call but don't transform the data since we're using dummy components
-    this.blog$ = this.route.params.pipe(
-      switchMap((params) => this.blogService.getPost(params['id']))
+  ngAfterViewInit() {
+    // Wait for content to be loaded before initializing observer
+    if (this.contentLoaded) {
+      this.initializeObserver();
+    }
+  }
+
+  scrollToSection(sectionId: string) {
+    requestAnimationFrame(() => {
+      const element = document.getElementById(sectionId);
+      if (!element) return;
+
+      // Remove previous highlight
+      if (this.currentHighlight) {
+        this.currentHighlight.classList.remove('highlight-section');
+      }
+
+      // Calculate scroll position
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      // Smooth scroll to section
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+
+      // Add highlight effect
+      element.classList.add('highlight-section');
+      this.currentHighlight = element;
+
+      // Remove highlight after animation
+      setTimeout(() => {
+        if (this.currentHighlight === element) {
+          element.classList.remove('highlight-section');
+          this.currentHighlight = null;
+        }
+      }, 2000);
+    });
+  }
+
+  private initializeObserver() {
+    // Clean up existing observer
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+
+    // Create new observer
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0) {
+            const id = entry.target.id;
+            if (id) {
+              // Update sidebar selection
+              window.dispatchEvent(new CustomEvent('section-visible', {
+                detail: { sectionId: id }
+              }));
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '-80px 0px -80% 0px',
+        threshold: [0, 0.1, 0.5, 1]
+      }
     );
+
+    // Observe all section headings
+    requestAnimationFrame(() => {
+      const headings = document.querySelectorAll('h1[id], h2[id], h3[id]');
+      headings.forEach(heading => {
+        if (heading.id) {
+          this.observer?.observe(heading);
+        }
+      });
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

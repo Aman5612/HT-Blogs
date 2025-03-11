@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-main-content',
@@ -7,131 +8,201 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="main-content">
-      <h1>Places To Visit In Australia</h1>
-      <p class="subtitle">
-        relaxing beach, Scuba Diving,  food culture, vibrant nightlife, and
-        sporting events....
-      </p>
-
-      <div class="destination-content">
-        <p class="intro">
-          Australia, with its diverse landscapes and iconic landmarks, has long
-          been a top destination for travellers across the globe. From tropical
-          beaches to rugged mountains, Australia offers something for every kind
-          of explorer.
-        </p>
-
-        <section class="sydney-section">
-          <h2>1. Sydney</h2>
-          <img
-            src="https://images.unsplash.com/photo-1624138784614-87fd1b6528f8"
-            alt="Sydney Opera House"
-            class="feature-image"
-          />
-
-          <p>
-            Sydney is the heart of Australia, offering travellers a blend of
-            culture, entertainment, and natural beauty. With iconic landmarks
-            like the Sydney Opera House and Harbour Bridge, there's no shortage
-            of things to do.
-          </p>
-
-          <h3>Highlights:</h3>
-          <ul>
-            <li>
-              Sydney Opera House & Harbour Bridge: Witness two of Australia's
-              most famous landmarks
-            </li>
-            <li>Bondi Beach: Enjoy surfing or lounging on the golden sands</li>
-            <li>
-              Royal Botanic Garden: A peaceful retreat offering spectacular
-              views of the harbor
-            </li>
-          </ul>
-        </section>
-
-        <section class="travel-packages">
-          <div class="package-grid">
-            <div class="package-card">
-              <img src="path-to-image" alt="Family Fun: Universal Beyond" />
-              <h3>Family Fun: Universal Beyond</h3>
-              <p>Resort: Gold Coast</p>
-              <p class="price">From $29,000</p>
-              <a href="#" class="explore-link">Explore ></a>
-            </div>
-            <!-- Add more package cards as needed -->
-          </div>
-        </section>
-      </div>
+      @if (content) {
+        <div class="content-wrapper" [innerHTML]="sanitizedContent"></div>
+      } @else {
+        <div class="empty-state">
+          <p>No content available</p>
+        </div>
+      }
     </div>
   `,
-  styles: [
-    `
-      .main-content {
-        padding: 0px 40px 40px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+  styles: [`
+    .main-content {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      min-width: 0; // Fix for grid item overflow
+      overflow-wrap: break-word;
+    }
 
-      h1 {
-        font-size: 32px;
-        font-weight: 400;
-        margin-bottom: 1rem;
-      }
+    .content-wrapper {
+      line-height: 1.6;
+      color: #1a1a1a;
+      font-size: 1.1rem;
 
-      h2 {
-        font-size: 20px;
-        font-weight: 400;
-      }
-      .subtitle {
-        color: #4d4d4d;
-        font-size: 16px;
-        font-weight: 400;
-        font-family: DM mono;
-        margin-bottom: 2rem;
-      }
-
-      .feature-image {
-        width: 100%;
-        height: auto;
-        border-radius: 8px;
-        margin: 20px 0;
-      }
-
-      .package-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-        margin-top: 40px;
-      }
-
-      .package-card {
-        background: white;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
-      }
-
-      .package-card:hover {
-        transform: translateY(-5px);
-      }
-
-      .explore-link {
-        color: #0066cc;
-        text-decoration: none;
-      }
-
-      @media (max-width: 768px) {
-        .main-content {
-          padding: 20px;
+      :host ::ng-deep {
+        h1, h2, h3, h4, h5, h6 {
+          scroll-margin-top: calc(64px + 2rem); // Account for header height + padding
+          font-weight: 600;
+          line-height: 1.3;
+          color: #1a1a1a;
         }
 
         h1 {
+          font-size: 2.5rem;
+          margin: 2rem 0 1.5rem;
+        }
+
+        h2 {
           font-size: 2rem;
+          margin: 2rem 0 1rem;
+        }
+
+        h3 {
+          font-size: 1.75rem;
+          margin: 1.5rem 0 1rem;
+        }
+
+        p {
+          margin-bottom: 1.5rem;
+          line-height: 1.8;
+        }
+
+        img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 12px;
+          margin: 2rem 0;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        ul, ol {
+          margin: 1.5rem 0;
+          padding-left: 1.5rem;
+
+          li {
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+          }
+        }
+
+        blockquote {
+          margin: 2rem 0;
+          padding: 1.5rem 2rem;
+          border-left: 4px solid #1a1a1a;
+          background: #f8f8f8;
+          font-style: italic;
+          color: #333;
+          border-radius: 4px;
+
+          p:last-child {
+            margin-bottom: 0;
+          }
+        }
+
+        code {
+          background: #f5f5f5;
+          padding: 0.2em 0.4em;
+          border-radius: 3px;
+          font-family: 'Fira Code', monospace;
+          font-size: 0.9em;
+          color: #1a1a1a;
+        }
+
+        pre {
+          background: #f8f8f8;
+          padding: 1.5rem;
+          border-radius: 8px;
+          overflow-x: auto;
+          margin: 2rem 0;
+          border: 1px solid #eee;
+
+          code {
+            background: none;
+            padding: 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #1a1a1a;
+          }
+        }
+
+        a {
+          color: #0066cc;
+          text-decoration: none;
+          border-bottom: 1px solid transparent;
+          transition: border-color 0.2s;
+
+          &:hover {
+            border-bottom-color: currentColor;
+          }
+        }
+
+        hr {
+          margin: 3rem 0;
+          border: none;
+          border-top: 1px solid #eee;
+        }
+
+        table {
+          width: 100%;
+          margin: 2rem 0;
+          border-collapse: collapse;
+
+          th, td {
+            padding: 0.75rem;
+            border: 1px solid #eee;
+            text-align: left;
+          }
+
+          th {
+            background: #f8f8f8;
+            font-weight: 600;
+          }
+
+          tr:nth-child(even) {
+            background: #fafafa;
+          }
+        }
+
+        // First element spacing
+        > *:first-child {
+          margin-top: 0;
+        }
+
+        // Last element spacing
+        > *:last-child {
+          margin-bottom: 0;
         }
       }
-    `,
-  ],
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 1.5rem;
+      }
+
+      .content-wrapper {
+        font-size: 1rem;
+
+        :host ::ng-deep {
+          h1 { font-size: 2rem; }
+          h2 { font-size: 1.75rem; }
+          h3 { font-size: 1.5rem; }
+        }
+      }
+    }
+  `]
 })
-export class MainContentComponent {}
+export class MainContentComponent {
+  @Input() set content(value: string) {
+    this._content = value;
+    this.sanitizedContent = this.sanitizer.bypassSecurityTrustHtml(value);
+  }
+  get content(): string {
+    return this._content;
+  }
+  private _content: string = '';
+  sanitizedContent: SafeHtml = '';
+
+  constructor(private sanitizer: DomSanitizer) {}
+}

@@ -1,59 +1,68 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
 
 @Component({
   selector: 'app-trip-planner',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MostReadArticlesComponent],
   template: `
-    <div class="trip-planner">
-      <h2>Need help planning<br />your trip?</h2>
-      <p class="subtitle">Fill in this form please</p>
+    <div class="trip-planner-container">
+      <div class="trip-planner">
+        <h2>Need help planning<br />your trip?</h2>
+        <p class="subtitle">Fill in this form please</p>
 
-      <form class="planner-form" (submit)="onSubmit($event)">
-        <div class="form-group">
-          <input
-            type="text"
-            class="form-input"
-            placeholder="Name"
-            [(ngModel)]="formData.name"
-            name="name"
-          />
-        </div>
+        <form class="planner-form" (submit)="onSubmit($event)">
+          <div class="form-group">
+            <input
+              type="text"
+              class="form-input"
+              placeholder="Name"
+              [(ngModel)]="formData.name"
+              name="name"
+            />
+          </div>
 
-        <div class="form-group">
-          <input
-            type="tel"
-            class="form-input"
-            placeholder="Phone No."
-            [(ngModel)]="formData.phone"
-            name="phone"
-          />
-        </div>
+          <div class="form-group">
+            <input
+              type="tel"
+              class="form-input"
+              placeholder="Phone No."
+              [(ngModel)]="formData.phone"
+              name="phone"
+            />
+          </div>
 
-        <div class="form-group">
-          <input
-            type="email"
-            class="form-input"
-            placeholder="Email Address"
-            [(ngModel)]="formData.email"
-            name="email"
-          />
-        </div>
+          <div class="form-group">
+            <input
+              type="email"
+              class="form-input"
+              placeholder="Email Address"
+              [(ngModel)]="formData.email"
+              name="email"
+            />
+          </div>
 
-        <p class="privacy-notice">
-          By clicking button you agree with our
-          <a href="#" class="policy-link">Privacy Policy</a> &
-          <a href="#" class="policy-link">User Agreement</a> policy.
-        </p>
+          <p class="privacy-notice">
+            By clicking button you agree with our
+            <a href="#" class="policy-link">Privacy Policy</a> &
+            <a href="#" class="policy-link">User Agreement</a> policy.
+          </p>
 
-        <button type="submit" class="submit-btn">Submit</button>
-      </form>
+          <button type="submit" class="submit-btn">Submit</button>
+        </form>
+      </div>
     </div>
   `,
   styles: [
     `
+      .trip-planner-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
       .trip-planner {
         background: #f8f8f8;
         display: flex;

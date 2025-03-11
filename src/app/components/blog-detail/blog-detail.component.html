@@ -1,5 +1,34 @@
 <main>
-  <app-sidebar></app-sidebar>
-  <app-main-content></app-main-content>
-  <app-trip-planner></app-trip-planner>
+  @if (error) {
+    <div class="error-state">
+      <h2>{{ error }}</h2>
+      <a routerLink="/blog" class="back-link">Back to Blog List</a>
+    </div>
+  } @else {
+    @if ((blogData$ | async); as blog) {
+      @if (blog) {
+        <app-sidebar 
+          [sections]="blog.sections" 
+          (sectionClick)="scrollToSection($event)"
+        ></app-sidebar>
+        <app-main-content 
+          [content]="blog.content"
+        ></app-main-content>
+        <div class="right-sidebar">
+          <app-trip-planner></app-trip-planner>
+          <app-most-read-articles></app-most-read-articles>
+        </div>
+      } @else {
+        <div class="error-state">
+          <h2>Blog post not found</h2>
+          <a routerLink="/blog" class="back-link">Back to Blog List</a>
+        </div>
+      }
+    } @else {
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading blog post...</p>
+      </div>
+    }
+  }
 </main>

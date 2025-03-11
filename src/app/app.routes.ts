@@ -1,17 +1,19 @@
 import { Routes } from '@angular/router';
+import { BlogDetailComponent } from './components/blog-detail/blog-detail.component';
+import { BlogListComponent } from './components/blog-list/blog-list.component';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'blog',
+    redirectTo: '/blog',
     pathMatch: 'full'
   },
   {
     path: 'blog',
-    loadComponent: () => import('./components/blog-list/blog-list.component').then(m => m.BlogListComponent)
+    component: BlogListComponent
   },
   {
     path: 'blog/:id',
-    loadComponent: () => import('./components/blog-detail/blog-detail.component').then(m => m.BlogDetailComponent)
+    component: BlogDetailComponent
   }
 ];

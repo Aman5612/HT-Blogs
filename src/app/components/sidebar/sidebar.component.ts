@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-interface DestinationItem {
-  name: string;
-  isExpanded: boolean;
-  subItems?: string[];
+export interface ContentSection {
+  id: string;
+  title: string;
+  level: number;
+  subSections?: ContentSection[];
 }
 
 @Component({
@@ -12,214 +13,180 @@ interface DestinationItem {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './sidebar.component.html',
-  styles: [
-    `
-      .sidebar {
-        background: white;
-        max-height: 60vh;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        width: 100%;
+  styles: [`
+    .sidebar {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .title-section {
+      padding: 1.25rem 1.5rem;
+      background: #f8f8f8;
+      border-bottom: 1px solid #eee;
+
+      h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0 0 0.5rem;
       }
 
-      h3 {
-        font-size: 20px;
-        font-weight: 400;
-        padding: 12px 14px;
-        background: #f8f8f8;
-        margin: 0 12px 12px 0px;
-        border-radius: 12px;
-        border-bottom: 1px solid #f0f0f0;
+      .highlights {
+        font-size: 0.875rem;
+        color: #666;
       }
+    }
 
-      .destination-list {
-        flex: 1;
-        overflow-y: auto;
-        padding: 16px 12px;
-      }
+    .sections-list {
+      padding: 1rem 0;
+    }
 
-      .destination-item {
-        margin-bottom: 12px;
-        cursor: pointer;
-      }
+    .section-item {
+      padding: 0.25rem 1.5rem;
+    }
 
-      .destination-item-container {
-        display: flex;
-        gap: 16px;
-        align-items: center;
-      }
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      padding: 0.5rem 0;
+      width: 100%;
+    }
 
-      .destination-header {
-        display: flex;
-        justify-content: space-between;
-        background: #f8f8f8;
-        align-items: center;
-        padding: 12px;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
-        width: 100%;
-      }
+    input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
 
-      .destination-header:hover,
-      .destination-header.selected {
-        box-shadow: inset 0 0 0 1px #cfcfcf;
-      }
+    .checkmark {
+      position: relative;
+      height: 16px;
+      width: 16px;
+      border: 1.5px solid #d4d4d4;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: white;
 
-      .header-content label {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-      }
-
-      .radio {
-        position: relative;
-        display: inline-block;
-        cursor: pointer;
-      }
-
-      .radio input {
+      &:after {
+        content: "";
         position: absolute;
-        opacity: 0;
-        cursor: pointer;
-      }
-
-      .radio .checkmark {
-        width: 14px;
-        height: 14px;
-        border: 1px solid #d3d3d3;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease-in-out;
-      }
-
-      .radio input:checked + .checkmark {
-        border-color: #cfcfcf;
-      }
-
-      .radio input:checked + .checkmark::after {
-        content: '';
+        display: none;
+        top: 50%;
+        left: 50%;
         width: 8px;
         height: 8px;
-        background-color: #7a7a7a;
         border-radius: 50%;
+        background: #1a1a1a;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    input[type="radio"]:checked ~ .checkmark {
+      border-color: #1a1a1a;
+      &:after {
+        display: block;
+      }
+    }
+
+    .section-title {
+      font-size: 1rem;
+      color: #1a1a1a;
+      line-height: 1.4;
+      flex-grow: 1;
+      padding-right: 0.5rem;
+    }
+
+    .subsections {
+      margin-top: 0.25rem;
+      padding-left: 2.25rem;
+    }
+
+    .subsection-item {
+      padding: 0.5rem 0;
+      font-size: 0.875rem;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        color: #1a1a1a;
       }
 
-      .expand-icon {
-        transition: transform 0.2s;
+      &.selected {
+        color: #1a1a1a;
+        font-weight: 500;
       }
+    }
 
-      .expand-icon.expanded {
-        transform: rotate(180deg);
-      }
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+      font-style: italic;
+      font-size: 0.875rem;
+    }
 
-      .sub-items {
-        padding: 8px 0 8px 42px;
-        transition: all 0.3s ease-in-out;
-      }
+    // Scrollbar styling
+    :host {
+      scrollbar-width: thin;
+      scrollbar-color: #ddd transparent;
+    }
 
-      .sub-item {
-        width: fit-content;
-        margin-bottom: 8px;
-        color: #4d4d4d;
-        font-size: 16px;
-        line-height: 140.3%;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        transition: color 0.3s ease-in-out;
-      }
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
 
-      .sub-item::after {
-        content: '';
-        position: absolute;
-        bottom: 2px;
-        left: 0;
-        width: 100%;
-        height: 1px;
-        background: #333;
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.3s ease-in-out;
-      }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
-      .sub-item:hover::after,
-      .sub-item.selected::after {
-        transform: scaleX(1);
-      }
+    ::-webkit-scrollbar-thumb {
+      background-color: #ddd;
+      border-radius: 2px;
 
-      /* Scrollbar styling */
-      .destination-list::-webkit-scrollbar {
-        display: hidden;
-        width: 0px;
+      &:hover {
+        background-color: #ccc;
       }
-
-      .destination-list::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      .destination-list::-webkit-scrollbar-thumb {
-        background: #ddd;
-        border-radius: 3px;
-      }
-
-      .destination-list::-webkit-scrollbar-thumb:hover {
-        background: #ccc;
-      }
-    `,
-  ],
+    }
+  `]
 })
-export class SidebarComponent {
-  destinations: DestinationItem[] = [
-    {
-      name: 'Sydney',
-      isExpanded: false,
-      subItems: ['Highlights', 'Best Time to Visit'],
-    },
-    {
-      name: 'Great Barrier Reef',
-      isExpanded: false,
-      subItems: ['Highlights', 'Best Time to Visit'],
-    },
-    {
-      name: 'Melbourne',
-      isExpanded: false,
-      subItems: ['Highlights', 'Best Time to Visit'],
-    },
-    {
-      name: 'Uluru (Ayers Rock)',
-      isExpanded: false,
-      subItems: ['Highlights', 'Best Time to Visit'],
-    },
-    {
-      name: 'Tasmania',
-      isExpanded: false,
-      subItems: ['Highlights', 'Best Time to Visit'],
-    },
-    {
-      name: 'Gold Coast',
-      isExpanded: false,
-      subItems: ['Highlights', 'Best Time to Visit'],
-    },
-  ];
+export class SidebarComponent implements OnInit, OnDestroy {
+  @Input() sections: ContentSection[] = [];
+  @Output() sectionClick = new EventEmitter<string>();
 
-  selectedDestination: number | null = null;
-  selectedSubItem: number | null = null;
+  selectedSection: string | null = null;
 
-  toggleExpand(index: number) {
-    this.selectedDestination = index;
-    this.destinations.forEach(
-      (item, i) => (item.isExpanded = i === index ? !item.isExpanded : false)
-    );
+  private sectionVisibilityHandler = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    if (customEvent.detail?.sectionId) {
+      this.selectedSection = customEvent.detail.sectionId;
+    }
+  };
+
+  ngOnInit() {
+    window.addEventListener('section-visible', this.sectionVisibilityHandler);
   }
 
-  selectSubItem(destinationIndex: number, subItemIndex: number) {
-    this.selectedDestination = destinationIndex;
-    this.selectedSubItem = subItemIndex;
+  ngOnDestroy() {
+    window.removeEventListener('section-visible', this.sectionVisibilityHandler);
+  }
+
+  onSectionClick(sectionId: string) {
+    this.selectedSection = sectionId;
+    this.sectionClick.emit(sectionId);
+  }
+
+  onSubSectionClick(event: Event, sectionId: string) {
+    event.stopPropagation();
+    this.selectedSection = sectionId;
+    this.sectionClick.emit(sectionId);
   }
 }

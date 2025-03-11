@@ -1,57 +1,42 @@
 <div class="sidebar">
-  <h3>Why Australia Should Be Your 2025 Travel Destination</h3>
-  <div class="destination-list">
-    <div
-      *ngFor="let item of destinations; let i = index"
-      class="destination-item"
-    >
-      <div class="destination-item-container">
-        <!-- Sync radio button selection -->
-        <label class="radio">
-          <input
-            type="radio"
-            name="option"
-            [checked]="selectedDestination === i"
-            (change)="toggleExpand(i)"
-          />
+  <div class="title-section">
+    <h2>{{ sections[0]?.title }}</h2>
+    <div class="highlights">Highlights</div>
+  </div>
+  
+  <div class="sections-list">
+    @for (section of sections[0]?.subSections; track section.id) {
+      <div class="section-item">
+        <label class="radio-label">
+          <input 
+            type="radio" 
+            [name]="'section'" 
+            [value]="section.id"
+            [checked]="selectedSection === section.id"
+            (change)="onSectionClick(section.id)"
+          >
           <span class="checkmark"></span>
+          <span class="section-title">{{ section.title }}</span>
         </label>
 
-        <div
-          class="destination-header"
-          [class.expanded]="item.isExpanded"
-          [class.selected]="selectedDestination === i"
-          (click)="toggleExpand(i)"
-        >
-          <div class="header-content">
-            <label>{{ item.name }}</label>
+        @if (section.subSections?.length) {
+          <div class="subsections">
+            @for (subSection of section.subSections; track subSection.id) {
+              <div 
+                class="subsection-item"
+                [class.selected]="selectedSection === subSection.id"
+                (click)="onSubSectionClick($event, subSection.id)"
+              >
+                {{ subSection.title }}
+              </div>
+            }
           </div>
-          <svg
-            *ngIf="item.subItems"
-            class="expand-icon"
-            [class.expanded]="item.isExpanded"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" />
-          </svg>
-        </div>
+        }
       </div>
-
-      <div class="sub-items" *ngIf="item.subItems && item.isExpanded">
-        <div
-          *ngFor="let subItem of item.subItems; let subIndex = index"
-          class="sub-item"
-          [class.selected]="
-            selectedSubItem === subIndex && selectedDestination === i
-          "
-          (click)="selectSubItem(i, subIndex)"
-        >
-          {{ subItem }}
-        </div>
+    } @empty {
+      <div class="empty-state">
+        No sections available
       </div>
-    </div>
+    }
   </div>
 </div>
