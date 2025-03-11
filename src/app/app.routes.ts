@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { BlogDetailComponent } from './components/blog-detail/blog-detail.component';
 import { BlogListComponent } from './components/blog-list/blog-list.component';
+import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,17 @@ export const routes: Routes = [
   },
   {
     path: 'blog/:id',
-    component: BlogDetailComponent
+    component: BlogDetailComponent,
   }
 ];
+
+export const serverRoutes: ServerRoute[] = [
+  {
+    path: 'blog/:id',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: '**',
+    renderMode: RenderMode.Prerender
+  },
+]
