@@ -13,13 +13,15 @@ export interface BlogPost {
   date: string;
   imageUrl?: string;
   tags?: string[];
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class BlogService {
-  private apiUrl = 'https://blog-cms.opengig.works/api';
+  private apiUrl = 'http://localhost:3001/api';
 
   constructor(private http: HttpClient) {}
 
@@ -58,6 +60,8 @@ export class BlogService {
           date: article.createdAt,
           imageUrl: article.media?.[0]?.url || article.featuredImage || '',
           tags: [],
+          metaTitle: article.metaTitle,
+          metaDescription: article.metaDescription,
         };
       })
     );

@@ -10,6 +10,8 @@ export interface Article {
     type: string;
   }[];
   featuredImage: string | null;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 export interface BlogListItem extends Article {

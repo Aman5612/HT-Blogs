@@ -7,6 +7,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { MainContentComponent } from '../main-content/main-content.component';
 import { TripPlannerComponent } from '../trip-planner/trip-planner.component';
 import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
+import { Title, Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-blog-detail',
@@ -33,7 +34,9 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private blogService: BlogService
+    private blogService: BlogService,
+    private titleService: Title,
+    private metaService: Meta
   ) {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -46,6 +49,8 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
             this.error = 'Blog post not found.';
           } else {
             this.contentLoaded = true;
+            // Set meta title and description
+            this.updateMetadata(blog);
             // Initialize observer after content is loaded
             setTimeout(() => this.initializeObserver(), 300);
           }
@@ -58,6 +63,20 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         shareReplay({ bufferSize: 1, refCount: true }),
         takeUntil(this.destroy$)
       );
+    }
+  }
+
+  private updateMetadata(blog: BlogPost): void {
+    // Set document title
+    if (blog.metaTitle) {
+      this.titleService.setTitle(blog.metaTitle);
+    } else {
+      this.titleService.setTitle(blog.title);
+    }
+
+    // Set meta description
+    if (blog.metaDescription) {
+      this.metaService.updateTag({ name: 'description', content: blog.metaDescription });
     }
   }
 
