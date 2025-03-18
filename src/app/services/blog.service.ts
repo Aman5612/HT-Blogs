@@ -21,7 +21,7 @@ export interface BlogPost {
   providedIn: 'root',
 })
 export class BlogService {
-  private apiUrl = 'http://localhost:3001/api';
+  private apiUrl = 'https://blog-cms.opengig.works/api';
 
   constructor(private http: HttpClient) {}
 
