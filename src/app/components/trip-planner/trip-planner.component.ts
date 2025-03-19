@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
@@ -101,10 +101,13 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
         display: flex;
         flex-direction: column;
         gap: 24px;
+        width: 100%;
+        max-width: 320px;
       }
 
       .form-group {
         position: relative;
+        width: 100%;
       }
 
       .form-group::after {
@@ -118,6 +121,7 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
         opacity: 0.6;
       }
 
+      /* Simple centered input approach */
       .form-input {
         width: 100%;
         padding: 8px 0;
@@ -126,11 +130,31 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
         font-size: 1rem;
         color: #333;
         outline: none;
-      }
-
-      .form-input::placeholder {
-        color: #999;
         text-align: center;
+        
+        /* Chrome, Safari, Edge, Opera */
+        &::-webkit-input-placeholder {
+          color: #999;
+          text-align: center;
+        }
+        
+        /* Firefox */
+        &::-moz-placeholder {
+          color: #999;
+          text-align: center;
+        }
+        
+        /* Internet Explorer 10-11 */
+        &:-ms-input-placeholder {
+          color: #999;
+          text-align: center;
+        }
+        
+        /* Microsoft Edge */
+        &::-ms-input-placeholder {
+          color: #999;
+          text-align: center;
+        }
       }
 
       .privacy-notice {
@@ -169,12 +193,50 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
     `,
   ],
 })
-export class TripPlannerComponent {
+export class TripPlannerComponent implements OnInit {
   formData = {
     name: '',
     phone: '',
     email: '',
   };
+
+  ngOnInit() {
+    // Check if we're in a browser environment
+    if (typeof document !== 'undefined') {
+      // Apply this after the component is initialized
+      setTimeout(() => {
+        this.applyInputOverride();
+      }, 0);
+    }
+  }
+
+  // This applies a direct DOM modification to get the desired behavior
+  private applyInputOverride() {
+    // Get all inputs
+    const inputs = document.querySelectorAll('.form-input') as NodeListOf<HTMLInputElement>;
+    
+    // Apply the style to each input using direct style properties
+    inputs.forEach(input => {
+      // Create a style element for our custom CSS
+      const style = document.createElement('style');
+      style.textContent = `
+        /* Force center alignment for input text */
+        input[name="${input.name}"] {
+          text-align: center !important;
+        }
+        
+        /* Fix browser autofill styling */
+        input[name="${input.name}"]:-webkit-autofill,
+        input[name="${input.name}"]:-webkit-autofill:hover, 
+        input[name="${input.name}"]:-webkit-autofill:focus {
+          -webkit-text-fill-color: #333;
+          transition: background-color 5000s ease-in-out 0s;
+          text-align: center !important;
+        }
+      `;
+      document.head.appendChild(style);
+    });
+  }
 
   onSubmit(event: Event) {
     event.preventDefault();
