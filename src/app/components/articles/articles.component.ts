@@ -8,7 +8,7 @@ import { Article } from '../../interface/travel.interface';
   imports: [CommonModule],
   template: `
     <div class="articles-section">
-      <h2>Most Read Articles</h2>
+      <h2>Most Read </h2>
       <div class="articles-list">
         <div *ngFor="let article of articles" class="article-item">
           <img [src]="article.imageUrl" [alt]="article.title" />

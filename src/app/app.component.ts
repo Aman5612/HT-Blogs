@@ -40,11 +40,12 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       background: #fff;
       padding: 0;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      position: sticky;
+      position: fixed;
       top: 0;
       z-index: 100;
       display: flex;
       align-items: center;
+      width: 100%;
 
       nav {
         width: 100%;

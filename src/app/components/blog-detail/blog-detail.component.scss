@@ -9,12 +9,10 @@
 
 main {
   display: grid;
-  grid-template-columns: 22% 50% 28%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 2rem;
+  grid-template-columns: 22% 50% 28%;  
   position: relative;
-  gap: 2rem;
+  background-color: #ffffff;
+  padding-right: 16px !important;
 }
 
 .sidebar-container {
@@ -28,13 +26,14 @@ main {
   margin-left: 0; // Remove margin as we're using grid layout
   min-width: 0; // Prevent content from overflowing grid
   overflow-x: hidden; // Additional safety measure
+  margin-top: 56px !important;
 }
 
 .right-sidebar {
   position: sticky;
-  top: 1.5rem;
-  height: calc(100vh - 3rem);
-  overflow-y: auto;
+  top: 5.5rem;
+  height: fit-content;
+
   min-width: 0; // Prevent content from overflowing grid
   display: flex;
   flex-direction: column;

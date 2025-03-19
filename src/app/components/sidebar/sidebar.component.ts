@@ -15,12 +15,12 @@ export interface ContentSection {
   templateUrl: './sidebar.component.html',
   styles: [`:host {
   position: fixed;
-  top: 1.5rem;
+  top: 4.5rem;
   height: calc(100vh - 3rem);
   display: block;
   z-index: 10;
   width: 22%;
-  max-width: 320px;
+  max-width: 332px;
 }
 
 .sidebar {
@@ -28,8 +28,6 @@ export interface ContentSection {
   border-radius: 12px;
   overflow-y: auto;
   overflow-x: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid #eaeaea;
   width: 100%;
   max-height: 100%;
 }
@@ -57,13 +55,15 @@ export interface ContentSection {
 }
 
 .category-header {
-  font-weight: 600;
+  font-weight: 500;
   color: #1a1a1a;
   font-size: 1.125rem;
-  padding: 1rem 1.5rem 0.5rem;
+  padding:12px;
   margin-top: 0.5rem;
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 0.5rem;
+  margin: 0.5rem 1.5rem;
+  background-color: #F8F8F8;
+  border-radius: 12px;
+  font-size: 20px;
 }
 
 .sections-list {

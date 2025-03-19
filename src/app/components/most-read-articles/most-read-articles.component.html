@@ -35,7 +35,7 @@
             }
           </div>
           <div class="article-content">
-            <h4>{{ article.title }}</h4>
+            <h4 style="font-size: 20px;">{{ article.title }}</h4>
             <div class="date">{{ article.createdAt | date:'mediumDate' }}</div>
             <div class="status">
               <span class="tag" [class.draft]="article.status === 'draft'">
