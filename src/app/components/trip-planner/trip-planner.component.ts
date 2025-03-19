@@ -21,6 +21,8 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
               placeholder="Name"
               [(ngModel)]="formData.name"
               name="name"
+              (focus)="onInputFocus($event)"
+              (blur)="onInputBlur($event)"
             />
           </div>
 
@@ -31,6 +33,8 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
               placeholder="Phone No."
               [(ngModel)]="formData.phone"
               name="phone"
+              (focus)="onInputFocus($event)"
+              (blur)="onInputBlur($event)"
             />
           </div>
 
@@ -41,6 +45,8 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
               placeholder="Email Address"
               [(ngModel)]="formData.email"
               name="email"
+              (focus)="onInputFocus($event)"
+              (blur)="onInputBlur($event)"
             />
           </div>
 
@@ -136,24 +142,45 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
         &::-webkit-input-placeholder {
           color: #999;
           text-align: center;
+          transition: opacity 0.2s ease;
         }
         
         /* Firefox */
         &::-moz-placeholder {
           color: #999;
           text-align: center;
+          transition: opacity 0.2s ease;
         }
         
         /* Internet Explorer 10-11 */
         &:-ms-input-placeholder {
           color: #999;
           text-align: center;
+          transition: opacity 0.2s ease;
         }
         
         /* Microsoft Edge */
         &::-ms-input-placeholder {
           color: #999;
           text-align: center;
+          transition: opacity 0.2s ease;
+        }
+        
+        /* Hide placeholder on focus for all browsers */
+        &:focus::-webkit-input-placeholder {
+          opacity: 0;
+        }
+        
+        &:focus::-moz-placeholder {
+          opacity: 0;
+        }
+        
+        &:focus:-ms-input-placeholder {
+          opacity: 0;
+        }
+        
+        &:focus::-ms-input-placeholder {
+          opacity: 0;
         }
       }
 
@@ -233,9 +260,30 @@ export class TripPlannerComponent implements OnInit {
           transition: background-color 5000s ease-in-out 0s;
           text-align: center !important;
         }
+        
+        /* Immediately hide placeholder on focus */
+        input[name="${input.name}"]:focus::placeholder {
+          opacity: 0 !important;
+          visibility: hidden !important;
+        }
       `;
       document.head.appendChild(style);
     });
+  }
+
+  onInputFocus(event: FocusEvent) {
+    // Hide placeholder immediately on focus
+    const input = event.target as HTMLInputElement;
+    input.setAttribute('data-placeholder', input.placeholder);
+    input.placeholder = '';
+  }
+
+  onInputBlur(event: FocusEvent) {
+    // Restore placeholder on blur if the input is empty
+    const input = event.target as HTMLInputElement;
+    if (!input.value) {
+      input.placeholder = input.getAttribute('data-placeholder') || '';
+    }
   }
 
   onSubmit(event: Event) {

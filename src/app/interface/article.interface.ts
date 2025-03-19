@@ -9,6 +9,8 @@ export interface Article {
     url: string;
     type: string;
   }[];
+  featureImage : string;
+  featureImageAlt: string;
   featuredImage: string | null;
   metaTitle?: string;
   metaDescription?: string;

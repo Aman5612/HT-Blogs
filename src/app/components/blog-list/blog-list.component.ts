@@ -17,11 +17,11 @@ import { Observable } from 'rxjs';
         <div class="posts-grid">
           @for (post of posts; track post.id) {
             <div class="post-card" [routerLink]="['/blog', post.id]" role="link" tabindex="0">
-              <div class="post-image" [class.no-image]="!post.media?.[0]?.url && !post.featuredImage">
-                @if (post.media?.[0]?.url || post.featuredImage) {
+              <div class="post-image" [class.no-image]="!post.media?.[0]?.url && !post.featureImage">
+                @if (post.media?.[0]?.url || post.featureImage) {
                   <img 
-                    [src]="post.media[0]?.url || post.featuredImage" 
-                    [alt]="post.title"
+                    [src]="post.featureImage || post.media[0].url" 
+                    [alt]="post.featureImageAlt"
                   >
                 }
               </div>
