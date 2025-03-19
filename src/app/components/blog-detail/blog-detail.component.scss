@@ -126,11 +126,12 @@ main {
 
   .main-content-wrapper {
     margin-left: 0;
+    margin-top: 0px !important;
     width: 100%;
   }
 
-  .right-sidebar {
-    display: none;
+  .right-sidebar h2{
+    font-size: 24px !important;
   }
 }
 

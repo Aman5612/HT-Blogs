@@ -85,6 +85,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
         }
       }
     }
+      
 
     .main-content {
       flex: 1;

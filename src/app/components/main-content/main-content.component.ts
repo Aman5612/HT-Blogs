@@ -18,6 +18,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     </div>
   `,
   styles: [`
+    
     .main-content {
       background: white;
       border-radius: 12px;
@@ -178,17 +179,32 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
     @media (max-width: 768px) {
       .main-content {
-        padding: 1.5rem;
+        padding: 1rem;
       }
 
       .content-wrapper {
-        font-size: 1rem;
+        font-size: 14px;
+      }
 
-        :host ::ng-deep {
-          h1 { font-size: 2rem; }
-          h2 { font-size: 1.75rem; }
-          h3 { font-size: 1.5rem; }
-        }
+      ::ng-deep .content-wrapper h1 {
+        font-size: 24px !important;
+        margin: 1.5rem 0 1rem !important;
+      }
+      
+      ::ng-deep .content-wrapper h2 {
+        font-size: 18px !important;
+        margin: 1.25rem 0 0.75rem !important;
+      }
+      
+      ::ng-deep .content-wrapper h3 {
+        font-size: 16px !important;
+        margin: 1rem 0 0.5rem !important;
+      }
+      
+      ::ng-deep .content-wrapper p {
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+        margin-bottom: 1rem !important;
       }
     }
   `]
