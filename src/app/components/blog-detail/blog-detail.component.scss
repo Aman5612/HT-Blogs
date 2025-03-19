@@ -10,28 +10,44 @@
 main {
   display: grid;
   grid-template-columns: 22% 50% 28%;
-  width: 100%;
-  max-width: 1600px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 2rem;
+  position: relative;
   gap: 2rem;
-  min-height: calc(100vh - 64px);
+}
 
-  > * {
-    min-width: 0; // Fix for grid items overflowing
-  }
+.sidebar-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.main-content-wrapper {
+  width: 100%;
+  margin-left: 0; // Remove margin as we're using grid layout
+  min-width: 0; // Prevent content from overflowing grid
+  overflow-x: hidden; // Additional safety measure
 }
 
 .right-sidebar {
+  position: sticky;
+  top: 1.5rem;
+  height: calc(100vh - 3rem);
+  overflow-y: auto;
+  min-width: 0; // Prevent content from overflowing grid
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  min-width: 0; // Fix for flex items overflowing
+  gap: 1.5rem;
+}
+
+.error-state, .loading-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
 }
 
 .error-state {
-  grid-column: 1 / -1;
-  text-align: center;
   background: white;
   padding: 3rem;
   border-radius: 12px;
@@ -59,10 +75,6 @@ main {
 }
 
 .loading-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 3rem;
-  color: #666;
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -88,22 +100,11 @@ main {
   100% { transform: rotate(360deg); }
 }
 
-// Sticky sidebar behavior
-app-sidebar {
-  position: sticky;
-  top: calc(64px + 2rem); // Account for header height + padding
-  height: fit-content;
-  max-height: calc(100vh - 64px - 4rem); // Account for header height + padding
-  overflow-y: auto;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 // Responsive styles
 @media (max-width: 1600px) {
   main {
     margin: 0;
+    max-width: 100%;
   }
 }
 
@@ -116,9 +117,28 @@ app-sidebar {
 
 @media (max-width: 1200px) {
   main {
-    grid-template-columns: 25% 50% 25%;
+    grid-template-columns: 1fr;
     padding: 1rem;
-    gap: 1rem;
+  }
+
+  .sidebar-container {
+    display: none; // Hide sidebar on small screens
+  }
+
+  .main-content-wrapper {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .right-sidebar {
+    display: none;
+  }
+}
+
+/* Add this to make sure main content stays in proper column on medium screens */
+@media (min-width: 1201px) and (max-width: 1600px) {
+  main {
+    grid-template-columns: 22% 50% 28%; /* Maintain the same proportions */
   }
 }
 
@@ -127,11 +147,6 @@ app-sidebar {
     grid-template-columns: 1fr;
     gap: 2rem;
     padding: 1rem;
-  }
-
-  app-sidebar,
-  .right-sidebar {
-    display: none;
   }
 
   .error-state,

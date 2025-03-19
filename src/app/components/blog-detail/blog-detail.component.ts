@@ -149,12 +149,21 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       }
     );
 
-    // Observe all section headings
+    // Observe all section headings and marked paragraphs
     requestAnimationFrame(() => {
+      // Find headings
       const headings = document.querySelectorAll('h1[id], h2[id], h3[id]');
       headings.forEach(heading => {
         if (heading.id) {
           this.observer?.observe(heading);
+        }
+      });
+
+      // Find paragraphs with IDs (these contain bold text sections)
+      const paragraphs = document.querySelectorAll('p[id]');
+      paragraphs.forEach(paragraph => {
+        if (paragraph.id) {
+          this.observer?.observe(paragraph);
         }
       });
     });

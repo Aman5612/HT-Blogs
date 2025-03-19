@@ -85,6 +85,7 @@ export class BlogService {
     ];
 
     let currentH2: ContentSection | null = null;
+    let currentH3: ContentSection | null = null;
 
     // Process all headings
     const headings = tempDiv.querySelectorAll('h1, h2, h3');
@@ -106,8 +107,52 @@ export class BlogService {
       if (level === 2) {
         sections[0].subSections?.push(section);
         currentH2 = section;
+        currentH3 = null;
       } else if (level === 3 && currentH2) {
         currentH2.subSections?.push(section);
+        currentH3 = section;
+
+        // Find content after H3 and look for bold text sections
+        let nextElement = heading.nextElementSibling;
+        while (nextElement && !nextElement.tagName.match(/^H[1-3]$/i)) {
+          // Check for paragraphs with bold text
+          if (nextElement && nextElement.tagName === 'P') {
+            const boldElements = nextElement.querySelectorAll('strong, b');
+            
+            // Process each bold element as a subsection
+            boldElements.forEach((boldElement) => {
+              const boldText = boldElement.textContent?.trim();
+              if (boldText) {
+                // Generate unique ID for this bold section
+                const boldSectionId = `${id}-${this.generateSectionId(boldText)}`;
+                
+                // Create section for the bold text
+                const boldSection: ContentSection = {
+                  id: boldSectionId,
+                  title: boldText,
+                  level: 4,
+                  subSections: []
+                };
+                
+                // Add to current H3 subsections
+                if (currentH3) {
+                  currentH3.subSections?.push(boldSection);
+                }
+                
+                // Add ID to the containing paragraph
+                if (nextElement && !nextElement.id) {
+                  nextElement.id = boldSectionId;
+                }
+              }
+            });
+          }
+          
+          if (nextElement) {
+            nextElement = nextElement.nextElementSibling;
+          } else {
+            break;
+          }
+        }
       }
     });
 

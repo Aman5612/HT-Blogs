@@ -7,13 +7,17 @@
   } @else {
     @if ((blogData$ | async); as blog) {
       @if (blog) {
-        <app-sidebar 
-          [sections]="blog.sections" 
-          (sectionClick)="scrollToSection($event)"
-        ></app-sidebar>
-        <app-main-content 
-          [content]="blog.content"
-        ></app-main-content>
+        <div class="sidebar-container">
+          <app-sidebar 
+            [sections]="blog.sections" 
+            (sectionClick)="scrollToSection($event)"
+          ></app-sidebar>
+        </div>
+        <div class="main-content-wrapper">
+          <app-main-content 
+            [content]="blog.content"
+          ></app-main-content>
+        </div>
         <div class="right-sidebar">
           <app-trip-planner></app-trip-planner>
           <app-most-read-articles></app-most-read-articles>
