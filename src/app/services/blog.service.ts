@@ -15,14 +15,14 @@ export interface BlogPost {
   tags?: string[];
   metaTitle?: string;
   metaDescription?: string;
-  packageIds?:string[];
+  packageIds?: string[];
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class BlogService {
-  private apiUrl = 'http://localhost:3001/api';
+  private apiUrl = 'https://blog-cms.opengig.works/api';
 
   constructor(private http: HttpClient) {}
 
@@ -63,7 +63,7 @@ export class BlogService {
           tags: [],
           metaTitle: article.metaTitle,
           metaDescription: article.metaDescription,
-          packageIds : article.packageIds
+          packageIds: article.packageIds,
         };
       })
     );
@@ -120,27 +120,29 @@ export class BlogService {
           // Check for paragraphs with bold text
           if (nextElement && nextElement.tagName === 'P') {
             const boldElements = nextElement.querySelectorAll('strong, b');
-            
+
             // Process each bold element as a subsection
             boldElements.forEach((boldElement) => {
               const boldText = boldElement.textContent?.trim();
               if (boldText) {
                 // Generate unique ID for this bold section
-                const boldSectionId = `${id}-${this.generateSectionId(boldText)}`;
-                
+                const boldSectionId = `${id}-${this.generateSectionId(
+                  boldText
+                )}`;
+
                 // Create section for the bold text
                 const boldSection: ContentSection = {
                   id: boldSectionId,
                   title: boldText,
                   level: 4,
-                  subSections: []
+                  subSections: [],
                 };
-                
+
                 // Add to current H3 subsections
                 if (currentH3) {
                   currentH3.subSections?.push(boldSection);
                 }
-                
+
                 // Add ID to the containing paragraph
                 if (nextElement && !nextElement.id) {
                   nextElement.id = boldSectionId;
@@ -148,7 +150,7 @@ export class BlogService {
               }
             });
           }
-          
+
           if (nextElement) {
             nextElement = nextElement.nextElementSibling;
           } else {
