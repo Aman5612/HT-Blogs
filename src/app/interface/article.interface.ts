@@ -14,6 +14,7 @@ export interface Article {
   featuredImage: string | null;
   metaTitle?: string;
   metaDescription?: string;
+  packageIds?: string[];
 }
 
 export interface BlogListItem extends Article {

@@ -288,6 +288,6 @@ export class TripPlannerComponent implements OnInit {
 
   onSubmit(event: Event) {
     event.preventDefault();
-    console.log('Form submitted:', this.formData);
+    // console.log('Form submitted:', this.formData);
   }
 }

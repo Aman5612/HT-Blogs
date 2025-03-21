@@ -284,7 +284,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   processTitle(title: string): string {
-    console.log('Processing title:',  title.replace(/^\d+\.\s*/, ''));
+    // console.log('Processing title:',  title.replace(/^\d+\.\s*/, ''));
     return title.replace(/^\d+\.\s*/, '');
   }
 

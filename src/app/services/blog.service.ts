@@ -15,13 +15,14 @@ export interface BlogPost {
   tags?: string[];
   metaTitle?: string;
   metaDescription?: string;
+  packageIds?:string[];
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class BlogService {
-  private apiUrl = 'https://blog-cms.opengig.works/api';
+  private apiUrl = 'http://localhost:3001/api';
 
   constructor(private http: HttpClient) {}
 
@@ -62,6 +63,7 @@ export class BlogService {
           tags: [],
           metaTitle: article.metaTitle,
           metaDescription: article.metaDescription,
+          packageIds : article.packageIds
         };
       })
     );
