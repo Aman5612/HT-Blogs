@@ -441,7 +441,7 @@ export class MainContentComponent implements OnInit {
     return `
       <style>
         h3 {
-          max-width: 13ch; 
+        
           overflow: hidden;
           text-overflow: ellipsis; 
           white-space: nowrap; 
