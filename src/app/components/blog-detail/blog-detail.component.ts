@@ -1,13 +1,14 @@
-import { Component, ViewEncapsulation, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ViewEncapsulation, AfterViewInit, OnDestroy, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Observable, catchError, map, of, shareReplay, tap, Subject, takeUntil } from 'rxjs';
+import { Observable, catchError, map, of, shareReplay, tap, Subject, takeUntil, firstValueFrom } from 'rxjs';
 import { BlogService, BlogPost } from '../../services/blog.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { MainContentComponent } from '../main-content/main-content.component';
 import { TripPlannerComponent } from '../trip-planner/trip-planner.component';
 import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
 import { Title, Meta } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
   selector: 'app-blog-detail',
@@ -36,7 +37,8 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private blogService: BlogService,
     private titleService: Title,
-    private metaService: Meta
+    private metaService: Meta,
+    @Inject(DOCUMENT) private document: Document
   ) {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -63,6 +65,12 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         shareReplay({ bufferSize: 1, refCount: true }),
         takeUntil(this.destroy$)
       );
+      
+      if (typeof window === 'undefined') {
+        firstValueFrom(this.blogData$).catch(err => {
+          console.error('Error pre-fetching blog data for SSR:', err);
+        });
+      }
     }
   }
 
@@ -74,10 +82,40 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       this.titleService.setTitle(blog.title);
     }
 
-    // Set meta description
+    // Clear any previous meta tags
+    this.metaService.removeTag('name="description"');
+    this.metaService.removeTag('property="og:title"');
+    this.metaService.removeTag('property="og:description"');
+    this.metaService.removeTag('property="og:url"');
+    this.metaService.removeTag('property="og:image"');
+
+    // Basic meta description
     if (blog.metaDescription) {
-      this.metaService.updateTag({ name: 'description', content: blog.metaDescription });
+      this.metaService.addTag({ name: 'description', content: blog.metaDescription });
     }
+
+    // Open Graph Protocol tags for better social media sharing
+    if (blog.metaTitle) {
+      this.metaService.addTag({ property: 'og:title', content: blog.metaTitle });
+    } else {
+      this.metaService.addTag({ property: 'og:title', content: blog.title });
+    }
+
+    if (blog.metaDescription) {
+      this.metaService.addTag({ property: 'og:description', content: blog.metaDescription });
+    }
+
+    // Current URL - Safe for SSR
+    const url = this.document.location.href;
+    this.metaService.addTag({ property: 'og:url', content: url });
+
+    // Image if available
+    if (blog.imageUrl) {
+      this.metaService.addTag({ property: 'og:image', content: blog.imageUrl });
+    }
+
+    // Content type
+    this.metaService.addTag({ property: 'og:type', content: 'article' });
   }
 
   ngAfterViewInit() {
@@ -88,9 +126,23 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   scrollToSection(sectionId: string) {
+    console.log('BlogDetail: Scrolling to section:', sectionId);
+    
+    // Ensure execution in browser context only (to avoid SSR issues)
+    if (typeof window === 'undefined') {
+      console.log('BlogDetail: Not in browser context, skipping scroll');
+      return;
+    }
+    
     requestAnimationFrame(() => {
+      // Find the element in the DOM
       const element = document.getElementById(sectionId);
-      if (!element) return;
+      if (!element) {
+        console.warn(`BlogDetail: Element with ID ${sectionId} not found`);
+        return;
+      }
+
+      console.log(`BlogDetail: Found element for section ${sectionId}:`, element);
 
       // Remove previous highlight
       if (this.currentHighlight) {
@@ -100,13 +152,20 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       // Calculate scroll position
       const headerOffset = 80;
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      const offsetPosition = elementPosition + window.scrollY - headerOffset;
 
-      // Smooth scroll to section
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+      console.log(`BlogDetail: Scrolling to position: ${offsetPosition}`);
+
+      // Ensure element is visible using scrollIntoView
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      
+      // Adjust scroll position to account for header
+      setTimeout(() => {
+        window.scrollBy({
+          top: -headerOffset,
+          behavior: 'smooth'
+        });
+      }, 100);
 
       // Add highlight effect
       element.classList.add('highlight-section');
@@ -151,19 +210,43 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
     // Observe all section headings and marked paragraphs
     requestAnimationFrame(() => {
-      // Find headings
-      const headings = document.querySelectorAll('h1[id], h2[id], h3[id]');
+      // Find all headings with IDs
+      const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
       headings.forEach(heading => {
         if (heading.id) {
           this.observer?.observe(heading);
         }
       });
 
-      // Find paragraphs with IDs (these contain bold text sections)
+      // Find paragraphs with IDs (these contain bold text sections or are otherwise important)
       const paragraphs = document.querySelectorAll('p[id]');
       paragraphs.forEach(paragraph => {
         if (paragraph.id) {
           this.observer?.observe(paragraph);
+        }
+      });
+
+      // Find lists with IDs
+      const lists = document.querySelectorAll('ul[id], ol[id]');
+      lists.forEach(list => {
+        if (list.id) {
+          this.observer?.observe(list);
+        }
+      });
+
+      // Find blockquotes with IDs
+      const quotes = document.querySelectorAll('blockquote[id]');
+      quotes.forEach(quote => {
+        if (quote.id) {
+          this.observer?.observe(quote);
+        }
+      });
+
+      // Find any other elements with IDs that might represent sections
+      const otherSections = document.querySelectorAll('div[id^="section-"], div[id^="list-section-"], div[id^="quote-"]');
+      otherSections.forEach(section => {
+        if (section.id) {
+          this.observer?.observe(section);
         }
       });
     });

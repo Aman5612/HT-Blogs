@@ -177,13 +177,12 @@ input[type="radio"]:checked ~ .section-content {
   transition: max-height 0.3s ease-in-out, margin-top 0.3s ease;
   
   &.expanded {
-    max-height: 200px;
+    max-height: 500px; /* Increased height to accommodate deeper nesting */
   }
 }
 
 .nested-subsection-item {
   font-size: 16px;
- 
   color: #4D4D4D;
   cursor: pointer;
   transition: all 0.2s;
@@ -191,16 +190,41 @@ input[type="radio"]:checked ~ .section-content {
   font-weight: 400;
   padding: 6px 0;
 
- 
-
   &:hover {
     color: #4D4D4D;
     text-decoration: underline;
   }
 
   &.selected {
-   text-decoration: underline;
+    text-decoration: underline;
     color: #4D4D4D;
+  }
+}
+
+/* Deep nesting styles */
+.deep-subsections {
+  margin-left: 1rem;
+  padding: 4px 0 0 0.5rem;
+  border-left: 1px dotted #ccc;
+  margin-top: 3px;
+}
+
+.deep-nested-item {
+  font-size: 14px;
+  color: #666;
+  padding: 4px 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    color: #333;
+    text-decoration: underline;
+  }
+  
+  &.selected {
+    color: #333;
+    font-weight: 500;
+    text-decoration: underline;
   }
 }
 
@@ -289,46 +313,70 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   onSectionClick(sectionId: string) {
+    console.log('Sidebar: Section clicked:', sectionId);
+    
+    // Set the selected section
     this.selectedSection = sectionId;
 
-    // Close all other sections and open this one
+    // Toggle this section's expansion
     this.toggleSectionExpansion(sectionId);
     
-    // Emit event to scroll to section
-    setTimeout(() => {
-      this.sectionClick.emit(sectionId);
-    }, 50);
+    // Emit event to scroll to section IMMEDIATELY (no delay)
+    this.sectionClick.emit(sectionId);
+    console.log('Sidebar: Event emitted for section:', sectionId);
   }
 
   onSubSectionClick(event: Event, sectionId: string) {
     event.stopPropagation();
+    console.log('Sidebar: Subsection clicked:', sectionId);
+    
+    // Set the selected section
     this.selectedSection = sectionId;
     
-    // Keep only the parent section expanded
-    const parentSectionId = this.findParentSectionId(sectionId);
-    if (parentSectionId) {
-      this.expandedSections = [parentSectionId];
+    // Check if this subsection has its own subsections
+    const hasNestedSubSections = this.hasNestedSubSections(sectionId);
+    
+    if (hasNestedSubSections) {
+      // Toggle the expansion of this subsection
+      this.toggleNestedSectionExpansion(sectionId);
+    } else {
+      // For leaf nodes, ensure parent is expanded
+      const parentSectionId = this.findParentSectionId(sectionId);
+      if (parentSectionId && !this.expandedSections.includes(parentSectionId)) {
+        this.expandedSections.push(parentSectionId);
+      }
     }
     
-    // Emit event to scroll to section with a slight delay to ensure UI is updated
-    setTimeout(() => {
-      this.sectionClick.emit(sectionId);
-    }, 50);
+    // Emit event to scroll to section IMMEDIATELY (no delay)
+    this.sectionClick.emit(sectionId);
+    console.log('Sidebar: Event emitted for subsection:', sectionId);
   }
 
   private findParentSectionId(sectionId: string): string | null {
-    // Find parent H3 section for this subsection
+    // More comprehensive parent section finder
+    // First check direct H2 sections
     for (const h2Section of this.sections[0]?.subSections || []) {
+      if (h2Section.id === sectionId) {
+        return h2Section.id;
+      }
+      
+      // Check H3 sections
       for (const h3Section of h2Section.subSections || []) {
-        // Direct match with H3 section
         if (h3Section.id === sectionId) {
-          return h3Section.id;
+          return h2Section.id; // Return H2 parent for better hierarchy
         }
         
-        // Check if it's a subsection of H3
-        for (const boldSection of h3Section.subSections || []) {
-          if (boldSection.id === sectionId) {
-            return h3Section.id;
+        // Check H4 or other nested sections
+        for (const nestedSection of h3Section.subSections || []) {
+          if (nestedSection.id === sectionId) {
+            return h3Section.id; // Return H3 parent for this nested section
+          }
+          
+          // Check even deeper nesting if exists
+          for (const deepNestedSection of nestedSection.subSections || []) {
+            if (deepNestedSection.id === sectionId) {
+              return nestedSection.id;
+            }
           }
         }
       }
@@ -348,16 +396,74 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private expandSectionForId(sectionId: string) {
-    // Find parent H3 section for this subsection and expand only it
-    const parentSectionId = this.findParentSectionId(sectionId);
-    
-    if (parentSectionId) {
-      // Replace all expanded sections with just this parent
-      this.expandedSections = [parentSectionId];
+    // Find parent section hierarchy for this section ID
+    for (const h2Section of this.sections[0]?.subSections || []) {
+      // Check if this is a H2 section
+      if (h2Section.id === sectionId) {
+        this.expandedSections = [h2Section.id];
+        return;
+      }
+      
+      // Check H3 sections
+      for (const h3Section of h2Section.subSections || []) {
+        if (h3Section.id === sectionId) {
+          this.expandedSections = [h3Section.id];
+          return;
+        }
+        
+        // Look for this ID in H3's subsections
+        for (const nestedSection of h3Section.subSections || []) {
+          if (nestedSection.id === sectionId) {
+            // Expand both the H3 parent and potentially the nested section
+            this.expandedSections = [h3Section.id];
+            
+            // If the nested section has its own subsections, expand it too
+            if (nestedSection.subSections?.length) {
+              this.expandedSections.push(nestedSection.id);
+            }
+            return;
+          }
+          
+          // Check even deeper nesting
+          for (const deepNestedSection of nestedSection.subSections || []) {
+            if (deepNestedSection.id === sectionId) {
+              // Expand the whole chain
+              this.expandedSections = [h3Section.id, nestedSection.id];
+              return;
+            }
+          }
+        }
+      }
     }
   }
 
   isExpanded(sectionId: string): boolean {
     return this.expandedSections.includes(sectionId);
+  }
+
+  // Check if a section has nested subsections
+  private hasNestedSubSections(sectionId: string): boolean {
+    // Search through the entire section tree
+    for (const h2Section of this.sections[0]?.subSections || []) {
+      for (const h3Section of h2Section.subSections || []) {
+        for (const nestedSection of h3Section.subSections || []) {
+          if (nestedSection.id === sectionId && nestedSection.subSections && nestedSection.subSections.length > 0) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  // Toggle expansion of nested subsections
+  private toggleNestedSectionExpansion(sectionId: string) {
+    if (this.expandedSections.includes(sectionId)) {
+      // If already expanded, remove it from expanded sections
+      this.expandedSections = this.expandedSections.filter(id => id !== sectionId);
+    } else {
+      // Otherwise add it to expanded sections
+      this.expandedSections.push(sectionId);
+    }
   }
 }

@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
+import { SectionScrollDirective } from '../../directives/section-scroll.directive';
 
 interface Package {
   id: string;
@@ -15,11 +16,11 @@ interface Package {
 @Component({
   selector: 'app-main-content',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SectionScrollDirective],
   template: `
     <div class="main-content">
       @if (content) {
-        <div class="content-wrapper" [innerHTML]="sanitizedContent"></div>
+        <div class="content-wrapper" [innerHTML]="sanitizedContent" appSectionScroll></div>
       } @else {
         <div class="empty-state">
           <p>No content available</p>
@@ -43,6 +44,7 @@ interface Package {
       line-height: 1.6;
       color: #1a1a1a;
       font-size: 1.1rem;
+      position: relative;
 
       :host ::ng-deep {
         h1, h2, h3, h4, h5, h6 {
@@ -284,6 +286,64 @@ interface Package {
         // Last element spacing
         > *:last-child {
           margin-bottom: 0;
+        }
+
+        /* Additional styles for clickable sections */
+        h1[id], h2[id], h3[id], h4[id], h5[id], h6[id] {
+          transition: background-color 0.2s ease;
+          padding: 4px 8px;
+          margin-left: -8px;
+          border-radius: 4px;
+          display: inline-block;
+        }
+        
+        h1[id]:hover, h2[id]:hover, h3[id]:hover, h4[id]:hover, h5[id]:hover, h6[id]:hover {
+          background-color: rgba(0, 0, 0, 0.04);
+        }
+        
+        p[id] {
+          padding: 4px;
+          margin-left: -4px;
+          border-radius: 4px;
+          transition: background-color 0.2s ease;
+        }
+        
+        p[id]:hover {
+          background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        p[id] strong, p[id] b {
+          transition: background-color 0.2s ease;
+          padding: 2px 4px;
+          border-radius: 3px;
+        }
+        
+        p[id] strong:hover, p[id] b:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        ul[id], ol[id] {
+          transition: background-color 0.2s ease;
+          padding-top: 4px;
+          padding-bottom: 4px;
+          border-radius: 4px;
+        }
+        
+        ul[id]:hover, ol[id]:hover {
+          background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        blockquote[id] {
+          transition: background-color 0.2s ease;
+        }
+        
+        blockquote[id]:hover {
+          background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        /* Ensure all elements with IDs have proper scroll margins */
+        [id] {
+          scroll-margin-top: 80px; /* Match the header offset */
         }
       }
     }

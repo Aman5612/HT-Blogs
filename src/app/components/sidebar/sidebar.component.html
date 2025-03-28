@@ -1,48 +1,70 @@
 <div class="sidebar !mt-10">
+  <div class="title-section">
+    <h2>Blog Content</h2>
+    <p class="highlights">Sections and Highlights</p>
+  </div>
+
   <div class="sections-list">
-    @for (section of sections[0]?.subSections; track section.id) {
-      <!-- H2 sections as main category headers -->
-      <div class="category-header">{{ section.title }}</div>
-      
-      <!-- H3 sections as expandable items -->
-      @for (subSection of section.subSections; track subSection.id) {
-        <div class="section-item">
-          <label class="radio-label">
-            <input 
-              type="radio" 
-              [name]="'section'" 
-              [value]="subSection.id"
-              [checked]="selectedSection === subSection.id"
-              (change)="onSectionClick(subSection.id)"
-            >
-            <span class="checkmark"></span>
-            <span class="section-content">
-              <span class="section-title">{{ processTitle(subSection.title) }}</span>
-              @if (subSection.subSections?.length) {
-                <span class="expand-icon" [class.expanded]="expandedSections.includes(subSection.id)">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
-              }
-            </span>
-          </label>
-          @if (subSection.subSections?.length) {
-            <div class="subsections" [class.expanded]="expandedSections.includes(subSection.id)">
-              @for (nestedSubSection of subSection.subSections; track nestedSubSection.id) {
-                <div 
-                  class="nested-subsection-item"
-                  [class.selected]="selectedSection === nestedSubSection.id"
-                  (click)="onSubSectionClick($event, nestedSubSection.id)"
-                >
-                  {{ nestedSubSection.title }}
-                </div>
-              }
-            </div>
-          }
-        </div>
+    @if (sections && sections.length > 0 && sections[0] && sections[0].subSections) {
+      @for (section of sections[0].subSections; track section.id) {
+        <!-- H2 sections as main category headers -->
+        <div class="category-header">{{ processTitle(section.title) }}</div>
+        
+        <!-- H3 sections as expandable items -->
+        @for (subSection of section.subSections; track subSection.id) {
+          <div class="section-item">
+            <label class="radio-label">
+              <input 
+                type="radio" 
+                [name]="'section'" 
+                [value]="subSection.id"
+                [checked]="selectedSection === subSection.id"
+                (change)="onSectionClick(subSection.id)"
+              >
+              <span class="checkmark"></span>
+              <span class="section-content">
+                <span class="section-title">{{ processTitle(subSection.title) }}</span>
+                @if (subSection.subSections && subSection.subSections.length) {
+                  <span class="expand-icon" [class.expanded]="expandedSections.includes(subSection.id)">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                }
+              </span>
+            </label>
+            @if (subSection.subSections && subSection.subSections.length) {
+              <div class="subsections" [class.expanded]="expandedSections.includes(subSection.id)">
+                @for (nestedSubSection of subSection.subSections; track nestedSubSection.id) {
+                  <div 
+                    class="nested-subsection-item"
+                    [class.selected]="selectedSection === nestedSubSection.id"
+                    (click)="onSubSectionClick($event, nestedSubSection.id)"
+                  >
+                    {{ processTitle(nestedSubSection.title) }}
+                    
+                    <!-- Support for even deeper nesting (level 4) -->
+                    @if (nestedSubSection.subSections && nestedSubSection.subSections.length && expandedSections.includes(nestedSubSection.id)) {
+                      <div class="deep-subsections">
+                        @for (deepNestedSection of nestedSubSection.subSections; track deepNestedSection.id) {
+                          <div 
+                            class="deep-nested-item"
+                            [class.selected]="selectedSection === deepNestedSection.id"
+                            (click)="onSubSectionClick($event, deepNestedSection.id)"
+                          >
+                            {{ processTitle(deepNestedSection.title) }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
       }
-    } @empty {
+    } @else {
       <div class="empty-state">
         No sections available
       </div>
