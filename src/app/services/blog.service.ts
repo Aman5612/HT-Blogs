@@ -148,11 +148,28 @@ export class BlogService {
       },
     ];
 
+    // Create a map to track sections by level and position
+    const sectionMap: { [key: string]: ContentSection } = {};
     let currentH2: ContentSection | null = null;
     let currentH3: ContentSection | null = null;
+    let currentH4: ContentSection | null = null;
 
-    // Process all headings (h1, h2, h3, h4) and strong text
+    // First create a virtual parent section for all top-level content
+    const topLevelSection: ContentSection = {
+      id: 'content-top-level',
+      title: 'Content Sections',
+      level: 2,
+      subSections: []
+    };
+    
+    // Add it to the main section
+    sections[0].subSections?.push(topLevelSection);
+    currentH2 = topLevelSection;
+
+    // Process all headings (h1, h2, h3, h4, h5, h6)
     const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    console.log(`Found ${headings.length} headings in content`);
+    
     headings.forEach((heading, index) => {
       const level = parseInt(heading.tagName.charAt(1));
       const title = heading.textContent?.trim() || `Section ${index + 1}`;
@@ -161,32 +178,109 @@ export class BlogService {
       // Add id to the heading in the content
       heading.id = id;
 
+      // Check if this heading has a strong element and use its text if available
+      const strongElement = heading.querySelector('strong');
+      const headingTitle = strongElement ? strongElement.textContent?.trim() : title;
+
       const section: ContentSection = {
         id,
-        title,
+        title: headingTitle || title,
         level,
         subSections: [],
       };
+      
+      // Store in the map for later reference
+      sectionMap[id] = section;
 
+      // Set up parent-child relationships based on heading level
       if (level === 2) {
+        // H2 is a direct child of the main section
         sections[0].subSections?.push(section);
         currentH2 = section;
         currentH3 = null;
-      } else if (level === 3 && currentH2) {
-        currentH2.subSections?.push(section);
+        currentH4 = null;
+      } else if (level === 3) {
+        // H3 is a child of the current H2 or the top-level section if no H2 exists
+        if (currentH2) {
+          currentH2.subSections?.push(section);
+        } else {
+          // If there's no H2, make it a child of the top level section
+          topLevelSection.subSections?.push(section);
+        }
         currentH3 = section;
-      } else if (level === 4 && currentH3) {
-        currentH3.subSections?.push(section);
-      } else if (level === 4 && currentH2 && !currentH3) {
-        // If there's no H3 parent, add H4 under H2
-        currentH2.subSections?.push(section);
-      } else if (level > 1 && level <= 6 && !currentH2) {
-        // If no parent section exists, add directly under main title
-        sections[0].subSections?.push(section);
+        currentH4 = null;
+      } else if (level === 4) {
+        // H4 is a child of the current H3, or H2 if no H3 exists
+        if (currentH3) {
+          currentH3.subSections?.push(section);
+        } else if (currentH2) {
+          currentH2.subSections?.push(section);
+        } else {
+          // If neither H2 nor H3 exists, add to top level
+          topLevelSection.subSections?.push(section);
+        }
+        currentH4 = section;
+      } else if (level > 4) {
+        // For H5 and H6, place them under the closest parent (H4, H3, H2, or top-level)
+        if (currentH4) {
+          currentH4.subSections?.push(section);
+        } else if (currentH3) {
+          currentH3.subSections?.push(section);
+        } else if (currentH2) {
+          currentH2.subSections?.push(section);
+        } else {
+          topLevelSection.subSections?.push(section);
+        }
+      } else if (level === 1 && index > 0) {
+        // Additional H1s (not the page title) should go under top level
+        topLevelSection.subSections?.push(section);
+      }
+      
+      // Process list items that follow this heading
+      let nextElement = heading.nextElementSibling;
+      while (nextElement) {
+        // If we hit another heading, stop processing
+        if (nextElement.tagName.match(/^H[1-6]$/i)) {
+          break;
+        }
+        
+        // If we find a list (ul/ol)
+        if (nextElement.tagName === 'UL' || nextElement.tagName === 'OL') {
+          const listItems = nextElement.querySelectorAll('li');
+          
+          listItems.forEach((li, liIndex) => {
+            // Get text from the first paragraph in the list item, or use the list item text
+            const liParagraph = li.querySelector('p');
+            const liText = liParagraph?.textContent?.trim() || li.textContent?.trim() || `List item ${liIndex + 1}`;
+            
+            // Find any strong elements within the list item
+            const strongInLi = li.querySelector('strong, b');
+            const strongText = strongInLi?.textContent?.trim();
+            
+            // Generate an ID for this list item
+            const liId = this.generateSectionId(`${section.title}-item-${liIndex}`);
+            
+            // Create a section for this list item
+            const listItemSection: ContentSection = {
+              id: liId,
+              title: strongText || liText,
+              level: section.level + 1, // One level deeper than parent heading
+              subSections: []
+            };
+            
+            // Add the list item section to its parent heading section
+            section.subSections?.push(listItemSection);
+            
+            // Add ID to the list item in the content
+            li.id = liId;
+          });
+        }
+        
+        nextElement = nextElement.nextElementSibling;
       }
     });
 
-    // Process paragraphs with strong/bold elements
+    // Process paragraphs with strong/bold elements that are directly used as section headers
     const paragraphs = tempDiv.querySelectorAll('p');
     paragraphs.forEach((paragraph) => {
       const boldElements = paragraph.querySelectorAll('strong, b');
@@ -211,79 +305,41 @@ export class BlogService {
               subSections: []
             };
             
+            // Store in the map
+            sectionMap[boldSectionId] = boldSection;
+            
             // Determine where to add this section
             if (currentH3) {
               currentH3.subSections?.push(boldSection);
             } else if (currentH2) {
               currentH2.subSections?.push(boldSection);
             } else {
-              sections[0].subSections?.push(boldSection);
+              topLevelSection.subSections?.push(boldSection);
             }
           }
         }
       }
     });
 
-    // Detect bullet point lists which often indicate important sections
-    const lists = tempDiv.querySelectorAll('ul, ol');
-    lists.forEach((list, listIndex) => {
-      // If a list is preceded by a paragraph with bold text, it's likely a section
-      if (list.previousElementSibling && list.previousElementSibling.tagName === 'P') {
-        const prevPara = list.previousElementSibling;
-        const boldInPara = prevPara.querySelector('strong, b');
-        
-        if (boldInPara) {
-          const listId = `list-section-${listIndex}`;
-          list.id = listId;
-          
-          // Create a section for important lists
-          const listSection: ContentSection = {
-            id: listId,
-            title: boldInPara.textContent?.trim() || `List ${listIndex + 1}`,
-            level: 4,
-            subSections: []
-          };
-          
-          // Add to appropriate parent section
-          if (currentH3) {
-            currentH3.subSections?.push(listSection);
-          } else if (currentH2) {
-            currentH2.subSections?.push(listSection);
-          } else {
-            sections[0].subSections?.push(listSection);
-          }
-        }
+    // Clean up any empty subsections arrays to reduce clutter
+    const cleanSections = (section: ContentSection) => {
+      if (!section.subSections || section.subSections.length === 0) {
+        delete section.subSections;
+        return;
       }
-    });
+      
+      for (const subSection of section.subSections) {
+        cleanSections(subSection);
+      }
+    };
+    
+    // Clean up the section structure
+    for (const section of sections) {
+      cleanSections(section);
+    }
 
-    // Process quotes which might be important highlights
-    const quotes = tempDiv.querySelectorAll('blockquote');
-    quotes.forEach((quote, quoteIndex) => {
-      if (quote.textContent?.trim()) {
-        const quoteId = `quote-${quoteIndex}`;
-        quote.id = quoteId;
-        
-        // Get the first line or limited text for the section title
-        let quoteText = quote.textContent.trim();
-        quoteText = quoteText.length > 40 ? quoteText.substring(0, 40) + '...' : quoteText;
-        
-        const quoteSection: ContentSection = {
-          id: quoteId,
-          title: `"${quoteText}"`,
-          level: 4,
-          subSections: []
-        };
-        
-        // Add to appropriate parent section
-        if (currentH3) {
-          currentH3.subSections?.push(quoteSection);
-        } else if (currentH2) {
-          currentH2.subSections?.push(quoteSection);
-        } else {
-          sections[0].subSections?.push(quoteSection);
-        }
-      }
-    });
+    // Log the final structure for debugging
+    console.log('Final section structure:', JSON.stringify(sections, null, 2));
 
     return {
       processedContent: tempDiv.innerHTML,

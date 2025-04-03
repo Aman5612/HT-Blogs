@@ -1,4 +1,4 @@
-<div class="sidebar !mt-10">
+<div class="sidebar !mt-10" #sidebarContainer>
   <div class="title-section">
     <h2>Blog Content</h2>
     <p class="highlights">Sections and Highlights</p>
@@ -7,62 +7,118 @@
   <div class="sections-list">
     @if (sections && sections.length > 0 && sections[0] && sections[0].subSections) {
       @for (section of sections[0].subSections; track section.id) {
-        <!-- H2 sections as main category headers -->
-        <div class="category-header">{{ processTitle(section.title) }}</div>
+        <!-- Top level category -->
+        <div class="category-header cursor-pointer">
+          <span class="category-title" (click)="selectSectionOnly(section.id, $event)">
+            {{ processTitle(section.title) }}
+          </span>
+        </div>
         
-        <!-- H3 sections as expandable items -->
-        @for (subSection of section.subSections; track subSection.id) {
-          <div class="section-item">
-            <label class="radio-label">
-              <input 
-                type="radio" 
-                [name]="'section'" 
-                [value]="subSection.id"
-                [checked]="selectedSection === subSection.id"
-                (change)="onSectionClick(subSection.id)"
-              >
-              <span class="checkmark"></span>
-              <span class="section-content">
-                <span class="section-title">{{ processTitle(subSection.title) }}</span>
-                @if (subSection.subSections && subSection.subSections.length) {
-                  <span class="expand-icon" [class.expanded]="expandedSections.includes(subSection.id)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+        <!-- Level 2 sections -->
+        <div class="section-level-2">
+          @for (subSection of section.subSections; track subSection.id) {
+            <div class="section-item">
+              <label class="radio-label cursor-pointer">
+                <input 
+                  type="radio" 
+                  [name]="'section'" 
+                  [value]="subSection.id"
+                  [checked]="selectedSection === subSection.id"
+                  (change)="onSectionClick(subSection.id)"
+                >
+                <span class="checkmark"></span>
+                <span class="section-content">
+                  <span class="section-title cursor-pointer" (click)="selectSectionOnly(subSection.id, $event)">
+                    {{ processTitle(subSection.title) }}
                   </span>
-                }
-              </span>
-            </label>
-            @if (subSection.subSections && subSection.subSections.length) {
-              <div class="subsections" [class.expanded]="expandedSections.includes(subSection.id)">
-                @for (nestedSubSection of subSection.subSections; track nestedSubSection.id) {
-                  <div 
-                    class="nested-subsection-item"
-                    [class.selected]="selectedSection === nestedSubSection.id"
-                    (click)="onSubSectionClick($event, nestedSubSection.id)"
-                  >
-                    {{ processTitle(nestedSubSection.title) }}
-                    
-                    <!-- Support for even deeper nesting (level 4) -->
-                    @if (nestedSubSection.subSections && nestedSubSection.subSections.length && expandedSections.includes(nestedSubSection.id)) {
-                      <div class="deep-subsections">
-                        @for (deepNestedSection of nestedSubSection.subSections; track deepNestedSection.id) {
-                          <div 
-                            class="deep-nested-item"
-                            [class.selected]="selectedSection === deepNestedSection.id"
-                            (click)="onSubSectionClick($event, deepNestedSection.id)"
-                          >
-                            {{ processTitle(deepNestedSection.title) }}
+                  @if (subSection.subSections && subSection.subSections.length) {
+                    <span 
+                      class="expand-icon cursor-pointer" 
+                      [class.expanded]="expandedSections.includes(subSection.id)"
+                      (click)="toggleExpansionOnly(subSection.id, $event)"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </span>
+                  }
+                </span>
+              </label>
+              
+              <!-- Level 3 sections (subsections) - includes both regular subsections and list items -->
+              @if (subSection.subSections && subSection.subSections.length) {
+                <div class="subsections" [class.expanded]="expandedSections.includes(subSection.id)">
+                  @for (nestedSubSection of subSection.subSections; track nestedSubSection.id) {
+                    <!-- Check if this is a list item (based on ID pattern or level) -->
+                    @if (isListItem(nestedSubSection)) {
+                      <div 
+                        class="list-item-entry cursor-pointer"
+                        [class.selected]="selectedSection === nestedSubSection.id"
+                      >
+                        <div class="list-item-content" (click)="selectSectionOnly(nestedSubSection.id, $event)">
+                          <span class="list-bullet">•</span>
+                          <span class="list-item-title">{{ processTitle(nestedSubSection.title) }}</span>
+                        </div>
+                      </div>
+                    } @else {
+                      <!-- Regular nested subsection (not a list item) -->
+                      <div 
+                        class="nested-subsection-item cursor-pointer"
+                        [class.selected]="selectedSection === nestedSubSection.id"
+                      >
+                        <div class="nested-content">
+                          <span class="bullet">•</span>
+                          <span class="nested-title" (click)="selectSectionOnly(nestedSubSection.id, $event)">{{ processTitle(nestedSubSection.title) }}</span>
+                          
+                          @if (nestedSubSection.subSections && nestedSubSection.subSections.length) {
+                            <span 
+                              class="expand-icon-mini" 
+                              [class.expanded]="expandedSections.includes(nestedSubSection.id)"
+                              (click)="toggleExpansionOnly(nestedSubSection.id, $event)"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </span>
+                          }
+                        </div>
+                        
+                        <!-- Level 4 sections (deep nesting) -->
+                        @if (nestedSubSection.subSections && nestedSubSection.subSections.length) {
+                          <div class="deep-subsections" [class.expanded]="expandedSections.includes(nestedSubSection.id)">
+                            @for (deepNestedSection of nestedSubSection.subSections; track deepNestedSection.id) {
+                              @if (isListItem(deepNestedSection)) {
+                                <!-- List item under a regular subsection -->
+                                <div 
+                                  class="list-item-entry list-item-deep cursor-pointer"
+                                  [class.selected]="selectedSection === deepNestedSection.id"
+                                >
+                                  <div class="list-item-content" (click)="selectSectionOnly(deepNestedSection.id, $event)">
+                                    <span class="list-bullet-small">◦</span>
+                                    <span class="list-item-title-small">{{ processTitle(deepNestedSection.title) }}</span>
+                                  </div>
+                                </div>
+                              } @else {
+                                <!-- Regular deep nested item -->
+                                <div 
+                                  class="deep-nested-item cursor-pointer"
+                                  [class.selected]="selectedSection === deepNestedSection.id"
+                                >
+                                  <span class="bullet-small">◦</span>
+                                  <span class="deep-nested-title" (click)="selectSectionOnly(deepNestedSection.id, $event)">{{ processTitle(deepNestedSection.title) }}</span>
+                                </div>
+                              }
+                            }
                           </div>
                         }
                       </div>
                     }
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        }
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
       }
     } @else {
       <div class="empty-state">

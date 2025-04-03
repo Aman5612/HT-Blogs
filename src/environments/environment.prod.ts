@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-    apiUrl: 'http://holidayer.in:3004/api'
+    apiUrl: 'https://holidayer.in:3009/api'
 }; 

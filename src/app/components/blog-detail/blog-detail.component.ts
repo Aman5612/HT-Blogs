@@ -122,7 +122,51 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     // Wait for content to be loaded before initializing observer
     if (this.contentLoaded) {
       this.initializeObserver();
+      this.ensureHeadingsHaveIds();
     }
+  }
+
+  private ensureHeadingsHaveIds() {
+    // This function ensures all headings have proper IDs for navigation
+    setTimeout(() => {
+      const contentContainer = document.querySelector('.main-content-wrapper');
+      if (!contentContainer) {
+        console.warn('Could not find main-content-wrapper for adding heading IDs');
+        return;
+      }
+      
+      // Check if there's content inside MainContentComponent
+      const mainContent = contentContainer.querySelector('.article-content');
+      const targetElement = mainContent || contentContainer;
+      
+      console.log('Looking for headings in:', targetElement);
+      const headings = targetElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      console.log(`Found ${headings.length} headings in content`);
+      
+      headings.forEach((heading, index) => {
+        const element = heading as HTMLElement;
+        
+        // If heading doesn't have an ID, generate one
+        if (!element.id) {
+          const text = element.textContent?.trim() || `section-${index}`;
+          const id = text
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+            .substring(0, 50);
+            
+          element.id = id;
+          console.log(`Added ID to heading: ${id}`);
+          
+          // If the observer exists, observe this element
+          if (this.observer) {
+            this.observer.observe(element);
+          }
+        } else {
+          console.log(`Heading already has ID: ${element.id}`);
+        }
+      });
+    }, 500);
   }
 
   scrollToSection(sectionId: string) {
@@ -133,52 +177,157 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       console.log('BlogDetail: Not in browser context, skipping scroll');
       return;
     }
+
+    // First try direct approach with document.getElementById
+    const directElement = document.getElementById(sectionId);
     
-    requestAnimationFrame(() => {
-      // Find the element in the DOM
-      const element = document.getElementById(sectionId);
-      if (!element) {
-        console.warn(`BlogDetail: Element with ID ${sectionId} not found`);
+    if (directElement) {
+      console.log(`BlogDetail: Found element directly with ID: ${sectionId}`);
+      this.scrollToElement(directElement);
+      return;
+    }
+
+    // If direct approach fails, search within the content wrapper
+    const contentWrapper = document.querySelector('.main-content-wrapper');
+    if (contentWrapper) {
+      console.log('BlogDetail: Searching within main-content-wrapper');
+      
+      // Get full HTML content for debugging
+      const contentHtml = contentWrapper.innerHTML;
+      console.log('Content HTML excerpt:', contentHtml.substring(0, 500) + '...');
+      
+      // Try to find element by ID attribute
+      const match = contentHtml.includes(`id="${sectionId}"`);
+      console.log(`Does content contain element with id="${sectionId}"? ${match}`);
+      
+      // Try some alternative approaches
+      const contentElement = contentWrapper.querySelector(`[id="${sectionId}"]`);
+      if (contentElement) {
+        console.log(`BlogDetail: Found element in content wrapper with ID: ${sectionId}`);
+        this.scrollToElement(contentElement as HTMLElement);
         return;
       }
-
-      console.log(`BlogDetail: Found element for section ${sectionId}:`, element);
-
-      // Remove previous highlight
-      if (this.currentHighlight) {
-        this.currentHighlight.classList.remove('highlight-section');
-      }
-
-      // Calculate scroll position
-      const headerOffset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - headerOffset;
-
-      console.log(`BlogDetail: Scrolling to position: ${offsetPosition}`);
-
-      // Ensure element is visible using scrollIntoView
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       
-      // Adjust scroll position to account for header
-      setTimeout(() => {
-        window.scrollBy({
-          top: -headerOffset,
-          behavior: 'smooth'
-        });
-      }, 100);
-
-      // Add highlight effect
-      element.classList.add('highlight-section');
-      this.currentHighlight = element;
-
-      // Remove highlight after animation
-      setTimeout(() => {
-        if (this.currentHighlight === element) {
-          element.classList.remove('highlight-section');
-          this.currentHighlight = null;
+      // Try finding elements with the text content similar to the ID
+      const normalizedId = sectionId.replace(/-/g, ' ').toLowerCase();
+      console.log(`BlogDetail: Looking for elements with text content matching: ${normalizedId}`);
+      
+      const headings = contentWrapper.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      for (let i = 0; i < headings.length; i++) {
+        const heading = headings[i] as HTMLElement;
+        const headingText = heading.textContent?.toLowerCase() || '';
+        
+        if (headingText.includes(normalizedId) || normalizedId.includes(headingText)) {
+          console.log(`BlogDetail: Found heading with matching text: "${headingText}"`);
+          
+          // Assign ID to the element if it doesn't have one
+          if (!heading.id) {
+            heading.id = sectionId;
+            console.log(`BlogDetail: Assigned ID ${sectionId} to heading`);
+          }
+          
+          this.scrollToElement(heading);
+          return;
         }
-      }, 2000);
-    });
+      }
+    }
+    
+    // Last resort: try to find within iframes or other containers
+    console.log('BlogDetail: Trying alternative methods to find element');
+    
+    // Try the following selectors as a last resort
+    const alternativeSelectors = [
+      `h3:contains('${sectionId.replace(/-/g, ' ')}')`,
+      `.content h3`,
+      `.article-content *[id="${sectionId}"]`,
+      `.content-wrapper *[id="${sectionId}"]`
+    ];
+    
+    for (const selector of alternativeSelectors) {
+      try {
+        const elements = document.querySelectorAll(selector);
+        if (elements.length > 0) {
+          console.log(`BlogDetail: Found element using selector: ${selector}`);
+          this.scrollToElement(elements[0] as HTMLElement);
+          return;
+        }
+      } catch (e) {
+        console.log(`Error with selector ${selector}:`, e);
+      }
+    }
+    
+    console.error(`BlogDetail: Could not find element with ID ${sectionId}`);
+  }
+  
+  private scrollToElement(element: HTMLElement) {
+    // Remove previous highlight
+    if (this.currentHighlight) {
+      this.currentHighlight.classList.remove('highlight-section');
+    }
+
+    // Calculate scroll position accounting for fixed header
+    const headerOffset = 80;
+    
+    console.log(`BlogDetail: Scrolling to element:`, element);
+    
+    // Make sure element is visible
+    if (element.style.display === 'none') {
+      element.style.display = 'block';
+    }
+    
+    // Add highlight effect immediately
+    element.classList.add('highlight-section');
+    this.currentHighlight = element;
+    
+    // Get the element's position
+    const rect = element.getBoundingClientRect();
+    const elementTop = rect.top + window.pageYOffset;
+    const targetPosition = elementTop - headerOffset;
+    
+    // Get the current scroll position
+    const startPosition = window.pageYOffset;
+    const distance = targetPosition - startPosition;
+    
+    // Smooth scroll implementation with easing
+    const duration = 800; // ms - longer duration for smoother scroll
+    let start: number | null = null;
+    
+    // Easing function for smoother animation
+    const easeInOutQuad = (t: number): number => {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    };
+    
+    const animateScroll = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = easeInOutQuad(progress);
+      
+      window.scrollTo({
+        top: startPosition + distance * easeProgress,
+        behavior: 'auto' // We're handling the animation ourselves
+      });
+      
+      if (elapsed < duration) {
+        window.requestAnimationFrame(animateScroll);
+      } else {
+        // Final adjustment to ensure we're at the exact position
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'auto'
+        });
+      }
+    };
+    
+    window.requestAnimationFrame(animateScroll);
+
+    // Remove highlight after animation
+    setTimeout(() => {
+      if (this.currentHighlight === element) {
+        element.classList.remove('highlight-section');
+        this.currentHighlight = null;
+      }
+    }, 2000);
   }
 
   private initializeObserver() {
@@ -187,6 +336,8 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       this.observer.disconnect();
     }
 
+    console.log('Initializing IntersectionObserver for scrollspy');
+
     // Create new observer
     this.observer = new IntersectionObserver(
       (entries) => {
@@ -194,6 +345,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
           if (entry.isIntersecting && entry.intersectionRatio > 0) {
             const id = entry.target.id;
             if (id) {
+              console.log(`Section now visible: ${id}`);
               // Update sidebar selection
               window.dispatchEvent(new CustomEvent('section-visible', {
                 detail: { sectionId: id }
@@ -210,45 +362,67 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
     // Observe all section headings and marked paragraphs
     requestAnimationFrame(() => {
-      // Find all headings with IDs
-      const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
-      headings.forEach(heading => {
-        if (heading.id) {
-          this.observer?.observe(heading);
-        }
+      // Find containers to look for content in
+      const containers = [
+        document.querySelector('.main-content-wrapper'),
+        document.querySelector('.article-content'),
+        document.body
+      ].filter(Boolean);
+
+      let totalObserved = 0;
+
+      containers.forEach(container => {
+        if (!container) return;
+        
+        console.log(`Looking for observable elements in container:`, container);
+
+        // Find all headings with IDs
+        const headings = container.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
+        headings.forEach(heading => {
+          if (heading.id) {
+            this.observer?.observe(heading);
+            totalObserved++;
+          }
+        });
+
+        // Find paragraphs with IDs (these contain bold text sections or are otherwise important)
+        const paragraphs = container.querySelectorAll('p[id]');
+        paragraphs.forEach(paragraph => {
+          if (paragraph.id) {
+            this.observer?.observe(paragraph);
+            totalObserved++;
+          }
+        });
+
+        // Find lists with IDs
+        const lists = container.querySelectorAll('ul[id], ol[id]');
+        lists.forEach(list => {
+          if (list.id) {
+            this.observer?.observe(list);
+            totalObserved++;
+          }
+        });
+
+        // Find blockquotes with IDs
+        const quotes = container.querySelectorAll('blockquote[id]');
+        quotes.forEach(quote => {
+          if (quote.id) {
+            this.observer?.observe(quote);
+            totalObserved++;
+          }
+        });
+
+        // Find any other elements with IDs that might represent sections
+        const otherSections = container.querySelectorAll('div[id^="section-"], div[id^="list-section-"], div[id^="quote-"]');
+        otherSections.forEach(section => {
+          if (section.id) {
+            this.observer?.observe(section);
+            totalObserved++;
+          }
+        });
       });
 
-      // Find paragraphs with IDs (these contain bold text sections or are otherwise important)
-      const paragraphs = document.querySelectorAll('p[id]');
-      paragraphs.forEach(paragraph => {
-        if (paragraph.id) {
-          this.observer?.observe(paragraph);
-        }
-      });
-
-      // Find lists with IDs
-      const lists = document.querySelectorAll('ul[id], ol[id]');
-      lists.forEach(list => {
-        if (list.id) {
-          this.observer?.observe(list);
-        }
-      });
-
-      // Find blockquotes with IDs
-      const quotes = document.querySelectorAll('blockquote[id]');
-      quotes.forEach(quote => {
-        if (quote.id) {
-          this.observer?.observe(quote);
-        }
-      });
-
-      // Find any other elements with IDs that might represent sections
-      const otherSections = document.querySelectorAll('div[id^="section-"], div[id^="list-section-"], div[id^="quote-"]');
-      otherSections.forEach(section => {
-        if (section.id) {
-          this.observer?.observe(section);
-        }
-      });
+      console.log(`Total elements being observed: ${totalObserved}`);
     });
   }
 
