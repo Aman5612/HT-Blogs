@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BlogService } from '../../services/blog.service';
 import { Article } from '../../interface/article.interface';
 import { Observable } from 'rxjs';
+import { Title, Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-blog-list',
@@ -172,9 +173,101 @@ import { Observable } from 'rxjs';
 export class BlogListComponent implements OnInit {
   posts$: Observable<Article[]>;
 
-  constructor(private blogService: BlogService) {
+  constructor(
+    private blogService: BlogService,
+    private titleService: Title,
+    private metaService: Meta,
+    @Inject(DOCUMENT) private document: Document
+  ) {
     this.posts$ = this.blogService.getAllPosts();
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.setMetadata();
+  }
+
+  private setMetadata(): void {
+    const title = 'HTBlogs - Travel and Lifestyle Blog';
+    const description = 'Explore our collection of travel guides, luxury experiences, and lifestyle tips from around the world. Discover new destinations and plan your next adventure.';
+    
+    // Set document title
+    this.titleService.setTitle(title);
+    
+    // Clear any previous meta tags
+    this.metaService.removeTag('name="description"');
+    this.metaService.removeTag('property="og:title"');
+    this.metaService.removeTag('property="og:description"');
+    this.metaService.removeTag('property="og:url"');
+    this.metaService.removeTag('property="og:type"');
+    this.metaService.removeTag('name="twitter:card"');
+    this.metaService.removeTag('name="twitter:title"');
+    this.metaService.removeTag('name="twitter:description"');
+    this.metaService.removeTag('name="twitter:image"');
+    this.metaService.removeTag('name="robots"');
+    this.metaService.removeTag('name="keywords"');
+    
+    // Set basic meta tags
+    this.metaService.addTag({ name: 'description', content: description });
+    this.metaService.addTag({ name: 'robots', content: 'index, follow' });
+    this.metaService.addTag({ name: 'keywords', content: 'travel, luxury, lifestyle, blog, vacation, destination, experience, adventure' });
+    
+    // Set Open Graph tags
+    this.metaService.addTag({ property: 'og:title', content: title });
+    this.metaService.addTag({ property: 'og:description', content: description });
+    this.metaService.addTag({ property: 'og:url', content: this.document.location.href });
+    this.metaService.addTag({ property: 'og:type', content: 'website' });
+    this.metaService.addTag({ property: 'og:image', content: this.document.location.origin + '/assets/default-image.jpg' });
+    
+    // Set Twitter Card tags
+    this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.metaService.addTag({ name: 'twitter:title', content: title });
+    this.metaService.addTag({ name: 'twitter:description', content: description });
+    this.metaService.addTag({ name: 'twitter:image', content: this.document.location.origin + '/assets/default-image.jpg' });
+    
+    // Set canonical URL
+    let linkCanonical = this.document.querySelector('link[rel="canonical"]');
+    if (!linkCanonical) {
+      linkCanonical = this.document.createElement('link');
+      linkCanonical.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.setAttribute('href', this.document.location.href);
+    
+    // Add structured data for blog listing
+    this.addStructuredData();
+  }
+  
+  private addStructuredData(): void {
+    // Remove any existing structured data
+    const existingScript = this.document.getElementById('blogListStructuredData');
+    if (existingScript) {
+      existingScript.remove();
+    }
+    
+    const baseUrl = this.document.location.origin;
+    
+    // Create structured data for the blog list
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      'headline': 'HTBlogs - Travel and Lifestyle Blog',
+      'description': 'Explore our collection of travel guides, luxury experiences, and lifestyle tips from around the world.',
+      'url': this.document.location.href,
+      'publisher': {
+        '@type': 'Organization',
+        'name': 'HTBlogs',
+        'logo': {
+          '@type': 'ImageObject',
+          'url': `${baseUrl}/assets/logo.png`
+        }
+      }
+    };
+    
+    // Create script element and add to document
+    const script = this.document.createElement('script');
+    script.id = 'blogListStructuredData';
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(structuredData);
+    this.document.head.appendChild(script);
+  }
 }

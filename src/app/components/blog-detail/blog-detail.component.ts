@@ -88,10 +88,27 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     this.metaService.removeTag('property="og:description"');
     this.metaService.removeTag('property="og:url"');
     this.metaService.removeTag('property="og:image"');
+    this.metaService.removeTag('property="og:type"');
+    this.metaService.removeTag('name="twitter:card"');
+    this.metaService.removeTag('name="twitter:title"');
+    this.metaService.removeTag('name="twitter:description"');
+    this.metaService.removeTag('name="twitter:image"');
+    this.metaService.removeTag('name="keywords"');
+    this.metaService.removeTag('name="author"');
 
     // Basic meta description
     if (blog.metaDescription) {
       this.metaService.addTag({ name: 'description', content: blog.metaDescription });
+    }
+
+    // Add keywords based on tags if available
+    if (blog.tags && blog.tags.length > 0) {
+      this.metaService.addTag({ name: 'keywords', content: blog.tags.join(', ') });
+    }
+
+    // Add author
+    if (blog.author) {
+      this.metaService.addTag({ name: 'author', content: blog.author });
     }
 
     // Open Graph Protocol tags for better social media sharing
@@ -116,6 +133,80 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
     // Content type
     this.metaService.addTag({ property: 'og:type', content: 'article' });
+    
+    // Twitter Card
+    this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
+    
+    if (blog.metaTitle) {
+      this.metaService.addTag({ name: 'twitter:title', content: blog.metaTitle });
+    } else {
+      this.metaService.addTag({ name: 'twitter:title', content: blog.title });
+    }
+    
+    if (blog.metaDescription) {
+      this.metaService.addTag({ name: 'twitter:description', content: blog.metaDescription });
+    }
+    
+    if (blog.imageUrl) {
+      this.metaService.addTag({ name: 'twitter:image', content: blog.imageUrl });
+    }
+
+    // Canonical URL
+    let linkCanonical = this.document.querySelector('link[rel="canonical"]');
+    if (!linkCanonical) {
+      linkCanonical = this.document.createElement('link');
+      linkCanonical.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.setAttribute('href', url);
+    
+    // Add structured data (JSON-LD) for blog post
+    this.addStructuredData(blog);
+  }
+  
+  private addStructuredData(blog: BlogPost): void {
+    // Remove any existing structured data
+    const existingScript = this.document.getElementById('blogPostStructuredData');
+    if (existingScript) {
+      existingScript.remove();
+    }
+    
+    const publishDate = blog.date || new Date().toISOString();
+    const baseUrl = this.document.location.origin;
+    
+    // Create structured data for the blog article
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      'headline': blog.metaTitle || blog.title,
+      'description': blog.metaDescription || '',
+      'image': blog.imageUrl|| `${baseUrl}/assets/default-image.jpg`,
+      'datePublished': publishDate,
+      'dateModified': publishDate,
+      'author': {
+        '@type': 'Person',
+        'name': blog.author || 'HTBlogs Team'
+      },
+      'publisher': {
+        '@type': 'Organization',
+        'name': 'HTBlogs',
+        'logo': {
+          '@type': 'ImageObject',
+          'url': `${baseUrl}/assets/logo.png`
+        }
+      },
+      'mainEntityOfPage': {
+        '@type': 'WebPage',
+        '@id': this.document.location.href
+      }
+    };
+    
+    // Create script element and add to document
+    const script = this.document.createElement('script');
+    script.id = 'blogPostStructuredData';
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(structuredData);
+    this.document.head.appendChild(script);
   }
 
   ngAfterViewInit() {

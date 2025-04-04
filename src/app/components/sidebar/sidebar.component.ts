@@ -25,7 +25,6 @@ export interface ContentSection {
 
 .sidebar {
   background: white;
-  border-radius: 12px;
   overflow-y: auto;
   overflow-x: hidden;
   width: 100%;
@@ -112,24 +111,31 @@ input[type="radio"] {
 
 .checkmark {
   position: relative;
-  height: 12px;
-  width: 12px;
-  border: 1.5px solid #D7D7D7;
+  height: 18px;
+  width: 18px;
+  border: 2px solid #D7D7D7;
   border-radius: 50%;
   flex-shrink: 0;
   background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 
   &:after {
     content: "";
     position: absolute;
     display: none;
-    top: 50%;
-    left: 50%;
-    width: 7px;
-    height: 7px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: #6F6F6F;
-    transform: translate(-50%, -50%);
+    transform: none;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
   }
 }
 
@@ -269,10 +275,15 @@ input[type="radio"]:checked ~ .section-content {
   gap: 8px;
   padding: 4px 8px;
   border-radius: 6px;
-  cursor: pointer;
+  position: relative;
   
+  /* Make container non-interactive */
+  cursor: default;
+  
+  /* Remove hover effect from container */
+  background-color: transparent;
   &:hover {
-    background-color: #f0f0f0;
+    background-color: transparent;
   }
 }
 
@@ -296,7 +307,16 @@ input[type="radio"]:checked ~ .section-content {
   color: #333;
   line-height: 1.4;
   font-weight: 400;
-  padding-right: 10px;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  display: inline-block;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #000;
+  }
 }
 
 .list-item-title-small {
@@ -305,7 +325,91 @@ input[type="radio"]:checked ~ .section-content {
   color: #444;
   line-height: 1.4;
   font-weight: 400;
-  padding-right: 10px;
+  cursor: pointer; 
+  padding: 2px 8px;
+  border-radius: 3px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  display: inline-block;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #000;
+  }
+}
+
+.nested-title {
+  flex-grow: 1;
+  font-size: 16px;
+  line-height: 1.4;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  padding: 3px 8px;
+  display: inline-block;
+  
+  &:hover {
+    text-decoration: none;
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #000;
+  }
+}
+
+.deep-nested-title {
+  flex-grow: 1;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  padding: 3px 8px;
+  display: inline-block;
+  
+  &:hover {
+    text-decoration: none;
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #000;
+  }
+}
+
+.expand-icon-mini {
+  transform: rotate(0deg);
+  transition: transform 0.3s ease, background-color 0.15s ease;
+  color: #666;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  z-index: 5; /* Ensure it's above other elements */
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #000;
+  }
+  
+  &.expanded {
+    transform: translateY(-50%) rotate(180deg);
+  }
+}
+
+.list-item-entry.selected .list-item-title,
+.list-item-entry.selected .list-item-title-small {
+  font-weight: 500;
+  color: #000;
+}
+
+.list-item-deep {
+  margin-left: 20px;
+  
+  .list-item-content {
+    padding-left: 2px;
+  }
 }
 
 .empty-state {
@@ -465,18 +569,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   selectedSection: string | null = null;
   expandedSections: string[] = [];
-
   private sectionVisibilityHandler = (event: Event) => {
     const customEvent = event as CustomEvent;
     if (customEvent.detail?.sectionId) {
+      // Only update the selected section indicator, but don't scroll or expand
       this.selectedSection = customEvent.detail.sectionId;
       
-      // Find parent section (H3) of the visible section
-      if (this.selectedSection) {
-        this.expandSectionForId(this.selectedSection);
-        // Scroll the sidebar to show the active section
-        this.scrollSidebarToActiveSection();
-      }
+      // Removed automatic expansion and scrolling
+      // Do not call expandSectionForId() or scrollSidebarToActiveSection()
     }
   };
 
@@ -776,37 +876,58 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // Set the selected section
     this.selectedSection = sectionId;
     
-    // Important: Make sure parent sections are expanded so the selection is visible
-    // But NEVER collapse any sections when clicking on a title
-    const parentId = this.findParentSectionId(sectionId);
-    if (parentId && !this.expandedSections.includes(parentId)) {
-      // Only expand parent if not already expanded - don't collapse anything
-      this.expandedSections = [...this.expandedSections, parentId];
-    }
+    // Removed automatic parent expansion
+    // We don't want to auto-expand parent sections when clicking
     
-    // Emit event to scroll to section
+    // Emit event to scroll to section in the main content
     this.sectionClick.emit(sectionId);
     console.log('Sidebar: Navigation event emitted for section:', sectionId);
     
-    // Scroll sidebar to show the active section
-    this.scrollSidebarToActiveSection();
+    // Removed scrollSidebarToActiveSection call
+    // Let the user manually scroll the sidebar
   }
   
   /**
    * Only toggles expansion without selecting or navigating
    */
   toggleExpansionOnly(sectionId: string, event: Event): void {
-    // Stop event from propagating to parent handlers
+    // Make absolutely sure the event stops here and doesn't propagate further
     event.stopPropagation();
+    event.preventDefault();
     
     console.log('Sidebar: Toggling expansion only for:', sectionId);
     
+    // Get the current target and any parent elements
+    const target = event.target as HTMLElement;
+    
+    // Check if target is an image with expand-icon class
+    const isImage = target.tagName === 'IMG' && target.classList.contains('expand-icon');
+    
+    const isExpandIcon = isImage || 
+                        target.classList.contains('expand-icon') || 
+                        target.classList.contains('expand-icon-mini') ||
+                        target.closest('.expand-icon') || 
+                        target.closest('.expand-icon-mini') ||
+                        target.closest('[class*="rotate-180"]') ||
+                        target.parentElement?.classList.contains('expand-icon') ||
+                        target.parentElement?.classList.contains('expand-icon-mini');
+    
+    // Either allow the specific expand icon or the containing div
+    if (!isExpandIcon && !target.querySelector('.expand-icon') && !target.querySelector('.expand-icon-mini')) {
+      // If we're not clicking on an expand icon or a container with an expand icon inside
+      // Allow the click to go through to normal section selection
+      return;
+    }
+    
+    // Toggle expansion
     if (this.expandedSections.includes(sectionId)) {
       // If already expanded, collapse it
       this.expandedSections = this.expandedSections.filter(id => id !== sectionId);
+      console.log('Collapsing section:', sectionId);
     } else {
       // Otherwise expand it, keeping other expanded sections
       this.expandedSections = [...this.expandedSections, sectionId];
+      console.log('Expanding section:', sectionId);
       
       // If this is a section with a parent, make sure the parent is expanded too
       const parentId = this.findParentSectionId(sectionId);
@@ -815,4 +936,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       }
     }
   }
+  cleanString(input: string) {
+    return input.replace(/[^a-zA-Z0-9\s]/g, ''); 
+}
 }
