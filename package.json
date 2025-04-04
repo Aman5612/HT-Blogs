@@ -8,10 +8,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "prerender": "ng run HT-blogs:prerender",
-    "serve:ssr:HT-blogs": "node dist/ht-blogs/server/server.mjs",
+    "serve:ssr": "node dist/ht-blogs/server/server.mjs",
     "dev:ssr": "ng build && node dist/ht-blogs/server/server.mjs",
-    "build:ssr": "ng build && ng run HT-blogs:server",
-    "build:ssr:prod": "ng build --configuration production && ng run HT-blogs:server:production"
+    "build:ssr": "ng build",
+    "build:ssr:prod": "ng build --configuration production"
   },
   "private": true,
   "dependencies": {
