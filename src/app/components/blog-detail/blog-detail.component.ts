@@ -1,5 +1,5 @@
-import { Component, ViewEncapsulation, AfterViewInit, OnDestroy, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ViewEncapsulation, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformServer, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable, catchError, map, of, shareReplay, tap, Subject, takeUntil, firstValueFrom } from 'rxjs';
 import { BlogService, BlogPost } from '../../services/blog.service';
@@ -8,7 +8,6 @@ import { MainContentComponent } from '../main-content/main-content.component';
 import { TripPlannerComponent } from '../trip-planner/trip-planner.component';
 import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
 import { Title, Meta } from '@angular/platform-browser';
-import { DOCUMENT } from '@angular/common';
 
 @Component({
   selector: 'app-blog-detail',
@@ -38,7 +37,8 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     private blogService: BlogService,
     private titleService: Title,
     private metaService: Meta,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -53,8 +53,10 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
             this.contentLoaded = true;
             // Set meta title and description
             this.updateMetadata(blog);
-            // Initialize observer after content is loaded
-            setTimeout(() => this.initializeObserver(), 300);
+            // Initialize observer after content is loaded (only in browser)
+            if (!isPlatformServer(this.platformId)) {
+              setTimeout(() => this.initializeObserver(), 300);
+            }
           }
         }),
         catchError(error => {
@@ -66,7 +68,8 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         takeUntil(this.destroy$)
       );
       
-      if (typeof window === 'undefined') {
+      // For SSR, ensure data is loaded immediately
+      if (isPlatformServer(this.platformId)) {
         firstValueFrom(this.blogData$).catch(err => {
           console.error('Error pre-fetching blog data for SSR:', err);
         });
@@ -210,14 +213,19 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    // Wait for content to be loaded before initializing observer
-    if (this.contentLoaded) {
+    // Only execute client-side code when not on server
+    if (!isPlatformServer(this.platformId) && this.contentLoaded) {
       this.initializeObserver();
       this.ensureHeadingsHaveIds();
     }
   }
 
   private ensureHeadingsHaveIds() {
+    // Only run in browser environment
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+    
     // This function ensures all headings have proper IDs for navigation
     setTimeout(() => {
       const contentContainer = document.querySelector('.main-content-wrapper');
@@ -422,6 +430,11 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   private initializeObserver() {
+    // Skip on server side
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+    
     // Clean up existing observer
     if (this.observer) {
       this.observer.disconnect();

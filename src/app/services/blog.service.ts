@@ -1,10 +1,11 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { Article } from '../interface/article.interface';
 import { ContentSection } from '../components/sidebar/sidebar.component';
 import { makeStateKey, StateKey, TransferState } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { isPlatformServer, isPlatformBrowser } from '@angular/common';
 
 // Create state transfer keys
 const POST_KEY = makeStateKey<Article[]>('post');
@@ -32,89 +33,45 @@ export interface BlogPost {
 export class BlogService {
   private apiUrl = environment.apiUrl;
   private transferState = inject(TransferState);
-  private blogpost =  {
-    "id": "7303320c-f9d6-4853-ae6c-6070cfddceba",
-    "title": "The Ultimate Guide to Luxury Experiences in Qatar",
-    "content": "<p dir=\"auto\">Qatar is synonymous with opulence, offering travelers world-class luxury experiences that blend tradition with modernity. From lavish hotels and fine dining to high-end shopping and exclusive adventures, Qatar is the perfect destination for those seeking the finer things in life. Here’s your ultimate guide to luxury experiences in Qatar.</p><p style=\"text-align: left\" dir=\"auto\"></p><p dir=\"auto\"><div style=\"text-align: center;\" class=\"image\"><img height=\"auto\" style=\"\" class=\"image\" src=\"https://d12g53icgxmb2x.cloudfront.net/1743138019649-image.png\" alt=\"A serene waterfall flows in a resort, surrounded by a gazebo and a sparkling pool, creating a tranquil atmosphere.\" flipx=\"false\" flipy=\"false\" align=\"center\" inline=\"false\"></div></p><h3 style=\"text-align: left; line-height: 1.4em\" dir=\"auto\"><span><strong>1. Stay at the Most Luxurious Hotels</strong></span></h3><p dir=\"auto\"></p><p dir=\"auto\">Qatar boasts some of the most extravagant hotels in the world, offering unparalleled hospitality and stunning architecture.</p><ul><li><p dir=\"auto\"><strong>The Ritz-Carlton, Doha:</strong> A blend of Arabian elegance and contemporary design with a private marina.</p></li><li><p dir=\"auto\"><strong>Banana Island Resort by Anantara:</strong> A private island escape with overwater villas and world-class wellness facilities.</p></li><li><p dir=\"auto\"><strong>The St. Regis Doha:</strong> Renowned for its butler service, pristine beaches, and fine dining options. <strong>Tip:</strong> Book a suite with a private pool for the ultimate indulgence.</p></li></ul><h3 style=\"line-height: 1.4em\" dir=\"auto\"><strong>2. Fine Dining at Michelin-Starred &amp; High-End Restaurants</strong></h3><p dir=\"auto\"></p><p dir=\"auto\"><div style=\"text-align: center;\" class=\"image\"><img height=\"auto\" style=\"\" class=\"image\" src=\"https://d12g53icgxmb2x.cloudfront.net/1743138112462-image.png\" alt=\" A large chandelier elegantly hangs from the ceiling of a restaurant, adding a touch of sophistication to the ambiance.\" flipx=\"false\" flipy=\"false\" align=\"center\" inline=\"false\"></div></p><p dir=\"auto\">Qatar is a paradise for food connoisseurs, offering gourmet experiences crafted by world-renowned chefs.</p><ul><li><p dir=\"auto\"><strong>IDAM by Alain Ducasse (Museum of Islamic Art):</strong> A luxurious fusion of French cuisine with Arabic flavors.</p></li><li><p dir=\"auto\"><strong>Hakkasan Doha:</strong> An upscale Cantonese restaurant with a glamorous ambiance.</p></li><li><p dir=\"auto\"><strong>Morimoto Doha:</strong> A Japanese fine-dining experience by the legendary Chef Masaharu Morimoto. <strong>Tip:</strong> Reserve a private dining room for an exclusive experience.</p></li></ul><h3 style=\"line-height: 1.4em\" dir=\"auto\"><strong>3. High-End Shopping in Qatar’s Luxury Malls</strong></h3><p dir=\"auto\"></p><p dir=\"auto\"><div style=\"text-align: center;\" class=\"image\"><img height=\"auto\" style=\"\" class=\"image\" src=\"https://d12g53icgxmb2x.cloudfront.net/1743138079940-image.png\" alt=\"Place Vendôme Mall in Lusail, Qatar – a luxury shopping destination inspired by French architecture, featuring high-end shops, restaurants, and cafes\" flipx=\"false\" flipy=\"false\" align=\"center\" inline=\"false\"></div></p><p dir=\"auto\"></p><p dir=\"auto\">Indulge in retail therapy at Qatar’s ultra-luxurious shopping destinations.</p><ul><li><p dir=\"auto\"><strong>Place Vendôme Mall:</strong> Inspired by Parisian elegance, home to top designer brands.</p></li><li><p dir=\"auto\"><strong>The Pearl-Qatar:</strong> A high-end shopping and lifestyle hub with waterfront views.</p></li><li><p dir=\"auto\"><strong>Villaggio Mall:</strong> A Venetian-inspired mall featuring luxury boutiques like Gucci, Louis Vuitton, and Dior. <strong>Tip:</strong> Look for limited-edition collections exclusive to Qatar.</p></li></ul><h3 style=\"line-height: 1.4em\" dir=\"auto\"><strong>4. Exclusive Desert &amp; Private Yacht Experiences</strong></h3><p dir=\"auto\"></p><p dir=\"auto\"><div style=\"text-align: center;\" class=\"image\"><img height=\"auto\" style=\"\" class=\"image\" src=\"https://d12g53icgxmb2x.cloudfront.net/1743138102310-image.png\" alt=\"A luxury yacht glides through the ocean, silhouetted against a vibrant sunset sky.\" flipx=\"false\" flipy=\"false\" align=\"center\" inline=\"false\"></div></p><p dir=\"auto\"></p><p dir=\"auto\">Qatar offers unique adventure experiences that combine luxury with thrill.</p><ul><li><p dir=\"auto\"><strong>Private Desert Safari:</strong> Enjoy a VIP dune-bashing experience, followed by a gourmet dinner in a luxury desert camp.</p></li><li><p dir=\"auto\"><strong>Luxury Yacht Cruise:</strong> Charter a private yacht from The Pearl-Qatar and explore the Arabian Gulf in style. <strong>Tip:</strong> Opt for a sunset cruise for breathtaking views of the Doha skyline.</p></li></ul><p dir=\"auto\">Qatar is a top destination for luxury seekers, offering experiences that redefine extravagance. Whether you’re indulging in five-star hospitality, dining at Michelin-starred restaurants, or embarking on private adventures, Qatar ensures an unforgettable, high-end experience.</p>",
-    "slug": "the-ultimate-guide-to-luxury-experiences-in-qatar",
-    "excerpt": "Discover the finest luxury experiences in Qatar, from opulent hotels and Michelin-star dining to private desert safaris and VIP shopping. Plan your lavish getaway today!",
-    "status": "PUBLISHED",
-    "authorId": "eebfd4bc-f4dd-47bd-8fb0-320f5c3933bf",
-    "createdAt": "2025-03-28T05:19:30.685Z",
-    "updatedAt": "2025-03-28T05:19:30.685Z",
-    "metaTitle": "The Ultimate Guide to Luxury Experiences in Qatar | Exclusive Travel Tips",
-    "metaDescription": "Discover the finest luxury experiences in Qatar, from opulent hotels and Michelin-star dining to private desert safaris and VIP shopping. Plan your lavish getaway today!",
-    "featureImage": "https://d12g53icgxmb2x.cloudfront.net/1743137895789-w=2160 (6).avif",
-    "featureImageAlt": "An image of the Louis Vuitton store in Qatar",
-    "packageIds": [],
-    "author": {
-        "id": "eebfd4bc-f4dd-47bd-8fb0-320f5c3933bf",
-        "name": "Super Admin",
-        "email": "amankumartiwari392@gmail.com"
-    },
-    "media": [
-        {
-            "id": "5b1afda9-58ab-45bf-942f-067b9106e856",
-            "postId": "7303320c-f9d6-4853-ae6c-6070cfddceba",
-            "url": "https://d12g53icgxmb2x.cloudfront.net/1743138019649-image.png",
-            "type": "image",
-            "createdAt": "2025-03-28T05:19:30.764Z",
-            "alt": "A serene waterfall flows in a resort, surrounded by a gazebo and a sparkling pool, creating a tranquil atmosphere."
-        },
-        {
-            "id": "58cd721f-2219-4973-a769-256e7ec9feaf",
-            "postId": "7303320c-f9d6-4853-ae6c-6070cfddceba",
-            "url": "https://d12g53icgxmb2x.cloudfront.net/1743138112462-image.png",
-            "type": "image",
-            "createdAt": "2025-03-28T05:19:30.768Z",
-            "alt": " A large chandelier elegantly hangs from the ceiling of a restaurant, adding a touch of sophistication to the ambiance."
-        },
-        {
-            "id": "71452e75-292f-42cd-9643-41625c769d8b",
-            "postId": "7303320c-f9d6-4853-ae6c-6070cfddceba",
-            "url": "https://d12g53icgxmb2x.cloudfront.net/1743138079940-image.png",
-            "type": "image",
-            "createdAt": "2025-03-28T05:19:30.769Z",
-            "alt": "Place Vendôme Mall in Lusail, Qatar – a luxury shopping destination inspired by French architecture, featuring high-end shops, restaurants, and cafes"
-        },
-        {
-            "id": "cc4f5525-d528-43fb-a651-3ab00cf7b7cb",
-            "postId": "7303320c-f9d6-4853-ae6c-6070cfddceba",
-            "url": "https://d12g53icgxmb2x.cloudfront.net/1743138102310-image.png",
-            "type": "image",
-            "createdAt": "2025-03-28T05:19:30.771Z",
-            "alt": "A luxury yacht glides through the ocean, silhouetted against a vibrant sunset sky."
-        }
-    ]
-}
-  constructor(private http: HttpClient) {}
+  
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   getAllPosts(): Observable<Article[]> {
-    // Check if we have the posts in transferState already
-    if (this.transferState.hasKey(POSTS_KEY)) {
-      const posts = this.transferState.get<Article[]>(POSTS_KEY, []);
-      this.transferState.remove(POSTS_KEY); // Remove to avoid using stale data
+    const postsKey = makeStateKey<Article[]>('all-posts');
+    
+    // Check if we have the posts in transferState already (client-side)
+    if (isPlatformBrowser(this.platformId) && this.transferState.hasKey(postsKey)) {
+      const posts = this.transferState.get<Article[]>(postsKey, []);
+      this.transferState.remove(postsKey); // Remove to avoid using stale data
       return of(posts);
     }
 
-    // If not, fetch from API and store in transferState
+    // If not, fetch from API 
     return this.http.get<Article[]>(`${this.apiUrl}/posts`).pipe(
       map(posts => {
-        this.transferState.set(POSTS_KEY, posts);
+        // On server, store in transfer state for client to use
+        if (isPlatformServer(this.platformId)) {
+          this.transferState.set(postsKey, posts);
+        }
         return posts;
       }),
       catchError(err => {
         console.error('Error fetching posts:', err);
-        return of([this.blogpost] as any[]);
+        return of([]);
       })
     );
   }
 
   getMostReadArticles(): Observable<Article[]> {
-    // Check if we have most read articles in transferState already
-    if (this.transferState.hasKey(MOST_READ_KEY)) {
-      const mostRead = this.transferState.get<Article[]>(MOST_READ_KEY, []);
-      this.transferState.remove(MOST_READ_KEY); // Remove to avoid using stale data
+    const mostReadKey = makeStateKey<Article[]>('most-read-articles');
+    
+    // Check if we have most read articles in transferState already (client-side)
+    if (isPlatformBrowser(this.platformId) && this.transferState.hasKey(mostReadKey)) {
+      const mostRead = this.transferState.get<Article[]>(mostReadKey, []);
+      this.transferState.remove(mostReadKey); // Remove to avoid using stale data
       return of(mostRead);
     }
 
@@ -127,7 +84,11 @@ export class BlogService {
           )
           .slice(0, 5);
         
-        this.transferState.set(MOST_READ_KEY, mostReadArticles);
+        // On server, store in transfer state for client to use
+        if (isPlatformServer(this.platformId)) {
+          this.transferState.set(mostReadKey, mostReadArticles);
+        }
+        
         return mostReadArticles;
       }),
       catchError(err => {
@@ -138,12 +99,15 @@ export class BlogService {
   }
 
   getPost(id: string): Observable<BlogPost | null> {
-    // Check transfer state first
-    const postKey = makeStateKey<BlogPost>(`post-${id}`);
-    const post = this.transferState.get<BlogPost>(postKey, null as unknown as BlogPost);
+    // Create unique key for this specific post
+    const postKey = makeStateKey<BlogPost>(`blog-post-${id}`);
     
-    if (post) {
-      console.log(`Retrieved post ${id} from transfer state`);
+    // On client, check if we have post in transfer state
+    if (isPlatformBrowser(this.platformId) && this.transferState.hasKey(postKey)) {
+      const post = this.transferState.get<BlogPost>(postKey, null as unknown as BlogPost);
+      this.transferState.remove(postKey); // Clean up after use
+      
+      console.log(`Retrieved post ${id} from transfer state (client)`);
       return of(post);
     }
     
@@ -165,14 +129,18 @@ export class BlogService {
             slug: res.slug,
             metaTitle: res.metaTitle,
             metaDescription: res.metaDescription,
+            author: res.author || 'HTBlogs Team',
+            date: res.publishedDate || res.createdAt,
+            tags: res.tags || [],
             sections: processedContent.sections,
             packageIds: res.packageIds || []
           };
           
-          console.log(`Processed sections for post ${id}:`, processedContent.sections);
-          
-          // Store in transfer state
-          this.transferState.set(postKey, blogPost);
+          // On server, store in transfer state for client to use
+          if (isPlatformServer(this.platformId)) {
+            console.log(`Storing post ${id} in transfer state (server)`);
+            this.transferState.set(postKey, blogPost);
+          }
           
           return blogPost;
         }
@@ -189,6 +157,25 @@ export class BlogService {
     content: string,
     title: string
   ): { processedContent: string; sections: ContentSection[] } {
+    // For server-side rendering, we need a different approach
+    if (isPlatformServer(this.platformId)) {
+      // Create a basic section structure without DOM manipulation
+      const sections: ContentSection[] = [
+        {
+          id: 'main-title',
+          title: title,
+          level: 1,
+          subSections: [],
+        }
+      ];
+      
+      return {
+        processedContent: content,
+        sections: sections
+      };
+    }
+    
+    // Client-side processing with DOM manipulation
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
 
