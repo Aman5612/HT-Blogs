@@ -1,4 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://holidayer.in:3004/api'
+  apiUrl: 'https://holidayer.in:3009/api',
+  fallbackApiUrl: 'https://holidayer.in:3009/api' // Fallback API URL
 }; 

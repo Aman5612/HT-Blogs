@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { Article } from '../interface/article.interface';
 import { ContentSection } from '../components/sidebar/sidebar.component';
-import { makeStateKey, StateKey, TransferState } from '@angular/core';
+import { makeStateKey, TransferState } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { isPlatformServer, isPlatformBrowser } from '@angular/common';
 
@@ -30,11 +30,12 @@ export interface BlogPost {
 @Injectable({
   providedIn: 'root',
 })
-export class BlogService {
+export class NewBlogService {
   private apiUrl = environment.apiUrl;
   private transferState = inject(TransferState);
-  // Track generated IDs to avoid duplicates
-  private _generatedIds: Set<string> = new Set<string>();
+  // Track processed content and IDs
+  private processedContentTitles = new Set<string>();
+  private usedIds = new Set<string>();
   
   constructor(
     private http: HttpClient,
@@ -159,8 +160,9 @@ export class BlogService {
     content: string,
     title: string
   ): { processedContent: string; sections: ContentSection[] } {
-    // Reset generated IDs for each new post processing
-    this._generatedIds.clear();
+    // Reset tracking sets for new content processing
+    this.processedContentTitles.clear();
+    this.usedIds.clear();
     
     // For server-side rendering, we need a different approach
     if (isPlatformServer(this.platformId)) {
@@ -196,8 +198,6 @@ export class BlogService {
 
     // Create a map to track sections by level and position
     const sectionMap: { [key: string]: ContentSection } = {};
-    // Track all titles that have been processed to avoid duplicates
-    const processedTitles = new Set<string>();
     
     let currentH2: ContentSection | null = null;
     let currentH3: ContentSection | null = null;
@@ -222,9 +222,9 @@ export class BlogService {
     headings.forEach((heading, index) => {
       const level = parseInt(heading.tagName.charAt(1));
       const title = heading.textContent?.trim() || `Section ${index + 1}`;
-      // Use our improved ID generation that ensures uniqueness
-      const id = this.generateSectionId(title);
-      console.log("level,title,id", level, title, id);
+      
+      // Generate a unique ID for this heading
+      const id = this.generateUniqueId(title);
       
       // Add id to the heading in the content
       heading.id = id;
@@ -233,8 +233,8 @@ export class BlogService {
       const strongElement = heading.querySelector('strong');
       const headingTitle = strongElement ? strongElement.textContent?.trim() : title;
 
-      // Add title to processed set to avoid duplicates later
-      processedTitles.add(headingTitle || title);
+      // Mark this title as processed
+      this.processedContentTitles.add(headingTitle || title);
       
       const section: ContentSection = {
         id,
@@ -249,13 +249,11 @@ export class BlogService {
       // Set up parent-child relationships based on heading level
       if (level === 2) {
         // H2 is a direct child of the main section
-        console.log("level 2", section);
         sections[0].subSections?.push(section);
         currentH2 = section;
         currentH3 = null;
         currentH4 = null;
       } else if (level === 3) {
-        console.log("level 3", section);
         // H3 is a child of the current H2 or the top-level section if no H2 exists
         if (currentH2) {
           currentH2.subSections?.push(section);
@@ -266,7 +264,6 @@ export class BlogService {
         currentH3 = section;
         currentH4 = null;
       } else if (level === 4) {
-        console.log("level 4", section);
         // H4 is a child of the current H3, or H2 if no H3 exists
         if (currentH3) {
           currentH3.subSections?.push(section);
@@ -278,7 +275,6 @@ export class BlogService {
         }
         currentH4 = section;
       } else if (level > 4) {
-        console.log("level > 4", section);
         // For H5 and H6, place them under the closest parent (H4, H3, H2, or top-level)
         if (currentH4) {
           currentH4.subSections?.push(section);
@@ -316,12 +312,11 @@ export class BlogService {
             const strongText = strongInLi?.textContent?.trim();
             const itemTitle = strongText || liText;
             
-            // Add list item title to processed set to avoid duplicates
-            processedTitles.add(itemTitle);
+            // Mark this title as processed
+            this.processedContentTitles.add(itemTitle);
             
-            // Generate an ID for this list item - ensure the index is included at the end
-            const truncatedSectionTitle = section.title.substring(0, 30); // Truncate long titles
-            const liId = this.generateSectionId(`${truncatedSectionTitle}-item-${liIndex}`);
+            // Create a unique ID for this list item, ensuring the index is included
+            const liId = this.generateUniqueId(`${section.title}-item-${liIndex}`);
             
             // Create a section for this list item
             const listItemSection: ContentSection = {
@@ -345,7 +340,7 @@ export class BlogService {
 
     // Process paragraphs with strong/bold elements that are directly used as section headers
     const paragraphs = tempDiv.querySelectorAll('p');
-    paragraphs.forEach((paragraph) => {
+    paragraphs.forEach((paragraph, paragraphIndex) => {
       const boldElements = paragraph.querySelectorAll('strong, b');
       
       if (boldElements.length > 0) {
@@ -356,8 +351,9 @@ export class BlogService {
           const boldText = firstBold.textContent?.trim();
           
           // Skip this paragraph if the bold text has already been processed
-          if (boldText && boldText.length > 5 && !processedTitles.has(boldText)) {
-            const boldSectionId = this.generateSectionId(boldText);
+          if (boldText && boldText.length > 5 && !this.processedContentTitles.has(boldText)) {
+            // Generate a unique ID for this bold text section
+            const boldSectionId = this.generateUniqueId(`${boldText}-p${paragraphIndex}`);
             
             // Add ID to the containing paragraph
             paragraph.id = boldSectionId;
@@ -370,9 +366,8 @@ export class BlogService {
               subSections: []
             };
             
-            // Store in the map
-            sectionMap[boldSectionId] = boldSection;
-            processedTitles.add(boldText);
+            // Mark this title as processed
+            this.processedContentTitles.add(boldText);
             
             // Determine where to add this section
             if (currentH3) {
@@ -413,22 +408,29 @@ export class BlogService {
     };
   }
 
-  private generateSectionId(title: string): string {
-    // Get the first 50 characters of the ID, but ensure the entire ID is unique
+  /**
+   * Generates a unique ID for a section title, ensuring no duplicates exist
+   */
+  private generateUniqueId(title: string): string {
+    // First create a base ID from the title
     const baseId = title
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .substring(0, 50); // Limit length for better URLs
+      .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+      .replace(/(^-|-$)/g, '')     // Remove leading/trailing hyphens
+      .substring(0, 40);           // Limit length
     
-    // If this is a duplicate ID, add unique timestamp to ensure uniqueness
-    if (this._generatedIds.has(baseId)) {
-      return `${baseId}-${Date.now().toString().substring(8, 13)}`;
+    // If this exact ID has been used before, make it unique by adding a counter
+    let uniqueId = baseId;
+    let counter = 1;
+    
+    while (this.usedIds.has(uniqueId)) {
+      uniqueId = `${baseId}-${counter}`;
+      counter++;
     }
     
-    // Track this ID to avoid future duplicates
-    this._generatedIds.add(baseId);
+    // Record that we've used this ID
+    this.usedIds.add(uniqueId);
     
-    return baseId;
+    return uniqueId;
   }
 }

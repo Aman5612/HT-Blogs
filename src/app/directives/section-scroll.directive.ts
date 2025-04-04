@@ -17,12 +17,68 @@ export class SectionScrollDirective implements AfterViewInit {
     setTimeout(() => {
       // Get all elements with IDs that might be sections
       const container = this.el.nativeElement;
+      console.log('SectionScroll: Adding click handlers to elements in container', container);
+      
+      // Look specifically for h3 elements with strong tags (very common in blogs)
+      const headingsWithStrong = container.querySelectorAll('h3 strong, h3 b');
+      console.log(`SectionScroll: Found ${headingsWithStrong.length} headings with strong/bold tags`);
+      
+      headingsWithStrong.forEach((strongElement: Element, index: number) => {
+        const parentHeading = strongElement.closest('h3') as HTMLElement;
+        if (parentHeading) {
+          const text = strongElement.textContent?.trim() || `strong-section-${index}`;
+          const id = text
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+            .substring(0, 50);
+          
+          // Add ID to the parent heading if it doesn't have one
+          if (!parentHeading.id) {
+            parentHeading.id = id;
+            console.log(`SectionScroll: Added ID to heading with strong: ${id}`);
+          }
+          
+          // Make both the heading and strong element clickable
+          this.makeElementClickable(parentHeading);
+          this.makeElementClickable(strongElement as HTMLElement, parentHeading.id);
+        }
+      });
       
       // First find all headings
       const headings = container.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
+      console.log(`SectionScroll: Found ${headings.length} headings with IDs`);
       headings.forEach((heading: Element) => {
         if (heading.id) {
+          console.log(`SectionScroll: Adding click handler to heading with ID: ${heading.id}`);
           this.makeElementClickable(heading as HTMLElement);
+        }
+      });
+      
+      // Find headings that might not have IDs and add IDs to them
+      const headingsWithoutIds = container.querySelectorAll('h1:not([id]), h2:not([id]), h3:not([id]), h4:not([id]), h5:not([id]), h6:not([id])');
+      console.log(`SectionScroll: Found ${headingsWithoutIds.length} headings without IDs`);
+      headingsWithoutIds.forEach((heading: Element, index: number) => {
+        const text = heading.textContent?.trim() || `section-${index}`;
+        const id = text
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '')
+          .substring(0, 50);
+        
+        heading.id = id;
+        console.log(`SectionScroll: Added ID to heading: ${id}`);
+        this.makeElementClickable(heading as HTMLElement);
+      });
+      
+      // Find headings with strong tags that might need special handling
+      const strongInHeadings = container.querySelectorAll('h1 strong, h2 strong, h3 strong, h4 strong, h5 strong, h6 strong');
+      console.log(`SectionScroll: Found ${strongInHeadings.length} strong elements in headings`);
+      strongInHeadings.forEach((strong: Element) => {
+        const parentHeading = strong.closest('h1, h2, h3, h4, h5, h6') as HTMLElement;
+        if (parentHeading && parentHeading.id) {
+          console.log(`SectionScroll: Making strong element in heading ${parentHeading.id} clickable`);
+          this.makeElementClickable(strong as HTMLElement, parentHeading.id);
         }
       });
       
@@ -55,7 +111,7 @@ export class SectionScrollDirective implements AfterViewInit {
           this.makeElementClickable(quote as HTMLElement);
         }
       });
-    }, 300); // Give DOM time to render
+    }, 500); // Give DOM more time to render
   }
   
   private makeElementClickable(element: HTMLElement, targetId?: string) {
@@ -108,14 +164,46 @@ export class SectionScrollDirective implements AfterViewInit {
     
     // Calculate scroll position
     const headerOffset = 80;
-    const elementPosition = element.getBoundingClientRect().top;
-    const offsetPosition = elementPosition + window.scrollY - headerOffset;
+    const rect = element.getBoundingClientRect();
+    const elementTop = rect.top + window.scrollY;
+    const targetPosition = elementTop - headerOffset;
     
-    // Smooth scroll to section
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: 'smooth'
-    });
+    // Get the current scroll position
+    const startPosition = window.scrollY;
+    const distance = targetPosition - startPosition;
+    
+    // Smooth scroll implementation with easing
+    const duration = 800; // ms - longer duration for smoother scroll
+    let start: number | null = null;
+    
+    // Easing function for smoother animation
+    const easeInOutQuad = (t: number): number => {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    };
+    
+    const animateScroll = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = easeInOutQuad(progress);
+      
+      window.scrollTo({
+        top: startPosition + distance * easeProgress,
+        behavior: 'auto' // We're handling the animation ourselves
+      });
+      
+      if (elapsed < duration) {
+        window.requestAnimationFrame(animateScroll);
+      } else {
+        // Final adjustment to ensure we're at the exact position
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'auto'
+        });
+      }
+    };
+    
+    window.requestAnimationFrame(animateScroll);
     
     // Update sidebar selection by dispatching an event
     window.dispatchEvent(new CustomEvent('section-visible', {

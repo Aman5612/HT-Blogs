@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastComponent } from './shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastComponent],
   template: `
     <div class="app-container">
       <header>
@@ -18,6 +20,9 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       <main class="main-content">
         <router-outlet></router-outlet>
       </main>
+      
+      <!-- Toast Container -->
+      <app-toast></app-toast>
     </div>
   `,
   styles: [`

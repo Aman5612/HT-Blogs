@@ -1,17 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-trip-planner',
   standalone: true,
-  imports: [CommonModule, FormsModule, MostReadArticlesComponent],
+  imports: [CommonModule, FormsModule, HttpClientModule, MostReadArticlesComponent],
   template: `
-    <div class="trip-planner-container">
+    <div class="trip-planner-container font-sans">
       <div class="trip-planner">
-        <h2>Need help planning<br />your trip?</h2>
-        <p class="subtitle">Fill in this form please</p>
+        <h2 class="font-normal text-[32px] leading-[118%]">Need help planning<br />your trip?</h2>
+        <p class="  ">Fill in this form please</p>
 
         <form class="planner-form" (submit)="onSubmit($event)">
           <div class="form-group">
@@ -56,7 +60,9 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
             <a href="#" class="policy-link">User Agreement</a> policy.
           </p>
 
-          <button type="submit" class="submit-btn">Submit</button>
+          <button type="submit" class="submit-btn" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Submitting...' : 'Submit' }}
+          </button>
         </form>
       </div>
     </div>
@@ -195,6 +201,20 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
         font-weight: 500;
       }
 
+      .error-message {
+        color: #e53935;
+        text-align: center;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+
+      .success-message {
+        color: #43a047;
+        text-align: center;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+
       .submit-btn {
         background: #000;
         margin: 0 auto;
@@ -217,6 +237,11 @@ import { MostReadArticlesComponent } from '../most-read-articles/most-read-artic
       .submit-btn:hover {
         background: #222;
       }
+
+      .submit-btn:disabled {
+        background: #999;
+        cursor: not-allowed;
+      }
     `,
   ],
 })
@@ -226,6 +251,15 @@ export class TripPlannerComponent implements OnInit {
     phone: '',
     email: '',
   };
+  
+  isSubmitting = false;
+  submitError = '';
+  submitSuccess = false;
+
+  constructor(
+    private http: HttpClient,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {
     // Check if we're in a browser environment
@@ -288,6 +322,85 @@ export class TripPlannerComponent implements OnInit {
 
   onSubmit(event: Event) {
     event.preventDefault();
-    // console.log('Form submitted:', this.formData);
+    
+    // Basic validation
+    if (!this.formData.name || !this.formData.email || !this.formData.phone) {
+      this.toastService.error('Please fill in all fields');
+      return;
+    }
+    
+    this.isSubmitting = true;
+    
+    // Set proper headers
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+    
+    // Use relative path that will be handled by the proxy
+    const apiUrl = '/api/submit';
+    
+    // Send data to API with proper error handling
+    this.http.post(apiUrl, this.formData, { 
+      headers: headers, 
+      observe: 'response',
+      responseType: 'json'
+    })
+      .pipe(
+        catchError(error => {
+          console.error('API Error:', error);
+          
+          // Create a standardized error response
+          const errorResponse = {
+            status: error.status || 500,
+            body: { 
+              error: error.error?.message || error.message || 'Server error' 
+            }
+          };
+          
+          // If it's a parsing error, provide more specific message
+          if (error.error instanceof SyntaxError) {
+            errorResponse.body.error = 'Response parsing error. The server might be returning invalid JSON.';
+          }
+          
+          return of(errorResponse);
+        })
+      )
+      .subscribe({
+        next: (response: any) => {
+          this.isSubmitting = false;
+          
+          if (response.status >= 200 && response.status < 300) {
+            this.toastService.success('Thank you! We\'ll be in touch soon.');
+            
+            // Reset form after successful submission
+            this.formData = {
+              name: '',
+              phone: '',
+              email: ''
+            };
+            
+            // Restore placeholders after form reset
+            setTimeout(() => {
+              const inputs = document.querySelectorAll('.form-input') as NodeListOf<HTMLInputElement>;
+              inputs.forEach(input => {
+                // Get stored placeholder and restore it
+                const placeholder = input.getAttribute('data-placeholder');
+                if (placeholder) {
+                  input.placeholder = placeholder;
+                }
+              });
+            }, 0);
+          } else {
+            // Handle error response with toast
+            this.toastService.error(response.body?.error || 'Failed to submit. Please try again.');
+          }
+        },
+        error: (error) => {
+          console.error('Subscription error:', error);
+          this.isSubmitting = false;
+          this.toastService.error('Network error. Please check your connection and try again.');
+        }
+      });
   }
 }

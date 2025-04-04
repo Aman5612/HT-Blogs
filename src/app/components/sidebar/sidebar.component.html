@@ -1,71 +1,158 @@
-<div class="sidebar !mt-10">
-  <div class="title-section">
+<div class="sidebar border-r font-sans border-[#CACACA] !mt-6 bg-white overflow-y-auto overflow-x-hidden fixed top-[4.5rem] h-[calc(100vh-3rem)] z-10 w-[22%] max-w-[332px]" #sidebarContainer>
+  <!-- <div class="title-section">
     <h2>Blog Content</h2>
     <p class="highlights">Sections and Highlights</p>
-  </div>
+  </div> -->
 
-  <div class="sections-list">
+  <div class="py-3 mx-4 mb-10">
     @if (sections && sections.length > 0 && sections[0] && sections[0].subSections) {
       @for (section of sections[0].subSections; track section.id) {
-        <!-- H2 sections as main category headers -->
-        <div class="category-header">{{ processTitle(section.title) }}</div>
+        <!-- Top level category -->
+        <div class="bg-[#F8F8F8] p-3 rounded-xl cursor-pointer">
+          <span class="font-normal text-[20px]" (click)="selectSectionOnly(section.id, $event)">
+            {{ processTitle(section.title) }}
+          </span>
+        </div>
         
-        <!-- H3 sections as expandable items -->
-        @for (subSection of section.subSections; track subSection.id) {
-          <div class="section-item">
-            <label class="radio-label">
-              <input 
-                type="radio" 
-                [name]="'section'" 
-                [value]="subSection.id"
-                [checked]="selectedSection === subSection.id"
-                (change)="onSectionClick(subSection.id)"
-              >
-              <span class="checkmark"></span>
-              <span class="section-content">
-                <span class="section-title">{{ processTitle(subSection.title) }}</span>
-                @if (subSection.subSections && subSection.subSections.length) {
-                  <span class="expand-icon" [class.expanded]="expandedSections.includes(subSection.id)">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+        <!-- Level 2 sections -->
+        <div class="pt-3">
+          @for (subSection of section.subSections; track subSection.id) {
+            <div class=" py-1.5">
+              <label class="flex items-center gap-3 cursor-pointer relative w-full select-none p-0">
+                <input 
+                  type="radio" 
+                  [name]="'section'" 
+                  [value]="subSection.id"
+                  [checked]="selectedSection === subSection.id"
+                  (change)="onSectionClick(subSection.id)"
+                >
+                <span class="relative h-[18px] w-[18px] border-2 border-[#D7D7D7] rounded-full flex-shrink-0 flex items-center justify-center bg-white
+                  after:content-[''] after:absolute after:hidden after:w-[10px] after:h-[10px] after:rounded-full after:bg-[#6F6F6F] 
+                  after:inset-0 after:m-auto group-hover:border-[#1a1a1a] group-hover:after:block 
+                  [input:checked~&]:border-[#1a1a1a] [input:checked~&]:after:block
+                  hover:border-[#1a1a1a] hover:after:block"></span>
+                <span class="w-full flex items-center justify-between p-2.5 bg-[#F8F8F8] rounded-xl transition-shadow duration-200
+                  hover:shadow-[inset_0_0_0_1px_#CFCFCF] [input:checked~&]:shadow-[inset_0_0_0_1px_#CFCFCF]">
+                  <span class="text-[20px] font-normal text-[#000000] line-clamp-2 leading-[1.4] flex-grow cursor-pointer" (click)="selectSectionOnly(subSection.id, $event)">
+                    {{ processTitle(subSection.title) }}
                   </span>
-                }
-              </span>
-            </label>
-            @if (subSection.subSections && subSection.subSections.length) {
-              <div class="subsections" [class.expanded]="expandedSections.includes(subSection.id)">
-                @for (nestedSubSection of subSection.subSections; track nestedSubSection.id) {
-                  <div 
-                    class="nested-subsection-item"
-                    [class.selected]="selectedSection === nestedSubSection.id"
-                    (click)="onSubSectionClick($event, nestedSubSection.id)"
-                  >
-                    {{ processTitle(nestedSubSection.title) }}
-                    
-                    <!-- Support for even deeper nesting (level 4) -->
-                    @if (nestedSubSection.subSections && nestedSubSection.subSections.length && expandedSections.includes(nestedSubSection.id)) {
-                      <div class="deep-subsections">
-                        @for (deepNestedSection of nestedSubSection.subSections; track deepNestedSection.id) {
-                          <div 
-                            class="deep-nested-item"
-                            [class.selected]="selectedSection === deepNestedSection.id"
-                            (click)="onSubSectionClick($event, deepNestedSection.id)"
-                          >
-                            {{ processTitle(deepNestedSection.title) }}
+                  @if (subSection.subSections && subSection.subSections.length) {
+                    <div 
+                      class="transform transition-transform duration-300 text-[#666] flex items-center px-2 py-1 rounded ml-1.5 
+                      hover:bg-[#e5e5e5] hover:text-[#333] cursor-pointer"
+                      [class.rotate-180]="expandedSections.includes(subSection.id)"
+                      (click)="toggleExpansionOnly(subSection.id, $event)"
+                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="10" viewBox="0 0 16 10" fill="none" class="expand-icon transition-transform duration-300">
+                      <path d="M8 9.25L0.5 1.75L2.25 0L8 5.75L13.75 0L15.5 1.75L8 9.25Z" fill="#666666"/>
+                    </svg>
+                    </div>
+                  }
+                </span>
+              </label>
+              
+              <!-- Level 3 sections (subsections) - includes both regular subsections and list items -->
+              @if (subSection.subSections && subSection.subSections.length) {
+                <div class="ml-10 mt-3 pl-3 overflow-hidden max-h-0 transition-all duration-300 ease-in-out"
+                     [class.max-h-[500px]]="expandedSections.includes(subSection.id)"
+                     [class.border-l]="expandedSections.includes(subSection.id)"
+                     [class.border-gray-200]="expandedSections.includes(subSection.id)">
+                  @for (nestedSubSection of subSection.subSections; track nestedSubSection.id) {
+                    <!-- Check if this is a list item (based on ID pattern or level) -->
+                    @if (isListItem(nestedSubSection)) {
+                      <div 
+                        class=" ml-2.5 transition-all duration-200 cursor-pointer"
+                        [class.font-medium]="selectedSection === nestedSubSection.id"
+                        [class.text-black]="selectedSection === nestedSubSection.id"
+                      >
+                        <div class="flex items-start rounded-md relative cursor-default bg-transparent" 
+                             (click)="selectSectionOnly(nestedSubSection.id, $event)">
+                             <span class="text-base text-[#4D4D4D] leading-[1.4] font-normal cursor-pointer rounded transition-all duration-150 
+                             hover:underline inline-block truncate w-full">
+                         {{ cleanString(processTitle(nestedSubSection.title)) }}
+                       </span>
+                        </div>
+                      </div>
+                    } @else {
+                      <!-- Regular nested subsection (not a list item) -->
+                      <div 
+                        class="text-base text-[#4D4D4D] cursor-pointer transition-all duration-200 relative font-normal py-1.5
+                              hover:text-[#4D4D4D] hover:underline"
+                        [class.underline]="selectedSection === nestedSubSection.id"
+                      >
+                        <div class="flex items-center gap-1.5 relative">
+                          <span class="flex-grow text-base leading-[1.4] cursor-pointer rounded transition-all duration-150 p-[3px_8px] inline-block"
+                                (click)="selectSectionOnly(nestedSubSection.id, $event)">
+                            {{ processTitle(nestedSubSection.title) }}
+                          </span>
+                          
+                          @if (nestedSubSection.subSections && nestedSubSection.subSections.length) {
+                            <button type="button"
+                                  class="text-[#666] absolute right-0 top-1/2 w-5 h-5 flex items-center justify-center rounded-full z-[5]
+                                  transition-all duration-300 hover:bg-black/10 hover:text-black
+                                  transform -translate-y-1/2 expand-icon-mini"
+                                  [class.rotate-180]="expandedSections.includes(nestedSubSection.id)"
+                                  (click)="toggleExpansionOnly(nestedSubSection.id, $event)">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 16 10" fill="none" class="expand-icon-mini transition-transform duration-300">
+                                <path d="M8 9.25L0.5 1.75L2.25 0L8 5.75L13.75 0L15.5 1.75L8 9.25Z" fill="#666666"/>
+                              </svg>
+                            </button>
+                          }
+                        </div>
+                        
+                        <!-- Level 4 sections (deep nesting) -->
+                        @if (nestedSubSection.subSections && nestedSubSection.subSections.length) {
+                          <div class="ml-4 max-h-0 overflow-hidden transition-all duration-300" 
+                               [class.max-h-[500px]]="expandedSections.includes(nestedSubSection.id)"
+                               [class.border-l]="expandedSections.includes(nestedSubSection.id)"
+                               [class.border-gray-200]="expandedSections.includes(nestedSubSection.id)">
+                            @for (deepNestedSection of nestedSubSection.subSections; track deepNestedSection.id) {
+                              @if (isListItem(deepNestedSection)) {
+                                <!-- List item under a regular subsection -->
+                                <div 
+                                  class="py-1.5 ml-2.5 transition-all duration-200 cursor-pointer"
+                                  [class.font-medium]="selectedSection === deepNestedSection.id"
+                                  [class.text-black]="selectedSection === deepNestedSection.id"
+                                >
+                                  <div class="flex items-start gap-2 p-1 rounded-md pl-0.5 relative" 
+                                       (click)="selectSectionOnly(deepNestedSection.id, $event)">
+                                    <span class="text-[#666] inline-block flex-shrink-0 text-[0.85rem]">◦</span>
+                                    <span class="flex-grow text-[0.85rem] text-[#444] leading-[1.4] font-normal cursor-pointer p-[2px_8px] rounded
+                                           transition-all duration-150 hover:bg-black/[0.08] hover:text-black inline-block">
+                                      {{ processTitle(deepNestedSection.title) }}
+                                    </span>
+                                  </div>
+                                </div>
+                              } @else {
+                                <!-- Regular deep nested item -->
+                                <div 
+                                  class="flex items-center py-1.5 ml-2.5 text-[#555] text-sm cursor-pointer
+                                        hover:text-black"
+                                  [class.text-black]="selectedSection === deepNestedSection.id"
+                                  [class.font-medium]="selectedSection === deepNestedSection.id"
+                                >
+                                  <span class="text-[#666] inline-block mr-1.5 flex-shrink-0 text-xs">◦</span>
+                                  <span class="flex-grow text-sm text-[#555] leading-[1.4] cursor-pointer rounded transition-all duration-150
+                                        p-[3px_8px] inline-block hover:bg-black/[0.08] hover:text-black"
+                                        (click)="selectSectionOnly(deepNestedSection.id, $event)">
+                                    {{ processTitle(deepNestedSection.title) }}
+                                  </span>
+                                </div>
+                              }
+                            }
                           </div>
                         }
                       </div>
                     }
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        }
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
       }
     } @else {
-      <div class="empty-state">
+      <div class="text-center p-8 text-[#666] italic text-sm">
         No sections available
       </div>
     }

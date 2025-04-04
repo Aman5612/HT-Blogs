@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { BlogService } from '../../services/blog.service';
+import { NewBlogService } from '../../services/new-blog.service';
 import { Article } from '../../interface/article.interface';
 
 @Component({
@@ -17,7 +17,7 @@ export class MostReadArticlesComponent implements OnInit {
   error: string | null = null;
 
   constructor(
-    private blogService: BlogService,
+    private blogService: NewBlogService,
     private router: Router
   ) {}
 
