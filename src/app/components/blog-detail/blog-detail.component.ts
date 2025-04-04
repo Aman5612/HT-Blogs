@@ -2,7 +2,8 @@ import { Component, ViewEncapsulation, AfterViewInit, OnDestroy, Inject, PLATFOR
 import { CommonModule, isPlatformServer, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable, catchError, map, of, shareReplay, tap, Subject, takeUntil, firstValueFrom } from 'rxjs';
-import { BlogService, BlogPost } from '../../services/blog.service';
+import { BlogPost } from '../../services/blog.service';
+import { NewBlogService } from '../../services/new-blog.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { MainContentComponent } from '../main-content/main-content.component';
 import { TripPlannerComponent } from '../trip-planner/trip-planner.component';
@@ -34,7 +35,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private blogService: BlogService,
+    private blogService: NewBlogService,
     private titleService: Title,
     private metaService: Meta,
     @Inject(DOCUMENT) private document: Document,

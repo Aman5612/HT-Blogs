@@ -43,10 +43,9 @@
                       [class.rotate-180]="expandedSections.includes(subSection.id)"
                       (click)="toggleExpansionOnly(subSection.id, $event)"
                     >
-                    <img src="assets/icons/Arrow_icon_gray.svg" alt="Expand" width="16" height="16" class="expand-icon transition-transform duration-300">
-                      <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="expand-icon">
-                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg> -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="10" viewBox="0 0 16 10" fill="none" class="expand-icon transition-transform duration-300">
+                      <path d="M8 9.25L0.5 1.75L2.25 0L8 5.75L13.75 0L15.5 1.75L8 9.25Z" fill="#666666"/>
+                    </svg>
                     </div>
                   }
                 </span>
@@ -94,7 +93,9 @@
                                   transform -translate-y-1/2 expand-icon-mini"
                                   [class.rotate-180]="expandedSections.includes(nestedSubSection.id)"
                                   (click)="toggleExpansionOnly(nestedSubSection.id, $event)">
-                              <img src="assets/icons/Arrow_icon_gray.svg" alt="Expand" width="12" height="12" class="expand-icon-mini transition-transform duration-300">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 16 10" fill="none" class="expand-icon-mini transition-transform duration-300">
+                                <path d="M8 9.25L0.5 1.75L2.25 0L8 5.75L13.75 0L15.5 1.75L8 9.25Z" fill="#666666"/>
+                              </svg>
                             </button>
                           }
                         </div>

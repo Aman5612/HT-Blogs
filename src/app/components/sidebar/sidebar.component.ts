@@ -569,6 +569,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   selectedSection: string | null = null;
   expandedSections: string[] = [];
+  arrowIconPath = '/assets/icons/Arrow_icon_gray.svg';
+
   private sectionVisibilityHandler = (event: Event) => {
     const customEvent = event as CustomEvent;
     if (customEvent.detail?.sectionId) {

@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { BlogService } from '../../services/blog.service';
+import { NewBlogService } from '../../services/new-blog.service';
 import { Article } from '../../interface/article.interface';
 import { Observable } from 'rxjs';
 import { Title, Meta } from '@angular/platform-browser';
@@ -174,7 +174,7 @@ export class BlogListComponent implements OnInit {
   posts$: Observable<Article[]>;
 
   constructor(
-    private blogService: BlogService,
+    private blogService: NewBlogService,
     private titleService: Title,
     private metaService: Meta,
     @Inject(DOCUMENT) private document: Document
