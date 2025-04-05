@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { NewBlogService } from '../../services/new-blog.service';
@@ -9,26 +15,69 @@ import { Article } from '../../interface/article.interface';
   standalone: true,
   imports: [CommonModule, DatePipe],
   templateUrl: './most-read-articles.component.html',
-  styleUrls: ['./most-read-articles.component.scss']
+  styleUrls: ['./most-read-articles.component.scss'],
 })
-export class MostReadArticlesComponent implements OnInit {
+export class MostReadArticlesComponent implements OnInit, OnChanges {
+  @Input() relatedBlogs?: any[];
+
   mostReadArticles: Article[] = [];
   isLoading = true;
   error: string | null = null;
 
-  constructor(
-    private blogService: NewBlogService,
-    private router: Router
-  ) {}
+  constructor(private blogService: NewBlogService, private router: Router) {}
 
   ngOnInit() {
-    this.loadArticles();
+    this.updateArticles();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['relatedBlogs']) {
+      console.log('Related blogs changed:', this.relatedBlogs);
+      console.log('Related blogs is array?', Array.isArray(this.relatedBlogs));
+      console.log('Related blogs length:', this.relatedBlogs?.length);
+      console.log('Related blogs type:', typeof this.relatedBlogs);
+      this.updateArticles();
+    }
+  }
+
+  private updateArticles() {
+    // If relatedBlogs is provided, use those instead of fetching from service
+    if (
+      this.relatedBlogs &&
+      Array.isArray(this.relatedBlogs) &&
+      this.relatedBlogs.length > 0
+    ) {
+      console.log('Using related blogs:', this.relatedBlogs);
+
+      // Convert relatedBlogs to Article format
+      this.mostReadArticles = this.relatedBlogs.map((blog) => {
+        return {
+          id: blog.id,
+          title: blog.title,
+          content: blog.content,
+          status: blog.status || 'PUBLISHED',
+          createdAt: blog.createdAt || new Date().toISOString(),
+          updatedAt: blog.updatedAt || new Date().toISOString(),
+          media: [],
+          featureImage: blog.featureImage || '',
+          excerpt: blog.excerpt || '',
+          author: blog.author,
+        } as Article;
+      });
+
+      this.isLoading = false;
+    } else {
+      console.log(
+        'No related blogs found or invalid format, loading most read articles instead'
+      );
+      this.loadArticles();
+    }
   }
 
   loadArticles() {
     this.isLoading = true;
     this.error = null;
-    
+
     this.blogService.getMostReadArticles().subscribe({
       next: (articles) => {
         this.mostReadArticles = articles;
@@ -39,7 +88,7 @@ export class MostReadArticlesComponent implements OnInit {
         this.error = 'Failed to load articles. Please try again later.';
         this.isLoading = false;
         this.mostReadArticles = [];
-      }
+      },
     });
   }
 

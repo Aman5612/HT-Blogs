@@ -1,45 +1,53 @@
 <div class="most-read-container">
-  <h3>Most Read Articles</h3>
-  
+  <h3>
+    {{
+      relatedBlogs && relatedBlogs.length > 0
+        ? "Related Articles"
+        : "Most Read Articles"
+    }}
+  </h3>
+
   @if (isLoading) {
-    <div class="loading-state">
-      <div class="loading-spinner"></div>
-      <p>Loading articles...</p>
-    </div>
+  <div class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading articles...</p>
+  </div>
   } @else if (error) {
-    <div class="error-state">
-      <p>{{ error }}</p>
-      <button (click)="retryLoad()" class="retry-btn">Try Again</button>
-    </div>
+  <div class="error-state">
+    <p>{{ error }}</p>
+    <button (click)="retryLoad()" class="retry-btn">Try Again</button>
+  </div>
   } @else if (mostReadArticles.length === 0) {
-    <div class="empty-state">
-      <p>No articles available at the moment.</p>
-    </div>
+  <div class="empty-state">
+    <p>No articles available at the moment.</p>
+  </div>
   } @else {
-    <div class="article-cards">
-      @for (article of mostReadArticles; track article.id) {
-        <div 
-          class="article-card" 
-          (click)="onArticleClick(article)" 
-          (keydown)="onKeyPress($event, article)"
-          role="button" 
-          tabindex="0"
-          [attr.aria-label]="'Read article: ' + article.title"
-        >
-          <div class="article-image" [class.no-image]="!article.media?.[0]?.url && !article.featuredImage">
-            @if (article.featureImage) {
-              <img 
-                [src]="article.featuredImage ??article.media[0]?.url" 
-                [alt]="article.title"
-              >
-            }
-          </div>
-          <div class="article-content">
-            <h4 >{{ article.title }}</h4>
-            <div class="date">{{ article.createdAt | date:'mediumDate' }}</div>
-          </div>
-        </div>
-      }
+  <div class="article-cards">
+    @for (article of mostReadArticles; track article.id) {
+    <div
+      class="article-card"
+      (click)="onArticleClick(article)"
+      (keydown)="onKeyPress($event, article)"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="'Read article: ' + article.title"
+    >
+      <div class="article-image" [class.no-image]="!article.featureImage">
+        @if (article.featureImage) {
+        <img [src]="article.featureImage" [alt]="article.title" />
+        }
+      </div>
+      <div class="article-content">
+        <h4>{{ article.title }}</h4>
+        <div class="date">{{ article.createdAt | date : "mediumDate" }}</div>
+        @if (article.excerpt) {
+        <p class="excerpt">{{ article.excerpt }}</p>
+        } @if (article.author && article.author.name) {
+        <div class="author">By {{ article.author.name }}</div>
+        }
+      </div>
     </div>
+    }
+  </div>
   }
 </div>

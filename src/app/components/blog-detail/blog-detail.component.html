@@ -1,39 +1,40 @@
 <main>
   @if (error) {
-    <div class="error-state">
-      <h2>{{ error }}</h2>
-      <a routerLink="/blog" class="back-link">Back to Blog List</a>
-    </div>
+  <div class="error-state">
+    <h2>{{ error }}</h2>
+    <a routerLink="/blog" class="back-link">Back to Blog List</a>
+  </div>
+  } @else { @if ((blogData$ | async); as blog) { @if (blog) {
+  <div class="sidebar-container">
+    <app-sidebar
+      [sections]="blog.sections"
+      (sectionClick)="scrollToSection($event)"
+    ></app-sidebar>
+  </div>
+  <div class="main-content-wrapper">
+    <app-main-content
+      [content]="blog.content"
+      [packageIds]="blog.packageIds ?? ['479']"
+      [keywords]="blog.keywords ?? ''"
+      [relatedBlogs]="blog.relatedBlogs ?? []"
+      [customTitle]="blog.customTitle ?? blog.title"
+    ></app-main-content>
+  </div>
+  <div class="right-sidebar">
+    <app-trip-planner></app-trip-planner>
+    <app-most-read-articles
+      [relatedBlogs]="blog.relatedBlogs ?? []"
+    ></app-most-read-articles>
+  </div>
   } @else {
-    @if ((blogData$ | async); as blog) {
-      @if (blog) {
-        <div class="sidebar-container">
-          <app-sidebar 
-            [sections]="blog.sections" 
-            (sectionClick)="scrollToSection($event)"
-          ></app-sidebar>
-        </div>
-        <div class="main-content-wrapper">
-          <app-main-content 
-            [content]="blog.content"
-            [packageIds]="blog.packageIds ?? ['479']"
-          ></app-main-content>
-        </div>
-        <div class="right-sidebar">
-          <app-trip-planner></app-trip-planner>
-          <app-most-read-articles></app-most-read-articles>
-        </div>
-      } @else {
-        <div class="error-state">
-          <h2>Blog post not found</h2>
-          <a routerLink="/blog" class="back-link">Back to Blog List</a>
-        </div>
-      }
-    } @else {
-      <div class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Loading blog post...</p>
-      </div>
-    }
-  }
+  <div class="error-state">
+    <h2>Blog post not found</h2>
+    <a routerLink="/blog" class="back-link">Back to Blog List</a>
+  </div>
+  } } @else {
+  <div class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading blog post...</p>
+  </div>
+  } }
 </main>

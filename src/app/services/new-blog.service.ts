@@ -25,6 +25,13 @@ export interface BlogPost {
   metaTitle?: string;
   metaDescription?: string;
   packageIds?: string[];
+  relatedBlogs?: any[];
+  keywords?: string;
+  customTitle?: string;
+  excerpt?: string;
+  featureImage?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 @Injectable({
@@ -36,7 +43,7 @@ export class NewBlogService {
   // Track processed content and IDs
   private processedContentTitles = new Set<string>();
   private usedIds = new Set<string>();
-  
+
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -44,24 +51,27 @@ export class NewBlogService {
 
   getAllPosts(): Observable<Article[]> {
     const postsKey = makeStateKey<Article[]>('all-posts');
-    
+
     // Check if we have the posts in transferState already (client-side)
-    if (isPlatformBrowser(this.platformId) && this.transferState.hasKey(postsKey)) {
+    if (
+      isPlatformBrowser(this.platformId) &&
+      this.transferState.hasKey(postsKey)
+    ) {
       const posts = this.transferState.get<Article[]>(postsKey, []);
       this.transferState.remove(postsKey); // Remove to avoid using stale data
       return of(posts);
     }
 
-    // If not, fetch from API 
+    // If not, fetch from API
     return this.http.get<Article[]>(`${this.apiUrl}/posts`).pipe(
-      map(posts => {
+      map((posts) => {
         // On server, store in transfer state for client to use
         if (isPlatformServer(this.platformId)) {
           this.transferState.set(postsKey, posts);
         }
         return posts;
       }),
-      catchError(err => {
+      catchError((err) => {
         console.error('Error fetching posts:', err);
         return of([]);
       })
@@ -70,9 +80,12 @@ export class NewBlogService {
 
   getMostReadArticles(): Observable<Article[]> {
     const mostReadKey = makeStateKey<Article[]>('most-read-articles');
-    
+
     // Check if we have most read articles in transferState already (client-side)
-    if (isPlatformBrowser(this.platformId) && this.transferState.hasKey(mostReadKey)) {
+    if (
+      isPlatformBrowser(this.platformId) &&
+      this.transferState.hasKey(mostReadKey)
+    ) {
       const mostRead = this.transferState.get<Article[]>(mostReadKey, []);
       this.transferState.remove(mostReadKey); // Remove to avoid using stale data
       return of(mostRead);
@@ -86,15 +99,15 @@ export class NewBlogService {
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           )
           .slice(0, 5);
-        
+
         // On server, store in transfer state for client to use
         if (isPlatformServer(this.platformId)) {
           this.transferState.set(mostReadKey, mostReadArticles);
         }
-        
+
         return mostReadArticles;
       }),
-      catchError(err => {
+      catchError((err) => {
         console.error('Error fetching most read articles:', err);
         return of([]);
       })
@@ -104,31 +117,35 @@ export class NewBlogService {
   getPost(id: string): Observable<BlogPost | null> {
     // Create unique key for this specific post
     const postKey = makeStateKey<BlogPost>(`blog-post-${id}`);
-    
+
     // On client, check if we have post in transfer state
-    if (isPlatformBrowser(this.platformId) && this.transferState.hasKey(postKey)) {
-      const post = this.transferState.get<BlogPost>(postKey, null as unknown as BlogPost);
+    if (
+      isPlatformBrowser(this.platformId) &&
+      this.transferState.hasKey(postKey)
+    ) {
+      const post = this.transferState.get<BlogPost>(
+        postKey,
+        null as unknown as BlogPost
+      );
       this.transferState.remove(postKey); // Clean up after use
-      
+
       console.log(`Retrieved post ${id} from transfer state (client)`);
       return of(post);
     }
-    
+
     // Fetch from API if not in transfer state
     return this.http.get<any>(`${this.apiUrl}/posts/${id}`).pipe(
-      map(res => {
+      map((res) => {
         if (res) {
           // Process the blog post content to extract sections
-          const processedContent = this.processContent(
-            res.content,
-            res.title
-          );
-          
+          const processedContent = this.processContent(res.content, res.title);
+
           const blogPost: BlogPost = {
             id: res.id,
             title: res.title,
             content: processedContent.processedContent,
             imageUrl: res.featureImage,
+            featureImage: res.featureImage,
             slug: res.slug,
             metaTitle: res.metaTitle,
             metaDescription: res.metaDescription,
@@ -136,20 +153,26 @@ export class NewBlogService {
             date: res.publishedDate || res.createdAt,
             tags: res.tags || [],
             sections: processedContent.sections,
-            packageIds: res.packageIds || []
+            packageIds: res.packageIds || [],
+            relatedBlogs: res.relatedBlogs || [],
+            keywords: res.keywords || '',
+            customTitle: res.customTitle || res.title,
+            excerpt: res.excerpt || '',
+            createdAt: res.createdAt || '',
+            updatedAt: res.updatedAt || '',
           };
-          
+
           // On server, store in transfer state for client to use
           if (isPlatformServer(this.platformId)) {
             console.log(`Storing post ${id} in transfer state (server)`);
             this.transferState.set(postKey, blogPost);
           }
-          
+
           return blogPost;
         }
         return null;
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('Error fetching post:', error);
         return of(null);
       })
@@ -163,7 +186,7 @@ export class NewBlogService {
     // Reset tracking sets for new content processing
     this.processedContentTitles.clear();
     this.usedIds.clear();
-    
+
     // For server-side rendering, we need a different approach
     if (isPlatformServer(this.platformId)) {
       // Create a basic section structure without DOM manipulation
@@ -173,15 +196,15 @@ export class NewBlogService {
           title: title,
           level: 1,
           subSections: [],
-        }
+        },
       ];
-      
+
       return {
         processedContent: content,
-        sections: sections
+        sections: sections,
       };
     }
-    
+
     // Client-side processing with DOM manipulation
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
@@ -198,7 +221,7 @@ export class NewBlogService {
 
     // Create a map to track sections by level and position
     const sectionMap: { [key: string]: ContentSection } = {};
-    
+
     let currentH2: ContentSection | null = null;
     let currentH3: ContentSection | null = null;
     let currentH4: ContentSection | null = null;
@@ -208,9 +231,9 @@ export class NewBlogService {
       id: 'content-top-level',
       title: 'Content Sections',
       level: 2,
-      subSections: []
+      subSections: [],
     };
-    
+
     // Add it to the main section
     sections[0].subSections?.push(topLevelSection);
     currentH2 = topLevelSection;
@@ -218,31 +241,33 @@ export class NewBlogService {
     // Process all headings (h1, h2, h3, h4, h5, h6)
     const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
     console.log(`Found ${headings.length} headings in content`);
-    
+
     headings.forEach((heading, index) => {
       const level = parseInt(heading.tagName.charAt(1));
       const title = heading.textContent?.trim() || `Section ${index + 1}`;
-      
+
       // Generate a unique ID for this heading
       const id = this.generateUniqueId(title);
-      
+
       // Add id to the heading in the content
       heading.id = id;
 
       // Check if this heading has a strong element and use its text if available
       const strongElement = heading.querySelector('strong');
-      const headingTitle = strongElement ? strongElement.textContent?.trim() : title;
+      const headingTitle = strongElement
+        ? strongElement.textContent?.trim()
+        : title;
 
       // Mark this title as processed
       this.processedContentTitles.add(headingTitle || title);
-      
+
       const section: ContentSection = {
         id,
         title: headingTitle || title,
         level,
         subSections: [],
       };
-      
+
       // Store in the map for later reference
       sectionMap[id] = section;
 
@@ -289,7 +314,7 @@ export class NewBlogService {
         // Additional H1s (not the page title) should go under top level
         topLevelSection.subSections?.push(section);
       }
-      
+
       // Process list items that follow this heading
       let nextElement = heading.nextElementSibling;
       while (nextElement) {
@@ -297,43 +322,48 @@ export class NewBlogService {
         if (nextElement.tagName.match(/^H[1-6]$/i)) {
           break;
         }
-        
+
         // If we find a list (ul/ol)
         if (nextElement.tagName === 'UL' || nextElement.tagName === 'OL') {
           const listItems = nextElement.querySelectorAll('li');
-          
+
           listItems.forEach((li, liIndex) => {
             // Get text from the first paragraph in the list item, or use the list item text
             const liParagraph = li.querySelector('p');
-            const liText = liParagraph?.textContent?.trim() || li.textContent?.trim() || `List item ${liIndex + 1}`;
-            
+            const liText =
+              liParagraph?.textContent?.trim() ||
+              li.textContent?.trim() ||
+              `List item ${liIndex + 1}`;
+
             // Find any strong elements within the list item
             const strongInLi = li.querySelector('strong, b');
             const strongText = strongInLi?.textContent?.trim();
             const itemTitle = strongText || liText;
-            
+
             // Mark this title as processed
             this.processedContentTitles.add(itemTitle);
-            
+
             // Create a unique ID for this list item, ensuring the index is included
-            const liId = this.generateUniqueId(`${section.title}-item-${liIndex}`);
-            
+            const liId = this.generateUniqueId(
+              `${section.title}-item-${liIndex}`
+            );
+
             // Create a section for this list item
             const listItemSection: ContentSection = {
               id: liId,
               title: itemTitle,
               level: section.level + 1, // One level deeper than parent heading
-              subSections: []
+              subSections: [],
             };
-            
+
             // Add the list item section to its parent heading section
             section.subSections?.push(listItemSection);
-            
+
             // Add ID to the list item in the content
             li.id = liId;
           });
         }
-        
+
         nextElement = nextElement.nextElementSibling;
       }
     });
@@ -342,33 +372,42 @@ export class NewBlogService {
     const paragraphs = tempDiv.querySelectorAll('p');
     paragraphs.forEach((paragraph, paragraphIndex) => {
       const boldElements = paragraph.querySelectorAll('strong, b');
-      
+
       if (boldElements.length > 0) {
         // Consider paragraphs starting with bold text as important sections
         const firstBold = boldElements[0];
-        
-        if (firstBold && paragraph.textContent?.startsWith(firstBold.textContent || '')) {
+
+        if (
+          firstBold &&
+          paragraph.textContent?.startsWith(firstBold.textContent || '')
+        ) {
           const boldText = firstBold.textContent?.trim();
-          
+
           // Skip this paragraph if the bold text has already been processed
-          if (boldText && boldText.length > 5 && !this.processedContentTitles.has(boldText)) {
+          if (
+            boldText &&
+            boldText.length > 5 &&
+            !this.processedContentTitles.has(boldText)
+          ) {
             // Generate a unique ID for this bold text section
-            const boldSectionId = this.generateUniqueId(`${boldText}-p${paragraphIndex}`);
-            
+            const boldSectionId = this.generateUniqueId(
+              `${boldText}-p${paragraphIndex}`
+            );
+
             // Add ID to the containing paragraph
             paragraph.id = boldSectionId;
-            
+
             // Create section for the bold text
             const boldSection: ContentSection = {
               id: boldSectionId,
               title: boldText,
               level: 4, // Treat as level 4 heading
-              subSections: []
+              subSections: [],
             };
-            
+
             // Mark this title as processed
             this.processedContentTitles.add(boldText);
-            
+
             // Determine where to add this section
             if (currentH3) {
               currentH3.subSections?.push(boldSection);
@@ -388,12 +427,12 @@ export class NewBlogService {
         delete section.subSections;
         return;
       }
-      
+
       for (const subSection of section.subSections) {
         cleanSections(subSection);
       }
     };
-    
+
     // Clean up the section structure
     for (const section of sections) {
       cleanSections(section);
@@ -416,21 +455,21 @@ export class NewBlogService {
     const baseId = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
-      .replace(/(^-|-$)/g, '')     // Remove leading/trailing hyphens
-      .substring(0, 40);           // Limit length
-    
+      .replace(/(^-|-$)/g, '') // Remove leading/trailing hyphens
+      .substring(0, 40); // Limit length
+
     // If this exact ID has been used before, make it unique by adding a counter
     let uniqueId = baseId;
     let counter = 1;
-    
+
     while (this.usedIds.has(uniqueId)) {
       uniqueId = `${baseId}-${counter}`;
       counter++;
     }
-    
+
     // Record that we've used this ID
     this.usedIds.add(uniqueId);
-    
+
     return uniqueId;
   }
 }

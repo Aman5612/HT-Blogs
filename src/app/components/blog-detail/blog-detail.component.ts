@@ -1,10 +1,27 @@
-import { Component, ViewEncapsulation, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  ViewEncapsulation,
+  AfterViewInit,
+  OnDestroy,
+  Inject,
+  PLATFORM_ID,
+} from '@angular/core';
 import { CommonModule, isPlatformServer, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Observable, catchError, map, of, shareReplay, tap, Subject, takeUntil, firstValueFrom } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  map,
+  of,
+  shareReplay,
+  tap,
+  Subject,
+  takeUntil,
+  firstValueFrom,
+} from 'rxjs';
 import { BlogPost } from '../../services/blog.service';
 import { NewBlogService } from '../../services/new-blog.service';
-import { SidebarComponent } from '../sidebar/sidebar.component';
+import { SidebarComponent, ContentSection } from '../sidebar/sidebar.component';
 import { MainContentComponent } from '../main-content/main-content.component';
 import { TripPlannerComponent } from '../trip-planner/trip-planner.component';
 import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
@@ -19,11 +36,11 @@ import { Title, Meta } from '@angular/platform-browser';
     SidebarComponent,
     MainContentComponent,
     TripPlannerComponent,
-    MostReadArticlesComponent
+    MostReadArticlesComponent,
   ],
   templateUrl: './blog-detail.component.html',
   styleUrls: ['./blog-detail.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   blogData$: Observable<BlogPost | null>;
@@ -47,7 +64,32 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       this.blogData$ = of(null);
     } else {
       this.blogData$ = this.blogService.getPost(id).pipe(
-        tap(blog => {
+        map((blog) => {
+          if (blog) {
+            // Convert tableOfContents to ContentSection format if it exists
+            // Use type assertion to access tableOfContents
+            const blogWithTableOfContents = blog as unknown as {
+              tableOfContents?: {
+                sections: any[];
+              };
+            };
+
+            if (
+              blogWithTableOfContents.tableOfContents &&
+              blogWithTableOfContents.tableOfContents.sections
+            ) {
+              console.log('Converting tableOfContents to sections format');
+              blog.sections = this.convertTableOfContentsToSections(
+                blogWithTableOfContents.tableOfContents.sections
+              );
+            }
+
+            // Debug relatedBlogs
+            console.log('Blog relatedBlogs:', blog.relatedBlogs);
+          }
+          return blog;
+        }),
+        tap((blog) => {
           if (!blog) {
             this.error = 'Blog post not found.';
           } else {
@@ -60,7 +102,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
             }
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           console.error('Error fetching blog post:', error);
           this.error = 'Failed to load blog post. Please try again later.';
           return of(null);
@@ -68,14 +110,67 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         shareReplay({ bufferSize: 1, refCount: true }),
         takeUntil(this.destroy$)
       );
-      
+
       // For SSR, ensure data is loaded immediately
       if (isPlatformServer(this.platformId)) {
-        firstValueFrom(this.blogData$).catch(err => {
+        firstValueFrom(this.blogData$).catch((err) => {
           console.error('Error pre-fetching blog data for SSR:', err);
         });
       }
     }
+  }
+
+  // Convert the tableOfContents format to ContentSection format
+  private convertTableOfContentsToSections(sections: any[]): ContentSection[] {
+    console.log('Table of Contents sections to convert:', sections);
+
+    // Create main section
+    const mainSection: ContentSection = {
+      id: 'main-title',
+      title: 'Content Sections',
+      level: 1,
+      subSections: [],
+    };
+
+    // Create top level virtual section for all content
+    const topLevelSection: ContentSection = {
+      id: 'content-top-level',
+      title: 'Content Sections',
+      level: 2,
+      subSections: [],
+    };
+
+    mainSection.subSections = [topLevelSection];
+
+    // Process each section from tableOfContents
+    sections.forEach((section) => {
+      console.log('Processing TOC section:', section);
+
+      const newSection: ContentSection = {
+        id: section.id,
+        title: section.title,
+        level: 3,
+        subSections: [],
+      };
+
+      // Add subsections if they exist
+      if (section.subsections && section.subsections.length > 0) {
+        console.log('Processing subsections:', section.subsections);
+        newSection.subSections = section.subsections.map(
+          (subsection: { id: string; title: string }) => ({
+            id: subsection.id,
+            title: subsection.title,
+            level: 4,
+            subSections: [],
+          })
+        );
+      }
+
+      topLevelSection.subSections?.push(newSection);
+    });
+
+    console.log('Final sections structure:', mainSection);
+    return [mainSection];
   }
 
   private updateMetadata(blog: BlogPost): void {
@@ -102,28 +197,44 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
     // Basic meta description
     if (blog.metaDescription) {
-      this.metaService.addTag({ name: 'description', content: blog.metaDescription });
+      this.metaService.addTag({
+        name: 'description',
+        content: blog.metaDescription,
+      });
     }
 
     // Add keywords based on tags if available
     if (blog.tags && blog.tags.length > 0) {
-      this.metaService.addTag({ name: 'keywords', content: blog.tags.join(', ') });
+      this.metaService.addTag({
+        name: 'keywords',
+        content: blog.tags.join(', '),
+      });
     }
 
     // Add author
     if (blog.author) {
-      this.metaService.addTag({ name: 'author', content: blog.author });
+      this.metaService.addTag({
+        name: 'author',
+        content:
+          typeof blog.author === 'string' ? blog.author : blog.author.name,
+      });
     }
 
     // Open Graph Protocol tags for better social media sharing
     if (blog.metaTitle) {
-      this.metaService.addTag({ property: 'og:title', content: blog.metaTitle });
+      this.metaService.addTag({
+        property: 'og:title',
+        content: blog.metaTitle,
+      });
     } else {
       this.metaService.addTag({ property: 'og:title', content: blog.title });
     }
 
     if (blog.metaDescription) {
-      this.metaService.addTag({ property: 'og:description', content: blog.metaDescription });
+      this.metaService.addTag({
+        property: 'og:description',
+        content: blog.metaDescription,
+      });
     }
 
     // Current URL - Safe for SSR
@@ -131,28 +242,45 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     this.metaService.addTag({ property: 'og:url', content: url });
 
     // Image if available
-    if (blog.imageUrl) {
-      this.metaService.addTag({ property: 'og:image', content: blog.imageUrl });
+    if (blog.imageUrl || blog.featureImage) {
+      const imageContent = blog.imageUrl || blog.featureImage || '';
+      this.metaService.addTag({
+        property: 'og:image',
+        content: imageContent,
+      });
     }
 
     // Content type
     this.metaService.addTag({ property: 'og:type', content: 'article' });
-    
+
     // Twitter Card
-    this.metaService.addTag({ name: 'twitter:card', content: 'summary_large_image' });
-    
+    this.metaService.addTag({
+      name: 'twitter:card',
+      content: 'summary_large_image',
+    });
+
     if (blog.metaTitle) {
-      this.metaService.addTag({ name: 'twitter:title', content: blog.metaTitle });
+      this.metaService.addTag({
+        name: 'twitter:title',
+        content: blog.metaTitle,
+      });
     } else {
       this.metaService.addTag({ name: 'twitter:title', content: blog.title });
     }
-    
+
     if (blog.metaDescription) {
-      this.metaService.addTag({ name: 'twitter:description', content: blog.metaDescription });
+      this.metaService.addTag({
+        name: 'twitter:description',
+        content: blog.metaDescription,
+      });
     }
-    
-    if (blog.imageUrl) {
-      this.metaService.addTag({ name: 'twitter:image', content: blog.imageUrl });
+
+    if (blog.imageUrl || blog.featureImage) {
+      const imageContent = blog.imageUrl || blog.featureImage || '';
+      this.metaService.addTag({
+        name: 'twitter:image',
+        content: imageContent,
+      });
     }
 
     // Canonical URL
@@ -163,48 +291,56 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       this.document.head.appendChild(linkCanonical);
     }
     linkCanonical.setAttribute('href', url);
-    
+
     // Add structured data (JSON-LD) for blog post
     this.addStructuredData(blog);
   }
-  
+
   private addStructuredData(blog: BlogPost): void {
     // Remove any existing structured data
-    const existingScript = this.document.getElementById('blogPostStructuredData');
+    const existingScript = this.document.getElementById(
+      'blogPostStructuredData'
+    );
     if (existingScript) {
       existingScript.remove();
     }
-    
-    const publishDate = blog.date || new Date().toISOString();
+
+    const publishDate = blog.date || blog.createdAt || new Date().toISOString();
     const baseUrl = this.document.location.origin;
-    
+
     // Create structured data for the blog article
     const structuredData = {
       '@context': 'https://schema.org',
       '@type': 'BlogPosting',
-      'headline': blog.metaTitle || blog.title,
-      'description': blog.metaDescription || '',
-      'image': blog.imageUrl|| `${baseUrl}/assets/default-image.jpg`,
-      'datePublished': publishDate,
-      'dateModified': publishDate,
-      'author': {
+      headline: blog.metaTitle || blog.title,
+      description: blog.metaDescription || blog.excerpt || '',
+      image:
+        blog.imageUrl ||
+        blog.featureImage ||
+        `${baseUrl}/assets/default-image.jpg`,
+      datePublished: publishDate,
+      dateModified: blog.updatedAt || publishDate,
+      author: {
         '@type': 'Person',
-        'name': blog.author || 'HTBlogs Team'
+        name:
+          typeof blog.author === 'string'
+            ? blog.author
+            : blog.author?.name || 'HTBlogs Team',
       },
-      'publisher': {
+      publisher: {
         '@type': 'Organization',
-        'name': 'HTBlogs',
-        'logo': {
+        name: 'HTBlogs',
+        logo: {
           '@type': 'ImageObject',
-          'url': `${baseUrl}/assets/logo.png`
-        }
+          url: `${baseUrl}/assets/logo.png`,
+        },
       },
-      'mainEntityOfPage': {
+      mainEntityOfPage: {
         '@type': 'WebPage',
-        '@id': this.document.location.href
-      }
+        '@id': this.document.location.href,
+      },
     };
-    
+
     // Create script element and add to document
     const script = this.document.createElement('script');
     script.id = 'blogPostStructuredData';
@@ -226,26 +362,28 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     if (isPlatformServer(this.platformId)) {
       return;
     }
-    
+
     // This function ensures all headings have proper IDs for navigation
     setTimeout(() => {
       const contentContainer = document.querySelector('.main-content-wrapper');
       if (!contentContainer) {
-        console.warn('Could not find main-content-wrapper for adding heading IDs');
+        console.warn(
+          'Could not find main-content-wrapper for adding heading IDs'
+        );
         return;
       }
-      
+
       // Check if there's content inside MainContentComponent
       const mainContent = contentContainer.querySelector('.article-content');
       const targetElement = mainContent || contentContainer;
-      
+
       console.log('Looking for headings in:', targetElement);
       const headings = targetElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
       console.log(`Found ${headings.length} headings in content`);
-      
+
       headings.forEach((heading, index) => {
         const element = heading as HTMLElement;
-        
+
         // If heading doesn't have an ID, generate one
         if (!element.id) {
           const text = element.textContent?.trim() || `section-${index}`;
@@ -254,10 +392,10 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)/g, '')
             .substring(0, 50);
-            
+
           element.id = id;
           console.log(`Added ID to heading: ${id}`);
-          
+
           // If the observer exists, observe this element
           if (this.observer) {
             this.observer.observe(element);
@@ -271,7 +409,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
   scrollToSection(sectionId: string) {
     console.log('BlogDetail: Scrolling to section:', sectionId);
-    
+
     // Ensure execution in browser context only (to avoid SSR issues)
     if (typeof window === 'undefined') {
       console.log('BlogDetail: Not in browser context, skipping scroll');
@@ -280,7 +418,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
     // First try direct approach with document.getElementById
     const directElement = document.getElementById(sectionId);
-    
+
     if (directElement) {
       console.log(`BlogDetail: Found element directly with ID: ${sectionId}`);
       this.scrollToElement(directElement);
@@ -291,58 +429,76 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     const contentWrapper = document.querySelector('.main-content-wrapper');
     if (contentWrapper) {
       console.log('BlogDetail: Searching within main-content-wrapper');
-      
+
       // Get full HTML content for debugging
       const contentHtml = contentWrapper.innerHTML;
-      console.log('Content HTML excerpt:', contentHtml.substring(0, 500) + '...');
-      
+      console.log(
+        'Content HTML excerpt:',
+        contentHtml.substring(0, 500) + '...'
+      );
+
       // Try to find element by ID attribute
       const match = contentHtml.includes(`id="${sectionId}"`);
-      console.log(`Does content contain element with id="${sectionId}"? ${match}`);
-      
+      console.log(
+        `Does content contain element with id="${sectionId}"? ${match}`
+      );
+
       // Try some alternative approaches
-      const contentElement = contentWrapper.querySelector(`[id="${sectionId}"]`);
+      const contentElement = contentWrapper.querySelector(
+        `[id="${sectionId}"]`
+      );
       if (contentElement) {
-        console.log(`BlogDetail: Found element in content wrapper with ID: ${sectionId}`);
+        console.log(
+          `BlogDetail: Found element in content wrapper with ID: ${sectionId}`
+        );
         this.scrollToElement(contentElement as HTMLElement);
         return;
       }
-      
+
       // Try finding elements with the text content similar to the ID
       const normalizedId = sectionId.replace(/-/g, ' ').toLowerCase();
-      console.log(`BlogDetail: Looking for elements with text content matching: ${normalizedId}`);
-      
-      const headings = contentWrapper.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      console.log(
+        `BlogDetail: Looking for elements with text content matching: ${normalizedId}`
+      );
+
+      const headings = contentWrapper.querySelectorAll(
+        'h1, h2, h3, h4, h5, h6'
+      );
       for (let i = 0; i < headings.length; i++) {
         const heading = headings[i] as HTMLElement;
         const headingText = heading.textContent?.toLowerCase() || '';
-        
-        if (headingText.includes(normalizedId) || normalizedId.includes(headingText)) {
-          console.log(`BlogDetail: Found heading with matching text: "${headingText}"`);
-          
+
+        if (
+          headingText.includes(normalizedId) ||
+          normalizedId.includes(headingText)
+        ) {
+          console.log(
+            `BlogDetail: Found heading with matching text: "${headingText}"`
+          );
+
           // Assign ID to the element if it doesn't have one
           if (!heading.id) {
             heading.id = sectionId;
             console.log(`BlogDetail: Assigned ID ${sectionId} to heading`);
           }
-          
+
           this.scrollToElement(heading);
           return;
         }
       }
     }
-    
+
     // Last resort: try to find within iframes or other containers
     console.log('BlogDetail: Trying alternative methods to find element');
-    
+
     // Try the following selectors as a last resort
     const alternativeSelectors = [
       `h3:contains('${sectionId.replace(/-/g, ' ')}')`,
       `.content h3`,
       `.article-content *[id="${sectionId}"]`,
-      `.content-wrapper *[id="${sectionId}"]`
+      `.content-wrapper *[id="${sectionId}"]`,
     ];
-    
+
     for (const selector of alternativeSelectors) {
       try {
         const elements = document.querySelectorAll(selector);
@@ -355,10 +511,10 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         console.log(`Error with selector ${selector}:`, e);
       }
     }
-    
+
     console.error(`BlogDetail: Could not find element with ID ${sectionId}`);
   }
-  
+
   private scrollToElement(element: HTMLElement) {
     // Remove previous highlight
     if (this.currentHighlight) {
@@ -367,58 +523,58 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
     // Calculate scroll position accounting for fixed header
     const headerOffset = 80;
-    
+
     console.log(`BlogDetail: Scrolling to element:`, element);
-    
+
     // Make sure element is visible
     if (element.style.display === 'none') {
       element.style.display = 'block';
     }
-    
+
     // Add highlight effect immediately
     element.classList.add('highlight-section');
     this.currentHighlight = element;
-    
+
     // Get the element's position
     const rect = element.getBoundingClientRect();
     const elementTop = rect.top + window.pageYOffset;
     const targetPosition = elementTop - headerOffset;
-    
+
     // Get the current scroll position
     const startPosition = window.pageYOffset;
     const distance = targetPosition - startPosition;
-    
+
     // Smooth scroll implementation with easing
     const duration = 800; // ms - longer duration for smoother scroll
     let start: number | null = null;
-    
+
     // Easing function for smoother animation
     const easeInOutQuad = (t: number): number => {
       return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
     };
-    
+
     const animateScroll = (timestamp: number) => {
       if (!start) start = timestamp;
       const elapsed = timestamp - start;
       const progress = Math.min(elapsed / duration, 1);
       const easeProgress = easeInOutQuad(progress);
-      
+
       window.scrollTo({
         top: startPosition + distance * easeProgress,
-        behavior: 'auto' // We're handling the animation ourselves
+        behavior: 'auto', // We're handling the animation ourselves
       });
-      
+
       if (elapsed < duration) {
         window.requestAnimationFrame(animateScroll);
       } else {
         // Final adjustment to ensure we're at the exact position
         window.scrollTo({
           top: targetPosition,
-          behavior: 'auto'
+          behavior: 'auto',
         });
       }
     };
-    
+
     window.requestAnimationFrame(animateScroll);
 
     // Remove highlight after animation
@@ -435,7 +591,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     if (isPlatformServer(this.platformId)) {
       return;
     }
-    
+
     // Clean up existing observer
     if (this.observer) {
       this.observer.disconnect();
@@ -446,22 +602,24 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     // Create new observer
     this.observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > 0) {
             const id = entry.target.id;
             if (id) {
               console.log(`Section now visible: ${id}`);
               // Update sidebar selection
-              window.dispatchEvent(new CustomEvent('section-visible', {
-                detail: { sectionId: id }
-              }));
+              window.dispatchEvent(
+                new CustomEvent('section-visible', {
+                  detail: { sectionId: id },
+                })
+              );
             }
           }
         });
       },
       {
         rootMargin: '-80px 0px -80% 0px',
-        threshold: [0, 0.1, 0.5, 1]
+        threshold: [0, 0.1, 0.5, 1],
       }
     );
 
@@ -471,19 +629,21 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       const containers = [
         document.querySelector('.main-content-wrapper'),
         document.querySelector('.article-content'),
-        document.body
+        document.body,
       ].filter(Boolean);
 
       let totalObserved = 0;
 
-      containers.forEach(container => {
+      containers.forEach((container) => {
         if (!container) return;
-        
+
         console.log(`Looking for observable elements in container:`, container);
 
         // Find all headings with IDs
-        const headings = container.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
-        headings.forEach(heading => {
+        const headings = container.querySelectorAll(
+          'h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]'
+        );
+        headings.forEach((heading) => {
           if (heading.id) {
             this.observer?.observe(heading);
             totalObserved++;
@@ -492,7 +652,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
         // Find paragraphs with IDs (these contain bold text sections or are otherwise important)
         const paragraphs = container.querySelectorAll('p[id]');
-        paragraphs.forEach(paragraph => {
+        paragraphs.forEach((paragraph) => {
           if (paragraph.id) {
             this.observer?.observe(paragraph);
             totalObserved++;
@@ -501,7 +661,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
         // Find lists with IDs
         const lists = container.querySelectorAll('ul[id], ol[id]');
-        lists.forEach(list => {
+        lists.forEach((list) => {
           if (list.id) {
             this.observer?.observe(list);
             totalObserved++;
@@ -510,7 +670,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
         // Find blockquotes with IDs
         const quotes = container.querySelectorAll('blockquote[id]');
-        quotes.forEach(quote => {
+        quotes.forEach((quote) => {
           if (quote.id) {
             this.observer?.observe(quote);
             totalObserved++;
@@ -518,8 +678,10 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         });
 
         // Find any other elements with IDs that might represent sections
-        const otherSections = container.querySelectorAll('div[id^="section-"], div[id^="list-section-"], div[id^="quote-"]');
-        otherSections.forEach(section => {
+        const otherSections = container.querySelectorAll(
+          'div[id^="section-"], div[id^="list-section-"], div[id^="quote-"]'
+        );
+        otherSections.forEach((section) => {
           if (section.id) {
             this.observer?.observe(section);
             totalObserved++;
