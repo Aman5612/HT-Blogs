@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3000/api',
-  fallbackApiUrl: 'http://localhost:3000/api', // Fallback API URL
+  production: true,
+  apiUrl: 'https://holidayer.in:3009/api',
+  fallbackApiUrl: 'https://holidayer.in:3009/api',
 };
