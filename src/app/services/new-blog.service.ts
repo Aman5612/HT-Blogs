@@ -32,6 +32,16 @@ export interface BlogPost {
   featureImage?: string;
   createdAt?: string;
   updatedAt?: string;
+  tableOfContents?: {
+    sections: Array<{
+      id: string;
+      title: string;
+      subsections?: Array<{
+        id: string;
+        title: string;
+      }>;
+    }>;
+  };
 }
 
 @Injectable({
@@ -140,6 +150,9 @@ export class NewBlogService {
           // Process the blog post content to extract sections
           const processedContent = this.processContent(res.content, res.title);
 
+          // Log table of contents from API
+          console.log('API Response tableOfContents:', res.tableOfContents);
+
           const blogPost: BlogPost = {
             id: res.id,
             title: res.title,
@@ -160,6 +173,7 @@ export class NewBlogService {
             excerpt: res.excerpt || '',
             createdAt: res.createdAt || '',
             updatedAt: res.updatedAt || '',
+            tableOfContents: res.tableOfContents || { sections: [] },
           };
 
           // On server, store in transfer state for client to use

@@ -7,7 +7,8 @@
   } @else { @if ((blogData$ | async); as blog) { @if (blog) {
   <div class="sidebar-container">
     <app-sidebar
-      [sections]="blog.sections"
+      [sections]="blog.tableOfContents?.sections ?? []"
+      [blogTitle]="blog.customTitle || blog.title"
       (sectionClick)="scrollToSection($event)"
     ></app-sidebar>
   </div>

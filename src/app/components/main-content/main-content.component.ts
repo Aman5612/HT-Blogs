@@ -21,11 +21,20 @@ interface Package {
     <div class="main-content">
       @if (content) {
       <div>
-        <h1 class="blog-title">{{ customTitle }}</h1>
+        <h1
+          class="!font-normal !text-[32px] !text-black"
+          style="font-family: 'DM Sans'"
+        >
+          {{ customTitle }}
+        </h1>
         @if (keywords) {
-        <div class="keywords-container">
-          @for (keyword of keywordsArray; track keyword) {
-          <span class="keyword-tag">{{ keyword }}</span>
+        <div class="leading-[16px] mb-8">
+          @for (keyword of keywordsArray; track keyword; let i = $index) {
+          <span
+            class=" !text-[#4D4D4D] !font-normal text-[16px] leading-[16px] my-0"
+            style="font-family: 'DM Mono'"
+            >{{ keyword }}{{ i < keywordsArray.length - 1 ? ',' : '' }}</span
+          >
           }
         </div>
         }
@@ -52,9 +61,11 @@ interface Package {
         width: 100%;
         min-width: 0; // Fix for grid item overflow
         overflow-wrap: break-word;
+        font-family: 'DM Sans';
       }
 
       .blog-title {
+        font-family: 'DM Sans';
         font-size: 2.5rem;
         font-weight: 700;
         margin-bottom: 1rem;
@@ -63,6 +74,7 @@ interface Package {
       }
 
       .keywords-container {
+        font-family: 'DM Sans';
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
@@ -70,6 +82,7 @@ interface Package {
       }
 
       .keyword-tag {
+        font-family: 'DM Sans';
         display: inline-block;
         padding: 0.25rem 0.75rem;
         background-color: #f0f0f0;
@@ -80,6 +93,7 @@ interface Package {
       }
 
       .content-wrapper {
+        font-family: 'DM Sans';
         line-height: 1.6;
         color: #1a1a1a;
         font-size: 1.1rem;
@@ -98,26 +112,31 @@ interface Package {
             font-weight: 600;
             line-height: 1.3;
             color: #1a1a1a;
+            font-family: 'DM Sans';
           }
 
           h1 {
             font-size: 2.5rem;
             margin: 2rem 0 1.5rem;
+            font-family: 'DM Sans';
           }
 
           h2 {
             font-size: 2rem;
             margin: 2rem 0 1rem;
+            font-family: 'DM Sans';
           }
 
           h3 {
             font-size: 1.75rem;
             margin: 1.5rem 0 1rem;
+            font-family: 'DM Sans';
           }
 
           p {
             margin-bottom: 1.5rem;
             line-height: 1.8;
+            font-family: 'DM Sans';
           }
 
           img {
@@ -126,6 +145,7 @@ interface Package {
             border-radius: 12px;
             margin: 2rem 0;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-family: 'DM Sans';
           }
 
           ul,
@@ -583,17 +603,21 @@ export class MainContentComponent implements OnInit {
   private createPackageCardsHtml(): string {
     return `
       <style>
+        p, h1, h2, h3, h4, h5, h6 {
+          font-family: 'DM Sans' !important;
+        }
         h3 {
-        
           overflow: hidden;
           text-overflow: ellipsis; 
           white-space: nowrap; 
         }
         @media (max-width: 768px) {
           h3{
+            font-family: 'DM Sans';
             font-size: 14px !!important;
           }
           .size{
+            font-family: 'DM Sans';
             font-size: 12px !important;
           }
         } 

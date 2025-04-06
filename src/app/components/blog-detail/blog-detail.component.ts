@@ -66,22 +66,37 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       this.blogData$ = this.blogService.getPost(id).pipe(
         map((blog) => {
           if (blog) {
-            // Convert tableOfContents to ContentSection format if it exists
-            // Use type assertion to access tableOfContents
-            const blogWithTableOfContents = blog as unknown as {
-              tableOfContents?: {
-                sections: any[];
-              };
-            };
+            console.log('BlogDetail - Raw blog data:', blog);
+            console.log('BlogDetail - TableOfContents:', blog.tableOfContents);
 
-            if (
-              blogWithTableOfContents.tableOfContents &&
-              blogWithTableOfContents.tableOfContents.sections
-            ) {
-              console.log('Converting tableOfContents to sections format');
-              blog.sections = this.convertTableOfContentsToSections(
-                blogWithTableOfContents.tableOfContents.sections
+            // If tableOfContents exists, use it directly
+            if (blog.tableOfContents && blog.tableOfContents.sections) {
+              console.log(
+                'BlogDetail - TableOfContents sections found:',
+                JSON.stringify(blog.tableOfContents.sections, null, 2)
               );
+            } else {
+              // Otherwise try to convert from the old format
+              console.log(
+                'BlogDetail - No tableOfContents found, checking for old format'
+              );
+
+              // Convert tableOfContents to ContentSection format if it exists
+              const blogWithTableOfContents = blog as unknown as {
+                tableOfContents?: {
+                  sections: any[];
+                };
+              };
+
+              if (
+                blogWithTableOfContents.tableOfContents &&
+                blogWithTableOfContents.tableOfContents.sections
+              ) {
+                console.log('Converting tableOfContents to sections format');
+                blog.sections = this.convertTableOfContentsToSections(
+                  blogWithTableOfContents.tableOfContents.sections
+                );
+              }
             }
 
             // Debug relatedBlogs
@@ -123,6 +138,11 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   // Convert the tableOfContents format to ContentSection format
   private convertTableOfContentsToSections(sections: any[]): ContentSection[] {
     console.log('Table of Contents sections to convert:', sections);
+
+    if (!sections || sections.length === 0) {
+      console.warn('No table of contents sections found');
+      return [];
+    }
 
     // Create main section
     const mainSection: ContentSection = {

@@ -4,8 +4,16 @@ import {
   Input,
   OnChanges,
   SimpleChanges,
+  Inject,
+  PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import {
+  CommonModule,
+  DatePipe,
+  isPlatformBrowser,
+  LocationStrategy,
+  HashLocationStrategy,
+} from '@angular/common';
 import { Router } from '@angular/router';
 import { NewBlogService } from '../../services/new-blog.service';
 import { Article } from '../../interface/article.interface';
@@ -24,7 +32,12 @@ export class MostReadArticlesComponent implements OnInit, OnChanges {
   isLoading = true;
   error: string | null = null;
 
-  constructor(private blogService: NewBlogService, private router: Router) {}
+  constructor(
+    private blogService: NewBlogService,
+    private router: Router,
+    private locationStrategy: LocationStrategy,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit() {
     this.updateArticles();
@@ -92,14 +105,16 @@ export class MostReadArticlesComponent implements OnInit, OnChanges {
     });
   }
 
-  onArticleClick(article: Article) {
+  onArticleClick(event: Event, article: Article) {
+    // Check if we're using HashLocationStrategy
+    event.preventDefault();
     this.router.navigate(['/blog', article.id]);
   }
 
   onKeyPress(event: KeyboardEvent, article: Article) {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      this.onArticleClick(article);
+      this.onArticleClick(event, article);
     }
   }
 

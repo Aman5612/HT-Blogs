@@ -1,10 +1,6 @@
 <div class="most-read-container">
-  <h3>
-    {{
-      relatedBlogs && relatedBlogs.length > 0
-        ? "Related Articles"
-        : "Most Read Articles"
-    }}
+  <h3 class="text-[32px] !font-normal" style="font-family: 'DM Sans'">
+    Most Read Articles
   </h3>
 
   @if (isLoading) {
@@ -26,7 +22,7 @@
     @for (article of mostReadArticles; track article.id) {
     <div
       class="article-card"
-      (click)="onArticleClick(article)"
+      (click)="onArticleClick($event, article)"
       (keydown)="onKeyPress($event, article)"
       role="button"
       tabindex="0"
@@ -42,8 +38,6 @@
         <div class="date">{{ article.createdAt | date : "mediumDate" }}</div>
         @if (article.excerpt) {
         <p class="excerpt">{{ article.excerpt }}</p>
-        } @if (article.author && article.author.name) {
-        <div class="author">By {{ article.author.name }}</div>
         }
       </div>
     </div>
