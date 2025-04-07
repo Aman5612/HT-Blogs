@@ -69,6 +69,21 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
             console.log('BlogDetail - Raw blog data:', blog);
             console.log('BlogDetail - TableOfContents:', blog.tableOfContents);
 
+            if (blog.content) {
+              console.log(
+                'BlogDetail - Content preview:',
+                blog.content.substring(0, 200) + '...'
+              );
+              console.log(
+                'BlogDetail - Content contains HTML?',
+                blog.content.includes('<html>')
+              );
+              console.log(
+                'BlogDetail - Content has h3 tags?',
+                blog.content.includes('<h3')
+              );
+            }
+
             // If tableOfContents exists, use it directly
             if (blog.tableOfContents && blog.tableOfContents.sections) {
               console.log(
@@ -436,6 +451,22 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    // Log all elements with IDs in the content wrapper
+    const contentWrapper = document.querySelector('.main-content-wrapper');
+    if (contentWrapper) {
+      console.log(
+        'BlogDetail: Scanning main-content-wrapper for elements with IDs'
+      );
+      const elementsWithIds = contentWrapper.querySelectorAll('[id]');
+      console.log(
+        'BlogDetail: Found elements with IDs:',
+        Array.from(elementsWithIds).map((el) => ({
+          id: (el as HTMLElement).id,
+          tagName: (el as HTMLElement).tagName,
+        }))
+      );
+    }
+
     // First try direct approach with document.getElementById
     const directElement = document.getElementById(sectionId);
 
@@ -446,7 +477,6 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     }
 
     // If direct approach fails, search within the content wrapper
-    const contentWrapper = document.querySelector('.main-content-wrapper');
     if (contentWrapper) {
       console.log('BlogDetail: Searching within main-content-wrapper');
 

@@ -744,11 +744,10 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   onSectionClick(sectionId: string, event?: Event) {
+    // Ensure we have a proper event to stop propagation
     if (event) {
       event.stopPropagation();
     }
-
-    this.toggleExpansionOnly(sectionId, event as Event);  
 
     console.log('Sidebar: Section clicked:', sectionId);
 
@@ -757,6 +756,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
 
     // If this is a top-level section with subsections, expand it
     if (Array.isArray(this.sections)) {
+      // Find the parent section (if this is a subsection)
+      const parentSection = this.findParentSectionId(sectionId);
+      if (parentSection && !this.expandedSections.includes(parentSection)) {
+        this.expandedSections.push(parentSection);
+      }
+
       // For tableOfContents format
       for (const section of this.sections) {
         if (
@@ -764,7 +769,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
           section.subsections &&
           section.subsections.length > 0
         ) {
-          // If clicking on a section with subsections, toggle its expansion
+          // If clicking on a section with subsections, ensure it's expanded
           if (!this.expandedSections.includes(sectionId)) {
             this.expandedSections.push(sectionId);
           }
@@ -779,10 +784,16 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       // For ContentSection format
       const section = this.findSectionById(sectionId);
       if (section && section.subSections && section.subSections.length > 0) {
-        // If clicking on a section with subsections, toggle its expansion
+        // If clicking on a section with subsections, ensure it's expanded
         if (!this.expandedSections.includes(sectionId)) {
           this.expandedSections.push(sectionId);
         }
+      }
+
+      // Find the parent section (if this is a subsection)
+      const parentSection = this.findParentSectionId(sectionId);
+      if (parentSection && !this.expandedSections.includes(parentSection)) {
+        this.expandedSections.push(parentSection);
       }
     }
 
@@ -1079,10 +1090,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   /**
    * Only toggles expansion without selecting or navigating
    */
-  toggleExpansionOnly(sectionId: string, event: Event): void {
+  toggleExpansionOnly(sectionId: string, event?: Event): void {
     // Make absolutely sure the event stops here and doesn't propagate further
-    event.stopPropagation();
-    event.preventDefault();
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
 
     console.log('****** Sidebar: Toggling expansion only for:', sectionId);
     console.log('****** Before toggle, expandedSections:', [
