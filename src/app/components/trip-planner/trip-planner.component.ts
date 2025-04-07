@@ -44,6 +44,18 @@ import { ToastService } from '../../shared/services/toast.service';
 
           <div class="form-group">
             <input
+              type="text"
+              class="form-input"
+              placeholder="Destination"
+              [(ngModel)]="formData.destination"
+              name="destination"
+              (focus)="onInputFocus($event)"
+              (blur)="onInputBlur($event)"
+            />
+          </div>
+
+          <div class="form-group">
+            <input
               type="email"
               class="form-input"
               placeholder="Email Address"
@@ -250,6 +262,15 @@ export class TripPlannerComponent implements OnInit {
     name: '',
     phone: '',
     email: '',
+    destination: '',
+  };
+  
+  locationData = {
+    city: '',
+    region: '',
+    country_name: '',
+    latitude: '',
+    longitude: ''
   };
   
   isSubmitting = false;
@@ -267,8 +288,29 @@ export class TripPlannerComponent implements OnInit {
       // Apply this after the component is initialized
       setTimeout(() => {
         this.applyInputOverride();
+        this.getLocationData();
       }, 0);
     }
+  }
+
+  // Get user's location data
+  private getLocationData() {
+    // Example implementation - in a real app, you'd use a geolocation service
+    // This is just a placeholder to simulate the location data structure
+    fetch('https://ipapi.co/json/')
+      .then(response => response.json())
+      .then(data => {
+        this.locationData = {
+          city: data.city || '',
+          region: data.region || '',
+          country_name: data.country_name || '',
+          latitude: data.latitude || '',
+          longitude: data.longitude || ''
+        };
+      })
+      .catch(error => {
+        console.error('Error fetching location data:', error);
+      });
   }
 
   // This applies a direct DOM modification to get the desired behavior
@@ -324,12 +366,35 @@ export class TripPlannerComponent implements OnInit {
     event.preventDefault();
     
     // Basic validation
-    if (!this.formData.name || !this.formData.email || !this.formData.phone) {
-      this.toastService.error('Please fill in all fields');
+    if (!this.formData.name || !this.formData.phone || !this.formData.destination) {
+      this.toastService.error('Please fill in all required fields');
       return;
     }
     
     this.isSubmitting = true;
+    
+    // Prepare the payload according to the required format
+    const params = {
+      name: this.formData.name,
+      phone: this.formData.phone,
+      destination: this.formData.destination,
+      source: new URLSearchParams(window.location.search).get('utm_source') || '',
+      source_remark: new URLSearchParams(window.location.search).get('campaign_id') || '',
+      ad_id: new URLSearchParams(window.location.search).get('ad_id') || '',
+      location: {
+        city: this.locationData.city,
+        region: this.locationData.region,
+        country: this.locationData.country_name,
+        latitude: this.locationData.latitude,
+        longitude: this.locationData.longitude,
+      },
+    };
+    
+    // Add email separately if needed for your backend
+    const payload = {
+      ...params,
+      email: this.formData.email
+    };
     
     // Set proper headers
     const headers = new HttpHeaders({
@@ -341,7 +406,7 @@ export class TripPlannerComponent implements OnInit {
     const apiUrl = '/api/submit';
     
     // Send data to API with proper error handling
-    this.http.post(apiUrl, this.formData, { 
+    this.http.post(apiUrl, payload, { 
       headers: headers, 
       observe: 'response',
       responseType: 'json'
@@ -377,7 +442,8 @@ export class TripPlannerComponent implements OnInit {
             this.formData = {
               name: '',
               phone: '',
-              email: ''
+              email: '',
+              destination: ''
             };
             
             // Restore placeholders after form reset
