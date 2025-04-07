@@ -1,4 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  AfterViewInit,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
@@ -11,6 +17,17 @@ interface Package {
   description?: string;
   image_url?: string;
   categories?: string[];
+}
+
+interface TableOfContents {
+  sections: Array<{
+    id: string;
+    title: string;
+    subsections?: Array<{
+      id: string;
+      title: string;
+    }>;
+  }>;
 }
 
 @Component({
@@ -480,7 +497,7 @@ interface Package {
     `,
   ],
 })
-export class MainContentComponent implements OnInit {
+export class MainContentComponent implements OnInit, AfterViewInit {
   @Input() set content(value: string) {
     this._content = value;
     // Process content when it's set
@@ -495,6 +512,7 @@ export class MainContentComponent implements OnInit {
   @Input() customTitle: string = '';
   @Input() relatedBlogs: any = [];
   @Input() keywords: string = '';
+  @Input() tableOfContents?: TableOfContents;
 
   get keywordsArray(): string[] {
     if (!this.keywords) return [];
@@ -508,13 +526,35 @@ export class MainContentComponent implements OnInit {
   sanitizedContent: SafeHtml = '';
   packages: Package[] = [];
 
-  constructor(private sanitizer: DomSanitizer, private http: HttpClient) {}
+  constructor(
+    private sanitizer: DomSanitizer,
+    private http: HttpClient,
+    private elementRef: ElementRef
+  ) {}
 
   ngOnInit(): void {
+    console.log('MainContent: Component initialized');
+    console.log(
+      'MainContent: TableOfContents property available?',
+      !!this.tableOfContents
+    );
+    if (this.tableOfContents) {
+      console.log(
+        'MainContent: TableOfContents content:',
+        JSON.stringify(this.tableOfContents, null, 2)
+      );
+    }
+
     console.log('->>', this.packageIds);
     if (this.packageIds && this.packageIds.length > 0) {
       this.fetchPackages();
     }
+  }
+
+  ngAfterViewInit(): void {
+    // Apply IDs to the DOM after view is initialized
+    console.log('MainContent: AfterViewInit - Adding IDs to content elements');
+    this.applyIDsToDOM();
   }
 
   private fetchPackages(): void {
@@ -554,24 +594,38 @@ export class MainContentComponent implements OnInit {
   private processContent(): void {
     if (!this._content) {
       this.sanitizedContent = '';
+      console.log('MainContent: No content to process');
       return;
     }
 
+    console.log('MainContent: Processing content...');
+    console.log(
+      'MainContent: TableOfContents available:',
+      !!this.tableOfContents
+    );
+
+    // Process the content to add IDs to headings based on tableOfContents
+    let modifiedContent = this._content;
+
+    // Skip adding IDs here - we'll add them in ngAfterViewInit
+    // to directly work with the DOM instead of string manipulation
+
     // If no packages or packages not yet loaded, just sanitize the content
     if (!this.packages || this.packages.length === 0) {
-      this.sanitizedContent = this.sanitizer.bypassSecurityTrustHtml(
-        this._content
-      );
+      this.sanitizedContent =
+        this.sanitizer.bypassSecurityTrustHtml(modifiedContent);
       return;
     }
 
     // Create package cards HTML
     const packageCardsHtml = this.createPackageCardsHtml();
-    let modifiedContent = this._content;
 
     // Find all h2 and h3 tags
     const h2Matches = [...modifiedContent.matchAll(/<h2[^>]*>.*?<\/h2>/gi)];
     const h3Matches = [...modifiedContent.matchAll(/<h3[^>]*>.*?<\/h3>/gi)];
+
+    console.log('MainContent: Found h2 tags:', h2Matches.length);
+    console.log('MainContent: Found h3 tags:', h3Matches.length);
 
     // Try to find the second h2
     if (h2Matches.length >= 2) {
@@ -596,8 +650,157 @@ export class MainContentComponent implements OnInit {
       modifiedContent += packageCardsHtml;
     }
 
+    // Log first 200 chars of modified content to check IDs
+    console.log(
+      'MainContent: First 200 chars of modified content:',
+      modifiedContent.substring(0, 200)
+    );
+
     this.sanitizedContent =
       this.sanitizer.bypassSecurityTrustHtml(modifiedContent);
+  }
+
+  private applyIDsToDOM(): void {
+    if (!this.tableOfContents || !this.tableOfContents.sections) {
+      console.log('MainContent: No tableOfContents to apply to DOM');
+      return;
+    }
+
+    console.log('MainContent: Applying IDs to DOM elements');
+
+    // Get the content wrapper element
+    const contentWrapper =
+      this.elementRef.nativeElement.querySelector('.content-wrapper');
+    if (!contentWrapper) {
+      console.log('MainContent: Content wrapper not found');
+      return;
+    }
+
+    // Process each section from tableOfContents
+    this.tableOfContents.sections.forEach((section) => {
+      console.log('MainContent: Processing section in DOM:', section.title);
+
+      // Try to find headings that match the section title
+      this.findAndAddId(contentWrapper, section.title, section.id);
+
+      // Process subsections
+      if (section.subsections && section.subsections.length > 0) {
+        section.subsections.forEach((subsection) => {
+          console.log(
+            'MainContent: Processing subsection in DOM:',
+            subsection.title
+          );
+
+          // Handle truncated titles (those with ellipsis)
+          const searchTitle = subsection.title.includes('...')
+            ? subsection.title.split('...')[0]
+            : subsection.title;
+
+          this.findAndAddId(contentWrapper, searchTitle, subsection.id);
+        });
+      }
+    });
+
+    // Log all elements with IDs after processing
+    const elementsWithIds = contentWrapper.querySelectorAll('[id]');
+    console.log(
+      'MainContent: Elements with IDs after processing:',
+      Array.from(elementsWithIds).map((el) => ({
+        id: (el as HTMLElement).id,
+        tagName: (el as HTMLElement).tagName,
+        textContent: (el as HTMLElement).textContent?.substring(0, 30),
+      }))
+    );
+  }
+
+  private findAndAddId(container: Element, title: string, id: string): void {
+    console.log(
+      `MainContent: Looking for element with text: "${title}" to add ID: ${id}`
+    );
+
+    // First try to find headings (most likely targets)
+    const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+    for (let i = 0; i < headings.length; i++) {
+      const heading = headings[i] as HTMLElement;
+      const headingText = heading.textContent?.trim() || '';
+
+      if (headingText.includes(title) || title.includes(headingText)) {
+        console.log(`MainContent: Found matching heading: "${headingText}"`);
+        heading.id = id;
+        console.log(`MainContent: Added ID ${id} to heading`);
+        return;
+      }
+    }
+
+    // If no heading found, try paragraphs with strong tags
+    const paragraphs = container.querySelectorAll('p');
+
+    for (let i = 0; i < paragraphs.length; i++) {
+      const paragraph = paragraphs[i] as HTMLElement;
+      const paragraphText = paragraph.textContent?.trim() || '';
+
+      // Check if paragraph contains the title text
+      if (paragraphText.includes(title)) {
+        console.log(
+          `MainContent: Found matching paragraph with text containing: "${title}"`
+        );
+        paragraph.id = id;
+        console.log(`MainContent: Added ID ${id} to paragraph`);
+        return;
+      }
+
+      // Check for strong tags within the paragraph
+      const strongTags = paragraph.querySelectorAll('strong');
+      for (let j = 0; j < strongTags.length; j++) {
+        const strong = strongTags[j] as HTMLElement;
+        const strongText = strong.textContent?.trim() || '';
+
+        if (strongText.includes(title) || title.includes(strongText)) {
+          console.log(
+            `MainContent: Found strong tag with matching text: "${strongText}"`
+          );
+          // Add the ID to the parent paragraph for better scrolling
+          paragraph.id = id;
+          console.log(
+            `MainContent: Added ID ${id} to paragraph containing strong tag`
+          );
+          return;
+        }
+      }
+    }
+
+    // If still not found, look for spans
+    const spans = container.querySelectorAll('span');
+
+    for (let i = 0; i < spans.length; i++) {
+      const span = spans[i] as HTMLElement;
+      const spanText = span.textContent?.trim() || '';
+
+      if (spanText.includes(title) || title.includes(spanText)) {
+        console.log(
+          `MainContent: Found matching span with text: "${spanText}"`
+        );
+        // Try to get the parent element (likely a paragraph or heading)
+        const parent = span.parentElement;
+        if (parent) {
+          parent.id = id;
+          console.log(`MainContent: Added ID ${id} to parent of span`);
+          return;
+        } else {
+          span.id = id;
+          console.log(`MainContent: Added ID ${id} to span itself`);
+          return;
+        }
+      }
+    }
+
+    console.log(`MainContent: Could not find any element matching: "${title}"`);
+  }
+
+  private escapeRegExp(string: string): string {
+    // Escape special regex characters to use string in regex
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   private createPackageCardsHtml(): string {
