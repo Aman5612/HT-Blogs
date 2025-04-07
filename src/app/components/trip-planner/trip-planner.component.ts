@@ -84,6 +84,23 @@ interface DestinationSuggestion {
                 class="suggestion-item"
                 (click)="selectSuggestion(suggestion)"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-map-pin mr-2 h-4 w-4 text-gray-500"
+                >
+                  <path
+                    d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"
+                  ></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
                 {{ suggestion.city }}, {{ suggestion.country }}
               </div>
             </div>
@@ -194,16 +211,25 @@ interface DestinationSuggestion {
         border-radius: 8px;
         margin-top: 8px;
         z-index: 10;
-        max-height: 200px;
-        overflow-y: auto;
+        max-height: none;
+        height: auto;
+        padding: 0;
       }
 
       .suggestion-item {
-        padding: 10px 16px;
+        padding: 10px 8px;
         cursor: pointer;
         font-size: 14px;
         color: #333;
-        text-align: center;
+        text-align: left;
+        display: flex;
+        align-items: center;
+      }
+
+      .suggestion-item img {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
       }
 
       .suggestion-item:hover {
@@ -390,8 +416,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
   private setupDestinationAutocomplete() {
     const subscription = this.destinationInput$
       .pipe(
-        debounceTime(300), // Debounce for 300ms
-        distinctUntilChanged(), // Only emit when the value changes
+        debounceTime(300),
+        distinctUntilChanged(),
         switchMap((term) => {
           if (!term || term.length < 2) {
             return of({ result: [] });
@@ -401,7 +427,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response: any) => {
-          this.destinationSuggestions = response.result || [];
+          // Limit to maximum 6 suggestions
+          this.destinationSuggestions = response.result.slice(0, 6) || [];
           this.showSuggestions = this.destinationSuggestions.length > 0;
         },
         error: (error) => {
@@ -440,7 +467,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
   }
 
   selectSuggestion(suggestion: DestinationSuggestion) {
-    this.formData.destination = suggestion.city;
+    this.formData.destination = `${suggestion.city}, ${suggestion.country}`;
     this.showSuggestions = false;
   }
 
@@ -570,7 +597,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     });
 
     // Use relative path that will be handled by the proxy
-    const apiUrl = 'https://holidayer.in:3009/api/submit';
+    const apiUrl = 'https://stagingleads.holidaytribe.com/common/publishleadsToZoho';
 
     // Send data to API with proper error handling
     this.http
