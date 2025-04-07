@@ -1,20 +1,41 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpClientModule,
+  HttpHeaders,
+} from '@angular/common/http';
 import { MostReadArticlesComponent } from '../most-read-articles/most-read-articles.component';
-import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+} from 'rxjs/operators';
+import { of, Subject, Subscription } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
+
+interface DestinationSuggestion {
+  city: string;
+  country: string;
+}
 
 @Component({
   selector: 'app-trip-planner',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, MostReadArticlesComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    HttpClientModule,
+    MostReadArticlesComponent,
+  ],
   template: `
     <div class="trip-planner-container font-sans">
       <div class="trip-planner">
-        <h2 class="font-normal text-[32px] leading-[118%]">Need help planning<br />your trip?</h2>
+        <h2 class="font-normal text-[32px] leading-[118%]">
+          Need help planning<br />your trip?
+        </h2>
         <p class="  ">Fill in this form please</p>
 
         <form class="planner-form" (submit)="onSubmit($event)">
@@ -42,7 +63,7 @@ import { ToastService } from '../../shared/services/toast.service';
             />
           </div>
 
-          <div class="form-group">
+          <div class="form-group destination-group">
             <input
               type="text"
               class="form-input"
@@ -50,21 +71,35 @@ import { ToastService } from '../../shared/services/toast.service';
               [(ngModel)]="formData.destination"
               name="destination"
               (focus)="onInputFocus($event)"
-              (blur)="onInputBlur($event)"
+              (blur)="onDestinationBlur($event)"
+              (input)="onDestinationInput($event)"
+              autocomplete="off"
             />
+            <div
+              class="destination-suggestions"
+              *ngIf="showSuggestions && destinationSuggestions.length > 0"
+            >
+              <div
+                *ngFor="let suggestion of destinationSuggestions"
+                class="suggestion-item"
+                (click)="selectSuggestion(suggestion)"
+              >
+                {{ suggestion.city }}, {{ suggestion.country }}
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
+          <!-- <div class="form-group">
             <input
               type="email"
               class="form-input"
               placeholder="Email Address"
-              [(ngModel)]="formData.email"
+              [(ngModel)]="formData.destination"
               name="email"
               (focus)="onInputFocus($event)"
               (blur)="onInputBlur($event)"
             />
-          </div>
+          </div> -->
 
           <p class="privacy-notice">
             By clicking button you agree with our
@@ -145,6 +180,36 @@ import { ToastService } from '../../shared/services/toast.service';
         opacity: 0.6;
       }
 
+      .destination-group {
+        position: relative;
+      }
+
+      .destination-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        margin-top: 8px;
+        z-index: 10;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .suggestion-item {
+        padding: 10px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #333;
+        text-align: center;
+      }
+
+      .suggestion-item:hover {
+        background-color: #f5f5f5;
+      }
+
       /* Simple centered input approach */
       .form-input {
         width: 100%;
@@ -155,48 +220,48 @@ import { ToastService } from '../../shared/services/toast.service';
         color: #333;
         outline: none;
         text-align: center;
-        
+
         /* Chrome, Safari, Edge, Opera */
         &::-webkit-input-placeholder {
           color: #999;
           text-align: center;
           transition: opacity 0.2s ease;
         }
-        
+
         /* Firefox */
         &::-moz-placeholder {
           color: #999;
           text-align: center;
           transition: opacity 0.2s ease;
         }
-        
+
         /* Internet Explorer 10-11 */
         &:-ms-input-placeholder {
           color: #999;
           text-align: center;
           transition: opacity 0.2s ease;
         }
-        
+
         /* Microsoft Edge */
         &::-ms-input-placeholder {
           color: #999;
           text-align: center;
           transition: opacity 0.2s ease;
         }
-        
+
         /* Hide placeholder on focus for all browsers */
         &:focus::-webkit-input-placeholder {
           opacity: 0;
         }
-        
+
         &:focus::-moz-placeholder {
           opacity: 0;
         }
-        
+
         &:focus:-ms-input-placeholder {
           opacity: 0;
         }
-        
+
         &:focus::-ms-input-placeholder {
           opacity: 0;
         }
@@ -257,30 +322,32 @@ import { ToastService } from '../../shared/services/toast.service';
     `,
   ],
 })
-export class TripPlannerComponent implements OnInit {
+export class TripPlannerComponent implements OnInit, OnDestroy {
   formData = {
     name: '',
     phone: '',
-    email: '',
     destination: '',
   };
-  
+
   locationData = {
     city: '',
     region: '',
-    country_name: '',
+    country: '',
     latitude: '',
-    longitude: ''
+    longitude: '',
   };
-  
+
+  // Destination suggestions
+  destinationSuggestions: DestinationSuggestion[] = [];
+  showSuggestions = false;
+  private destinationInput$ = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+
   isSubmitting = false;
   submitError = '';
   submitSuccess = false;
 
-  constructor(
-    private http: HttpClient,
-    private toastService: ToastService
-  ) {}
+  constructor(private http: HttpClient, private toastService: ToastService) {}
 
   ngOnInit() {
     // Check if we're in a browser environment
@@ -291,6 +358,90 @@ export class TripPlannerComponent implements OnInit {
         this.getLocationData();
       }, 0);
     }
+
+    // Setup subscription for destination input with debouncing
+    this.setupDestinationAutocomplete();
+
+    // Handle clicks outside of the suggestions dropdown
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', this.handleDocumentClick.bind(this));
+    }
+  }
+
+  ngOnDestroy() {
+    // Clean up subscriptions
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+
+    if (typeof document !== 'undefined') {
+      document.removeEventListener(
+        'click',
+        this.handleDocumentClick.bind(this)
+      );
+    }
+  }
+
+  private handleDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.destination-group')) {
+      this.showSuggestions = false;
+    }
+  }
+
+  private setupDestinationAutocomplete() {
+    const subscription = this.destinationInput$
+      .pipe(
+        debounceTime(300), // Debounce for 300ms
+        distinctUntilChanged(), // Only emit when the value changes
+        switchMap((term) => {
+          if (!term || term.length < 2) {
+            return of({ result: [] });
+          }
+          return this.searchDestinations(term);
+        })
+      )
+      .subscribe({
+        next: (response: any) => {
+          this.destinationSuggestions = response.result || [];
+          this.showSuggestions = this.destinationSuggestions.length > 0;
+        },
+        error: (error) => {
+          console.error('Error fetching destination suggestions:', error);
+          this.destinationSuggestions = [];
+          this.showSuggestions = false;
+        },
+      });
+
+    this.subscriptions.push(subscription);
+  }
+
+  private searchDestinations(query: string) {
+    const apiUrl = `https://staging.holidaytribe.com:3000/places/semanticDestinationSearch/${encodeURIComponent(
+      query
+    )}`;
+    return this.http.get(apiUrl).pipe(
+      catchError((error) => {
+        console.error('API Error:', error);
+        return of({ result: [] });
+      })
+    );
+  }
+
+  onDestinationInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.destinationInput$.next(input.value);
+  }
+
+  onDestinationBlur(event: FocusEvent) {
+    // Don't hide suggestions immediately to allow for clicks
+    setTimeout(() => {
+      // Only restore placeholder if needed
+      this.onInputBlur(event);
+    }, 200);
+  }
+
+  selectSuggestion(suggestion: DestinationSuggestion) {
+    this.formData.destination = suggestion.city;
+    this.showSuggestions = false;
   }
 
   // Get user's location data
@@ -298,17 +449,17 @@ export class TripPlannerComponent implements OnInit {
     // Example implementation - in a real app, you'd use a geolocation service
     // This is just a placeholder to simulate the location data structure
     fetch('https://ipapi.co/json/')
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         this.locationData = {
           city: data.city || '',
           region: data.region || '',
-          country_name: data.country_name || '',
+          country: data.country_name || '',
           latitude: data.latitude || '',
-          longitude: data.longitude || ''
+          longitude: data.longitude || '',
         };
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching location data:', error);
       });
   }
@@ -316,10 +467,12 @@ export class TripPlannerComponent implements OnInit {
   // This applies a direct DOM modification to get the desired behavior
   private applyInputOverride() {
     // Get all inputs
-    const inputs = document.querySelectorAll('.form-input') as NodeListOf<HTMLInputElement>;
-    
+    const inputs = document.querySelectorAll(
+      '.form-input'
+    ) as NodeListOf<HTMLInputElement>;
+
     // Apply the style to each input using direct style properties
-    inputs.forEach(input => {
+    inputs.forEach((input) => {
       // Create a style element for our custom CSS
       const style = document.createElement('style');
       style.textContent = `
@@ -352,6 +505,15 @@ export class TripPlannerComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     input.setAttribute('data-placeholder', input.placeholder);
     input.placeholder = '';
+
+    // Show suggestions if it's the destination field and has value
+    if (
+      input.name === 'destination' &&
+      input.value &&
+      input.value.length >= 2
+    ) {
+      this.destinationInput$.next(input.value);
+    }
   }
 
   onInputBlur(event: FocusEvent) {
@@ -364,92 +526,100 @@ export class TripPlannerComponent implements OnInit {
 
   onSubmit(event: Event) {
     event.preventDefault();
-    
+
     // Basic validation
-    if (!this.formData.name || !this.formData.phone || !this.formData.destination) {
+    if (
+      !this.formData.name ||
+      !this.formData.phone ||
+      !this.formData.destination
+    ) {
       this.toastService.error('Please fill in all required fields');
       return;
     }
-    
+
     this.isSubmitting = true;
-    
+
     // Prepare the payload according to the required format
     const params = {
       name: this.formData.name,
       phone: this.formData.phone,
       destination: this.formData.destination,
-      source: new URLSearchParams(window.location.search).get('utm_source') || '',
-      source_remark: new URLSearchParams(window.location.search).get('campaign_id') || '',
+      source:
+        new URLSearchParams(window.location.search).get('utm_source') || '',
+      source_remark:
+        new URLSearchParams(window.location.search).get('campaign_id') || '',
       ad_id: new URLSearchParams(window.location.search).get('ad_id') || '',
       location: {
         city: this.locationData.city,
         region: this.locationData.region,
-        country: this.locationData.country_name,
+        country: this.locationData.country,
         latitude: this.locationData.latitude,
         longitude: this.locationData.longitude,
       },
     };
-    
+
     // Add email separately if needed for your backend
     const payload = {
       ...params,
-      email: this.formData.email
     };
-    
+
     // Set proper headers
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      Accept: 'application/json',
     });
-    
+
     // Use relative path that will be handled by the proxy
-    const apiUrl = '/api/submit';
-    
+    const apiUrl = 'https://holidayer.in:3009/api/submit';
+
     // Send data to API with proper error handling
-    this.http.post(apiUrl, payload, { 
-      headers: headers, 
-      observe: 'response',
-      responseType: 'json'
-    })
+    this.http
+      .post(apiUrl, payload, {
+        headers: headers,
+        observe: 'response',
+        responseType: 'json',
+      })
       .pipe(
-        catchError(error => {
+        catchError((error) => {
           console.error('API Error:', error);
-          
+
           // Create a standardized error response
           const errorResponse = {
             status: error.status || 500,
-            body: { 
-              error: error.error?.message || error.message || 'Server error' 
-            }
+            body: {
+              error: error.error?.message || error.message || 'Server error',
+            },
           };
-          
+
           // If it's a parsing error, provide more specific message
           if (error.error instanceof SyntaxError) {
-            errorResponse.body.error = 'Response parsing error. The server might be returning invalid JSON.';
+            errorResponse.body.error =
+              'Response parsing error. The server might be returning invalid JSON.';
           }
-          
+
           return of(errorResponse);
         })
       )
       .subscribe({
         next: (response: any) => {
           this.isSubmitting = false;
-          
+
           if (response.status >= 200 && response.status < 300) {
-            this.toastService.success('Thank you! We\'ll be in touch soon.');
-            
+            this.toastService.success("Thank you! We'll be in touch soon.");
+
             // Reset form after successful submission
             this.formData = {
               name: '',
               phone: '',
-              email: '',
-              destination: ''
+              destination: '',
             };
-            
+
             // Restore placeholders after form reset
             setTimeout(() => {
-              const inputs = document.querySelectorAll('.form-input') as NodeListOf<HTMLInputElement>;
-              inputs.forEach(input => {
+              const inputs = document.querySelectorAll(
+                '.form-input'
+              ) as NodeListOf<HTMLInputElement>;
+              inputs.forEach((input) => {
                 // Get stored placeholder and restore it
                 const placeholder = input.getAttribute('data-placeholder');
                 if (placeholder) {
@@ -459,14 +629,18 @@ export class TripPlannerComponent implements OnInit {
             }, 0);
           } else {
             // Handle error response with toast
-            this.toastService.error(response.body?.error || 'Failed to submit. Please try again.');
+            this.toastService.error(
+              response.body?.error || 'Failed to submit. Please try again.'
+            );
           }
         },
         error: (error) => {
           console.error('Subscription error:', error);
           this.isSubmitting = false;
-          this.toastService.error('Network error. Please check your connection and try again.');
-        }
+          this.toastService.error(
+            'Network error. Please check your connection and try again.'
+          );
+        },
       });
   }
 }
