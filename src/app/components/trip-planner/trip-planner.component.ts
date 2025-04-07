@@ -353,6 +353,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     name: '',
     phone: '',
     destination: '',
+    city_country: '',
   };
 
   locationData = {
@@ -455,6 +456,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
   onDestinationInput(event: Event) {
     const input = event.target as HTMLInputElement;
+    console.log('this is the destination->>>>>>>>.', input.value);
     this.destinationInput$.next(input.value);
   }
 
@@ -467,6 +469,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
   }
 
   selectSuggestion(suggestion: DestinationSuggestion) {
+    this.formData.city_country = `${suggestion.city}`;
     this.formData.destination = `${suggestion.city}, ${suggestion.country}`;
     this.showSuggestions = false;
   }
@@ -568,11 +571,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
     // Prepare the payload according to the required format
     const params = {
-      name: this.formData.name,
-      phone: this.formData.phone,
-      destination: this.formData.destination,
-      source:
-        new URLSearchParams(window.location.search).get('utm_source') || '',
+      Last_Name: this.formData.name,
+      Phone_number: this.formData.phone,
+      Destination: this.formData.city_country,
+      City_Country: this.formData.destination,
+      Package_Selected: window.location.href,
+      Source: 'Blog_Website',
       source_remark:
         new URLSearchParams(window.location.search).get('campaign_id') || '',
       ad_id: new URLSearchParams(window.location.search).get('ad_id') || '',
@@ -597,7 +601,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     });
 
     // Use relative path that will be handled by the proxy
-    const apiUrl = 'https://stagingleads.holidaytribe.com/common/publishleadsToZoho';
+    const apiUrl =
+      'https://stagingleads.holidaytribe.com/common/publishleadsToZoho';
 
     // Send data to API with proper error handling
     this.http
@@ -639,6 +644,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
               name: '',
               phone: '',
               destination: '',
+              city_country: '',
             };
 
             // Restore placeholders after form reset
