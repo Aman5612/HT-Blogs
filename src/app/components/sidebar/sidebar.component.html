@@ -19,7 +19,9 @@
     <div
       class="flex items-center gap-1.5 p-0 cursor-pointer transition-all mb-3"
     >
-      <div class="min-w-[30px] min-h-[30px] flex items-center justify-center">
+      <div
+        class="min-w-[30px] min-h-[30px] max-w-[30px] max-h-[30px] flex items-center justify-center"
+      >
         <svg
           *ngIf="selectedSection === section.id"
           width="40"
@@ -63,7 +65,7 @@
             ? 'shadow-[inset_0_0_0_1px_#CFCFCF]'
             : ''
         "
-        class="flex items-center justify-between rounded-xl p-3 bg-[#F8F8F8]"
+        class="flex items-center justify-between rounded-xl p-3 bg-[#F8F8F8] w-full"
       >
         <div class="flex items-center gap-2">
           <span
