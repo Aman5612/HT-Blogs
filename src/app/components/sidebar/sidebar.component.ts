@@ -434,7 +434,7 @@ export interface ContentSection {
         font-size: 0.875rem;
       }
 
-      // Scrollbar styling
+      
       :host {
         scrollbar-width: thin;
         scrollbar-color: #ddd transparent;
@@ -457,7 +457,7 @@ export interface ContentSection {
         }
       }
 
-      // Responsive adjustments
+      
       @media (max-width: 1600px) {
         :host {
           width: 22%;

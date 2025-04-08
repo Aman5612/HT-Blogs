@@ -76,7 +76,7 @@ interface TableOfContents {
         padding: 2rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         width: 100%;
-        min-width: 0; // Fix for grid item overflow
+        min-width: 0; 
         overflow-wrap: break-word;
         font-family: 'DM Sans';
       }
@@ -125,7 +125,7 @@ interface TableOfContents {
           h6 {
             scroll-margin-top: calc(
               64px + 2rem
-            ); // Account for header height + padding
+            ); 
             font-weight: 600;
             line-height: 1.3;
             color: #1a1a1a;
@@ -255,7 +255,6 @@ interface TableOfContents {
             }
           }
 
-          // Package cards container
           .package-cards-container {
             margin: 3rem 0;
             padding: 2rem;
@@ -363,12 +362,11 @@ interface TableOfContents {
             color: #111827;
           }
 
-          // First element spacing
           > *:first-child {
             margin-top: 0;
           }
 
-          // Last element spacing
+          
           > *:last-child {
             margin-bottom: 0;
           }

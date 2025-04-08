@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "HT-blogs": {
+    "ht-blogs": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -114,10 +114,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "HT-blogs:build:production"
+              "buildTarget": "ht-blogs:build:production"
             },
             "development": {
-              "buildTarget": "HT-blogs:build:development"
+              "buildTarget": "ht-blogs:build:development"
             }
           },
           "defaultConfiguration": "development",
