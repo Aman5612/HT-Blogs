@@ -106,9 +106,8 @@ export class MostReadArticlesComponent implements OnInit, OnChanges {
   }
 
   onArticleClick(event: Event, article: Article) {
-    // Check if we're using HashLocationStrategy
     event.preventDefault();
-    this.router.navigate(['/blog', article.id]);
+    window.location.href = `/blog/${article.id}`;
   }
 
   onKeyPress(event: KeyboardEvent, article: Article) {
