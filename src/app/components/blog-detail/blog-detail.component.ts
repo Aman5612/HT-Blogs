@@ -453,116 +453,92 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
     // Log all elements with IDs in the content wrapper
     const contentWrapper = document.querySelector('.main-content-wrapper');
-    if (contentWrapper) {
-      console.log(
-        'BlogDetail: Scanning main-content-wrapper for elements with IDs'
-      );
-      const elementsWithIds = contentWrapper.querySelectorAll('[id]');
-      console.log(
-        'BlogDetail: Found elements with IDs:',
-        Array.from(elementsWithIds).map((el) => ({
-          id: (el as HTMLElement).id,
-          tagName: (el as HTMLElement).tagName,
-        }))
-      );
-    }
-
-    // First try direct approach with document.getElementById
-    const directElement = document.getElementById(sectionId);
-
-    if (directElement) {
-      console.log(`BlogDetail: Found element directly with ID: ${sectionId}`);
-      this.scrollToElement(directElement);
+    if (!contentWrapper) {
+      console.error('BlogDetail: Content wrapper not found');
       return;
     }
 
-    // If direct approach fails, search within the content wrapper
-    if (contentWrapper) {
-      console.log('BlogDetail: Searching within main-content-wrapper');
+    // First collect all candidate elements matching this ID
+    const candidates: { element: HTMLElement; priority: number }[] = [];
 
-      // Get full HTML content for debugging
-      const contentHtml = contentWrapper.innerHTML;
-      console.log(
-        'Content HTML excerpt:',
-        contentHtml.substring(0, 500) + '...'
-      );
-
-      // Try to find element by ID attribute
-      const match = contentHtml.includes(`id="${sectionId}"`);
-      console.log(
-        `Does content contain element with id="${sectionId}"? ${match}`
-      );
-
-      // Try some alternative approaches
-      const contentElement = contentWrapper.querySelector(
-        `[id="${sectionId}"]`
-      );
-      if (contentElement) {
-        console.log(
-          `BlogDetail: Found element in content wrapper with ID: ${sectionId}`
-        );
-        this.scrollToElement(contentElement as HTMLElement);
-        return;
-      }
-
-      // Try finding elements with the text content similar to the ID
-      const normalizedId = sectionId.replace(/-/g, ' ').toLowerCase();
-      console.log(
-        `BlogDetail: Looking for elements with text content matching: ${normalizedId}`
-      );
-
-      const headings = contentWrapper.querySelectorAll(
-        'h1, h2, h3, h4, h5, h6'
-      );
-      for (let i = 0; i < headings.length; i++) {
-        const heading = headings[i] as HTMLElement;
-        const headingText = heading.textContent?.toLowerCase() || '';
-
-        if (
-          headingText.includes(normalizedId) ||
-          normalizedId.includes(headingText)
-        ) {
-          console.log(
-            `BlogDetail: Found heading with matching text: "${headingText}"`
-          );
-
-          // Assign ID to the element if it doesn't have one
-          if (!heading.id) {
-            heading.id = sectionId;
-            console.log(`BlogDetail: Assigned ID ${sectionId} to heading`);
-          }
-
-          this.scrollToElement(heading);
-          return;
-        }
+    // First priority: actual heading elements with this ID (not section-anchor)
+    const headings = contentWrapper.querySelectorAll(
+      `h1#${sectionId}, h2#${sectionId}, h3#${sectionId}, h4#${sectionId}, h5#${sectionId}, h6#${sectionId}`
+    );
+    for (let i = 0; i < headings.length; i++) {
+      const heading = headings[i] as HTMLElement;
+      if (!this.isInsidePackageCard(heading)) {
+        candidates.push({ element: heading, priority: 1 });
       }
     }
 
-    // Last resort: try to find within iframes or other containers
-    console.log('BlogDetail: Trying alternative methods to find element');
-
-    // Try the following selectors as a last resort
-    const alternativeSelectors = [
-      `h3:contains('${sectionId.replace(/-/g, ' ')}')`,
-      `.content h3`,
-      `.article-content *[id="${sectionId}"]`,
-      `.content-wrapper *[id="${sectionId}"]`,
-    ];
-
-    for (const selector of alternativeSelectors) {
-      try {
-        const elements = document.querySelectorAll(selector);
-        if (elements.length > 0) {
-          console.log(`BlogDetail: Found element using selector: ${selector}`);
-          this.scrollToElement(elements[0] as HTMLElement);
-          return;
-        }
-      } catch (e) {
-        console.log(`Error with selector ${selector}:`, e);
+    // Second priority: paragraphs or other text elements
+    const paragraphs = contentWrapper.querySelectorAll(
+      `p#${sectionId}, div#${sectionId}:not(.section-anchor)`
+    );
+    for (let i = 0; i < paragraphs.length; i++) {
+      const paragraph = paragraphs[i] as HTMLElement;
+      if (!this.isInsidePackageCard(paragraph)) {
+        candidates.push({ element: paragraph, priority: 2 });
       }
     }
 
-    console.error(`BlogDetail: Could not find element with ID ${sectionId}`);
+    // Third priority: section-anchor divs
+    const anchors = contentWrapper.querySelectorAll(
+      `.section-anchor#${sectionId}`
+    );
+    for (let i = 0; i < anchors.length; i++) {
+      candidates.push({ element: anchors[i] as HTMLElement, priority: 3 });
+    }
+
+    // Last priority: any element with this ID
+    const anyElement = document.getElementById(sectionId);
+    if (
+      anyElement &&
+      !this.isInsidePackageCard(anyElement) &&
+      !candidates.some((c) => c.element === anyElement)
+    ) {
+      candidates.push({ element: anyElement, priority: 4 });
+    }
+
+    console.log(
+      `BlogDetail: Found ${candidates.length} candidate elements for ID: ${sectionId}`
+    );
+
+    // Sort by priority and scroll to the best match
+    if (candidates.length > 0) {
+      candidates.sort((a, b) => a.priority - b.priority);
+      const bestMatch = candidates[0].element;
+      console.log(`BlogDetail: Scrolling to best match element:`, bestMatch);
+      this.scrollToElement(bestMatch);
+      return;
+    }
+
+    // If no elements found, create a new anchor
+    console.log('BlogDetail: No existing elements found, creating new anchor');
+    const newAnchor = document.createElement('div');
+    newAnchor.id = sectionId;
+    newAnchor.className = 'section-anchor';
+    newAnchor.style.position = 'relative';
+    newAnchor.style.marginTop = '20px';
+    newAnchor.style.height = '1px';
+
+    // Find the first heading to insert after
+    const firstHeading = contentWrapper.querySelector('h1, h2');
+    if (firstHeading && firstHeading.parentNode) {
+      firstHeading.parentNode.insertBefore(newAnchor, firstHeading.nextSibling);
+      console.log('BlogDetail: Inserted anchor after first heading');
+    } else {
+      // Otherwise add to the top of the content
+      const mainContentElement = contentWrapper.querySelector('.main-content');
+      if (mainContentElement) {
+        mainContentElement.prepend(newAnchor);
+      } else {
+        contentWrapper.prepend(newAnchor);
+      }
+    }
+
+    this.scrollToElement(newAnchor);
   }
 
   private scrollToElement(element: HTMLElement) {
@@ -694,7 +670,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
           'h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]'
         );
         headings.forEach((heading) => {
-          if (heading.id) {
+          if (heading.id && !this.isInsidePackageCard(heading as HTMLElement)) {
             this.observer?.observe(heading);
             totalObserved++;
           }
@@ -703,7 +679,10 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         // Find paragraphs with IDs (these contain bold text sections or are otherwise important)
         const paragraphs = container.querySelectorAll('p[id]');
         paragraphs.forEach((paragraph) => {
-          if (paragraph.id) {
+          if (
+            paragraph.id &&
+            !this.isInsidePackageCard(paragraph as HTMLElement)
+          ) {
             this.observer?.observe(paragraph);
             totalObserved++;
           }
@@ -712,7 +691,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         // Find lists with IDs
         const lists = container.querySelectorAll('ul[id], ol[id]');
         lists.forEach((list) => {
-          if (list.id) {
+          if (list.id && !this.isInsidePackageCard(list as HTMLElement)) {
             this.observer?.observe(list);
             totalObserved++;
           }
@@ -721,7 +700,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         // Find blockquotes with IDs
         const quotes = container.querySelectorAll('blockquote[id]');
         quotes.forEach((quote) => {
-          if (quote.id) {
+          if (quote.id && !this.isInsidePackageCard(quote as HTMLElement)) {
             this.observer?.observe(quote);
             totalObserved++;
           }
@@ -732,7 +711,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
           'div[id^="section-"], div[id^="list-section-"], div[id^="quote-"]'
         );
         otherSections.forEach((section) => {
-          if (section.id) {
+          if (section.id && !this.isInsidePackageCard(section as HTMLElement)) {
             this.observer?.observe(section);
             totalObserved++;
           }
@@ -749,5 +728,55 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     }
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  // Helper method to check if element is inside a package card
+  private isInsidePackageCard(element: HTMLElement): boolean {
+    let current: HTMLElement | null = element;
+    while (current) {
+      if (
+        current.classList.contains('package-card') ||
+        current.closest('.package-card') ||
+        current.closest('.scroll-container') ||
+        current.closest('.package-container')
+      ) {
+        console.log('BlogDetail: Element is inside package card, skipping');
+        return true;
+      }
+      current = current.parentElement;
+    }
+    return false;
+  }
+
+  // Check if two text strings are similar
+  private isTextSimilar(text1: string, text2: string): boolean {
+    // Basic similarity check
+    const words1 = text1
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 3);
+    const words2 = text2
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 3);
+
+    if (words1.length === 0 || words2.length === 0) {
+      return false;
+    }
+
+    // Count matching words
+    let matchCount = 0;
+    for (const word2 of words2) {
+      for (const word1 of words1) {
+        if (word1.includes(word2) || word2.includes(word1)) {
+          matchCount++;
+          break;
+        }
+      }
+    }
+
+    return (
+      matchCount > 0 && matchCount >= Math.min(2, Math.floor(words2.length / 2))
+    );
   }
 }

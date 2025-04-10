@@ -76,7 +76,7 @@ interface TableOfContents {
         padding: 2rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         width: 100%;
-        min-width: 0; 
+        min-width: 0;
         overflow-wrap: break-word;
         font-family: 'DM Sans';
       }
@@ -123,9 +123,7 @@ interface TableOfContents {
           h4,
           h5,
           h6 {
-            scroll-margin-top: calc(
-              64px + 2rem
-            ); 
+            scroll-margin-top: calc(64px + 2rem);
             font-weight: 600;
             line-height: 1.3;
             color: #1a1a1a;
@@ -366,7 +364,6 @@ interface TableOfContents {
             margin-top: 0;
           }
 
-          
           > *:last-child {
             margin-bottom: 0;
           }
@@ -552,7 +549,26 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     // Apply IDs to the DOM after view is initialized
     console.log('MainContent: AfterViewInit - Adding IDs to content elements');
-    this.applyIDsToDOM();
+
+    // Wait a short time to ensure content is fully rendered
+    setTimeout(() => {
+      this.applyIDsToDOM();
+
+      // Log all elements with IDs for debugging
+      const contentWrapper =
+        this.elementRef.nativeElement.querySelector('.content-wrapper');
+      if (contentWrapper) {
+        const elementsWithIds = contentWrapper.querySelectorAll('[id]');
+        console.log(
+          'MainContent: Elements with IDs after full initialization:',
+          Array.from(elementsWithIds).map((el) => ({
+            id: (el as HTMLElement).id,
+            tagName: (el as HTMLElement).tagName,
+            text: (el as HTMLElement).textContent?.substring(0, 30),
+          }))
+        );
+      }
+    }, 300);
   }
 
   private fetchPackages(): void {
@@ -665,6 +681,10 @@ export class MainContentComponent implements OnInit, AfterViewInit {
     }
 
     console.log('MainContent: Applying IDs to DOM elements');
+    console.log(
+      'MainContent: TableOfContents sections:',
+      JSON.stringify(this.tableOfContents.sections)
+    );
 
     // Get the content wrapper element
     const contentWrapper =
@@ -674,32 +694,189 @@ export class MainContentComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Process each section from tableOfContents
-    this.tableOfContents.sections.forEach((section) => {
-      console.log('MainContent: Processing section in DOM:', section.title);
+    // First, find all potential matches (headings and important paragraphs)
+    const headings = Array.from(
+      contentWrapper.querySelectorAll('h1, h2, h3, h4, h5, h6')
+    ).filter(
+      (el) => !this.isInsidePackageCard(el as HTMLElement)
+    ) as HTMLElement[];
+    const paragraphs = Array.from(contentWrapper.querySelectorAll('p')).filter(
+      (el) => !this.isInsidePackageCard(el as HTMLElement)
+    ) as HTMLElement[];
 
-      // Try to find headings that match the section title
-      this.findAndAddId(contentWrapper, section.title, section.id);
+    console.log(
+      `MainContent: Found ${headings.length} headings and ${paragraphs.length} paragraphs outside package cards`
+    );
 
-      // Process subsections
-      if (section.subsections && section.subsections.length > 0) {
-        section.subsections.forEach((subsection) => {
-          console.log(
-            'MainContent: Processing subsection in DOM:',
-            subsection.title
-          );
+    // Get all section IDs and titles from the TOC
+    const allSections = this.getAllSectionsFlat(this.tableOfContents.sections);
+    console.log('MainContent: All sections from TOC:', allSections);
 
-          // Handle truncated titles (those with ellipsis)
-          const searchTitle = subsection.title.includes('...')
-            ? subsection.title.split('...')[0]
-            : subsection.title;
+    // Track mapped IDs
+    const mappedIds: string[] = [];
 
-          this.findAndAddId(contentWrapper, searchTitle, subsection.id);
-        });
+    // First pass: try to match headings directly
+    allSections.forEach((section) => {
+      const titleLower = section.title.toLowerCase();
+
+      // Try to find an exact match in headings
+      const exactMatchIndex = headings.findIndex((h) => {
+        const text = h.textContent?.trim().toLowerCase() || '';
+        return (
+          text === titleLower ||
+          text.includes(titleLower) ||
+          titleLower.includes(text)
+        );
+      });
+
+      if (exactMatchIndex >= 0) {
+        const exactMatch = headings[exactMatchIndex];
+        exactMatch.id = section.id;
+        console.log(
+          `MainContent: Mapped ID ${section.id} to heading "${exactMatch.textContent}"`
+        );
+        mappedIds.push(section.id);
+        // Remove this heading from the array so it won't be matched again
+        headings.splice(exactMatchIndex, 1);
+        return;
+      }
+
+      // Try fuzzy matching with headings
+      const fuzzyMatchIndex = headings.findIndex((h) => {
+        const text = h.textContent?.trim().toLowerCase() || '';
+        return this.isTextSimilar(text, titleLower);
+      });
+
+      if (fuzzyMatchIndex >= 0) {
+        const fuzzyMatch = headings[fuzzyMatchIndex];
+        fuzzyMatch.id = section.id;
+        console.log(
+          `MainContent: Mapped ID ${section.id} to similar heading "${fuzzyMatch.textContent}"`
+        );
+        mappedIds.push(section.id);
+        // Remove this heading from the array so it won't be matched again
+        headings.splice(fuzzyMatchIndex, 1);
+        return;
       }
     });
 
-    // Log all elements with IDs after processing
+    // Second pass: for unmapped sections, look in paragraphs
+    const unmappedSections = allSections.filter(
+      (section) => !mappedIds.includes(section.id)
+    );
+
+    unmappedSections.forEach((section) => {
+      const titleLower = section.title.toLowerCase();
+
+      // Try to find content in paragraphs
+      for (let i = 0; i < paragraphs.length; i++) {
+        const paragraph = paragraphs[i];
+        const paragraphText = paragraph.textContent?.trim().toLowerCase() || '';
+
+        if (
+          paragraphText.includes(titleLower) ||
+          this.isTextSimilar(paragraphText, titleLower)
+        ) {
+          paragraph.id = section.id;
+          console.log(
+            `MainContent: Mapped ID ${section.id} to paragraph containing "${titleLower}"`
+          );
+          mappedIds.push(section.id);
+          paragraphs.splice(i, 1); // Remove this paragraph so it won't be matched again
+          break;
+        }
+
+        // Check for strong tags within paragraph
+        const strongTags = paragraph.querySelectorAll('strong, b');
+        let foundMatch = false;
+
+        for (const strong of Array.from(strongTags)) {
+          const strongText =
+            (strong as HTMLElement).textContent?.trim().toLowerCase() || '';
+
+          if (
+            strongText.includes(titleLower) ||
+            titleLower.includes(strongText) ||
+            this.isTextSimilar(strongText, titleLower)
+          ) {
+            paragraph.id = section.id;
+            console.log(
+              `MainContent: Mapped ID ${section.id} to paragraph with strong tag "${strongText}"`
+            );
+            mappedIds.push(section.id);
+            paragraphs.splice(i, 1); // Remove this paragraph so it won't be matched again
+            foundMatch = true;
+            break;
+          }
+        }
+
+        if (foundMatch) break;
+      }
+    });
+
+    // Final pass: create anchors for any still unmapped sections
+    const stillUnmappedSections = allSections.filter(
+      (section) => !mappedIds.includes(section.id)
+    );
+
+    if (stillUnmappedSections.length > 0) {
+      console.warn(
+        'MainContent: Creating anchors for unmapped sections:',
+        stillUnmappedSections.map((s) => s.title)
+      );
+
+      // Sort remaining content elements by their position in the DOM
+      const remainingElements = [...headings, ...paragraphs].sort((a, b) => {
+        // Compare position in the document
+        return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING
+          ? -1
+          : 1;
+      });
+
+      // Find appropriate places for each unmapped section
+      stillUnmappedSections.forEach((section, index) => {
+        // For the first few sections, place them evenly among the content
+        const positionIndex = Math.floor(
+          (remainingElements.length * (index + 1)) /
+            (stillUnmappedSections.length + 1)
+        );
+        const targetElement =
+          positionIndex < remainingElements.length
+            ? remainingElements[positionIndex]
+            : remainingElements[remainingElements.length - 1];
+
+        // Create anchor element
+        const anchor = document.createElement('div');
+        anchor.id = section.id;
+        anchor.className = 'section-anchor';
+        anchor.setAttribute('data-section-title', section.title);
+        anchor.style.position = 'relative';
+        anchor.style.marginTop = '10px';
+        anchor.style.marginBottom = '5px';
+        anchor.style.height = '1px';
+
+        // Insert before the target element
+        if (targetElement && targetElement.parentNode) {
+          targetElement.parentNode.insertBefore(anchor, targetElement);
+          console.log(
+            `MainContent: Created anchor for "${
+              section.title
+            }" before element "${targetElement.textContent?.substring(0, 30)}"`
+          );
+        } else {
+          // Fall back to appending to content wrapper
+          contentWrapper.appendChild(anchor);
+          console.log(
+            `MainContent: Created anchor for "${section.title}" at the end of content`
+          );
+        }
+
+        mappedIds.push(section.id);
+      });
+    }
+
+    // Log the final mapping results
+    console.log('MainContent: Successfully mapped IDs:', mappedIds);
     const elementsWithIds = contentWrapper.querySelectorAll('[id]');
     console.log(
       'MainContent: Elements with IDs after processing:',
@@ -711,89 +888,60 @@ export class MainContentComponent implements OnInit, AfterViewInit {
     );
   }
 
-  private findAndAddId(container: Element, title: string, id: string): void {
-    console.log(
-      `MainContent: Looking for element with text: "${title}" to add ID: ${id}`
+  // Flatten all sections including subsections into a simple array
+  private getAllSectionsFlat(
+    sections: any[]
+  ): Array<{ id: string; title: string }> {
+    let result: Array<{ id: string; title: string }> = [];
+
+    sections.forEach((section) => {
+      result.push({ id: section.id, title: section.title });
+
+      if (section.subsections && section.subsections.length > 0) {
+        section.subsections.forEach((subsection: any) => {
+          result.push({ id: subsection.id, title: subsection.title });
+        });
+      }
+    });
+
+    return result;
+  }
+
+  private isTextSimilar(text1: string, text2: string): boolean {
+    // Basic similarity check - could be enhanced with more sophisticated algorithms
+    const words1 = text1
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 3);
+    const words2 = text2
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 3);
+
+    // Count how many words from text2 are in text1
+    const matchingWords = words2.filter((word) =>
+      words1.some((w) => w.includes(word) || word.includes(w))
     );
 
-    // First try to find headings (most likely targets)
-    const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    // If at least half of the words match, consider it similar
+    return (
+      matchingWords.length > 0 && matchingWords.length >= words2.length / 2
+    );
+  }
 
-    for (let i = 0; i < headings.length; i++) {
-      const heading = headings[i] as HTMLElement;
-      const headingText = heading.textContent?.trim() || '';
-
-      if (headingText.includes(title) || title.includes(headingText)) {
-        console.log(`MainContent: Found matching heading: "${headingText}"`);
-        heading.id = id;
-        console.log(`MainContent: Added ID ${id} to heading`);
-        return;
+  private isInsidePackageCard(element: HTMLElement): boolean {
+    let current: HTMLElement | null = element;
+    while (current) {
+      if (
+        current.classList.contains('package-card') ||
+        current.closest('.package-card') ||
+        current.closest('.scroll-container')
+      ) {
+        return true;
       }
+      current = current.parentElement;
     }
-
-    // If no heading found, try paragraphs with strong tags
-    const paragraphs = container.querySelectorAll('p');
-
-    for (let i = 0; i < paragraphs.length; i++) {
-      const paragraph = paragraphs[i] as HTMLElement;
-      const paragraphText = paragraph.textContent?.trim() || '';
-
-      // Check if paragraph contains the title text
-      if (paragraphText.includes(title)) {
-        console.log(
-          `MainContent: Found matching paragraph with text containing: "${title}"`
-        );
-        paragraph.id = id;
-        console.log(`MainContent: Added ID ${id} to paragraph`);
-        return;
-      }
-
-      // Check for strong tags within the paragraph
-      const strongTags = paragraph.querySelectorAll('strong');
-      for (let j = 0; j < strongTags.length; j++) {
-        const strong = strongTags[j] as HTMLElement;
-        const strongText = strong.textContent?.trim() || '';
-
-        if (strongText.includes(title) || title.includes(strongText)) {
-          console.log(
-            `MainContent: Found strong tag with matching text: "${strongText}"`
-          );
-          // Add the ID to the parent paragraph for better scrolling
-          paragraph.id = id;
-          console.log(
-            `MainContent: Added ID ${id} to paragraph containing strong tag`
-          );
-          return;
-        }
-      }
-    }
-
-    // If still not found, look for spans
-    const spans = container.querySelectorAll('span');
-
-    for (let i = 0; i < spans.length; i++) {
-      const span = spans[i] as HTMLElement;
-      const spanText = span.textContent?.trim() || '';
-
-      if (spanText.includes(title) || title.includes(spanText)) {
-        console.log(
-          `MainContent: Found matching span with text: "${spanText}"`
-        );
-        // Try to get the parent element (likely a paragraph or heading)
-        const parent = span.parentElement;
-        if (parent) {
-          parent.id = id;
-          console.log(`MainContent: Added ID ${id} to parent of span`);
-          return;
-        } else {
-          span.id = id;
-          console.log(`MainContent: Added ID ${id} to span itself`);
-          return;
-        }
-      }
-    }
-
-    console.log(`MainContent: Could not find any element matching: "${title}"`);
+    return false;
   }
 
   private escapeRegExp(string: string): string {
@@ -844,12 +992,12 @@ export class MainContentComponent implements OnInit, AfterViewInit {
           display: none; /* Chrome, Safari, newer Edge */
         }
       </style>
-      <div style="margin: 0; margin-top: 1.25rem; margin-bottom: 1.25rem; width: 100%;">
+      <div class="package-container" style="margin: 0; margin-top: 1.25rem; margin-bottom: 1.25rem; width: 100%;">
         <div class="scroll-container">
           <div style="display: flex; gap: 6px;">
             ${this.packages
               .map(
-                (pkg) => `
+                (pkg, index) => `
               <div class="package-card" style="flex-shrink: 0; border-radius: 0.75rem; overflow: hidden; background-color: #F8F8F8;">
                 <div style="overflow: hidden; position: relative; background-color: #F8F8F8;">
                   <img src="/images/package.svg" alt="${
@@ -857,7 +1005,9 @@ export class MainContentComponent implements OnInit, AfterViewInit {
                   }" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
                 </div>
                 <div style="padding: 1rem; white-space: normal;">
-                  <h3 style="margin: 0; margin-bottom: 2px; font-size: 14px; font-weight: 600; color: #111827;">
+                  <h3 style="margin: 0; margin-bottom: 2px; font-size: 14px; font-weight: 600; color: #111827;" data-package-name="${
+                    pkg.name
+                  }" data-package-id="${pkg.id}" data-package-index="${index}">
                     ${pkg.name}
                   </h3>
                   <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem;">
