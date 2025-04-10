@@ -345,6 +345,49 @@ interface DestinationSuggestion {
         background: #999;
         cursor: not-allowed;
       }
+
+      /* Mobile responsive styles to reduce height */
+      @media (max-width: 768px) {
+        .trip-planner-container {
+          gap: 1rem; /* Reduced from 2rem */
+        }
+
+        .trip-planner {
+          padding: 24px; /* Reduced from 32px */
+          gap: 2px; /* Reduced from 4px */
+        }
+
+        h2 {
+          font-size: 24px; /* Reduced from 32px */
+          line-height: 1.1;
+          margin-bottom: 18px;
+        }
+
+        p {
+          font-size: 12px !important; /* Reduced from 14px */
+          margin: 0 0 6px 0;
+        }
+
+        .planner-form {
+          gap: 16px; /* Reduced from 24px */
+        }
+
+        .form-input {
+          padding: 4px 0; /* Reduced from 8px */
+          font-size: 0.9rem; /* Slightly smaller font */
+        }
+
+        .privacy-notice {
+          margin-top: 4px; /* Reduced from 8px */
+          font-size: 11px; /* Smaller text */
+          line-height: 1.2;
+        }
+
+        .submit-btn {
+          padding: 10px 24px; /* Reduced padding */
+          margin-top: 4px; /* Reduced from 8px */
+        }
+      }
     `,
   ],
 })
