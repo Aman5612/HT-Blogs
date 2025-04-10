@@ -34,7 +34,11 @@
         }
       </div>
       <div class="article-content">
-        <h4>{{ article.title }}</h4>
+        <h4 
+          style="-webkit-line-clamp: 1 !important; line-clamp: 1 !important;" 
+          [title]="article.title">
+          {{ article.title }}
+        </h4>
         <div class="date">{{ article.createdAt | date : "mediumDate" }}</div>
         @if (article.excerpt) {
         <p class="excerpt">{{ article.excerpt }}</p>
@@ -44,7 +48,9 @@
     }
   </div>
   }
-  <a href="/blog" class="flex items-center justify-end text-[20px] gap-0.5 cursor-pointer"
+  <a
+    href="/blog"
+    class="flex items-center justify-end text-[20px] gap-0.5 cursor-pointer"
     >More
     <img
       src="assets/images/arrow.svg"
