@@ -857,12 +857,63 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
       // Wait for animation to finish before actually scrolling
       setTimeout(() => {
-        const tripPlannerElement =
-          this.document.querySelector('app-trip-planner');
-        if (tripPlannerElement) {
-          tripPlannerElement.scrollIntoView({ behavior: 'smooth' });
+        // First try to find the form element directly
+        const plannerForm =
+          this.document.querySelector(
+            '.trip-planner-container .planner-form'
+          ) ||
+          this.document.querySelector('.trip-planner .planner-form') ||
+          this.document.querySelector('.planner-form');
+
+        if (plannerForm) {
+          console.log('Found trip planner form, scrolling directly to it');
+          plannerForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
           // Add a visual highlight to the form
+          const formContainer =
+            plannerForm.closest('.trip-planner') || plannerForm.parentElement;
+          if (formContainer) {
+            formContainer.classList.add('highlight-planner');
+            setTimeout(() => {
+              formContainer.classList.remove('highlight-planner');
+            }, 1500);
+          } else {
+            plannerForm.classList.add('highlight-planner');
+            setTimeout(() => {
+              plannerForm.classList.remove('highlight-planner');
+            }, 1500);
+          }
+
+          // Focus the name input field with a delay to ensure scroll is complete
+          setTimeout(() => {
+            // Try to find the name input specifically
+            const nameInput = plannerForm.querySelector('input[name="name"]');
+            if (nameInput) {
+              (nameInput as HTMLInputElement).focus();
+              console.log('Focused name input field');
+            } else {
+              // Fall back to the first input
+              const firstInput = plannerForm.querySelector('input');
+              if (firstInput) {
+                (firstInput as HTMLInputElement).focus();
+                console.log('Focused first input field');
+              }
+            }
+          }, 1000);
+
+          return;
+        }
+
+        // If we can't find the form directly, find the container and scroll to it
+        const tripPlannerElement =
+          this.document.querySelector('app-trip-planner') ||
+          this.document.querySelector('.trip-planner');
+
+        if (tripPlannerElement) {
+          console.log('Found trip planner container, scrolling to it');
+          tripPlannerElement.scrollIntoView({ behavior: 'smooth' });
+
+          // Add a visual highlight
           const tripPlannerForm =
             tripPlannerElement.querySelector('.trip-planner');
           if (tripPlannerForm) {
@@ -870,15 +921,48 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
             setTimeout(() => {
               tripPlannerForm.classList.remove('highlight-planner');
             }, 1500);
+
+            // Try to focus the first input field
+            setTimeout(() => {
+              const nameInput =
+                tripPlannerElement.querySelector('input[name="name"]');
+              if (nameInput) {
+                (nameInput as HTMLInputElement).focus();
+              } else {
+                const firstInput = tripPlannerElement.querySelector('input');
+                if (firstInput) {
+                  (firstInput as HTMLInputElement).focus();
+                }
+              }
+            }, 1000);
           }
+        } else {
+          console.warn('Trip planner element not found for scrolling');
         }
       }, 300);
     } else {
-      // If button not found, just scroll immediately
-      const tripPlannerElement =
-        this.document.querySelector('app-trip-planner');
-      if (tripPlannerElement) {
-        tripPlannerElement.scrollIntoView({ behavior: 'smooth' });
+      // If button not found, just scroll immediately to best match
+      const plannerForm =
+        this.document.querySelector('.trip-planner-container .planner-form') ||
+        this.document.querySelector('.trip-planner .planner-form') ||
+        this.document.querySelector('.planner-form');
+
+      if (plannerForm) {
+        plannerForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Try to focus the name input field
+        setTimeout(() => {
+          const nameInput = plannerForm.querySelector('input[name="name"]');
+          if (nameInput) {
+            (nameInput as HTMLInputElement).focus();
+          }
+        }, 800);
+      } else {
+        const tripPlannerElement =
+          this.document.querySelector('app-trip-planner');
+        if (tripPlannerElement) {
+          tripPlannerElement.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     }
   }
