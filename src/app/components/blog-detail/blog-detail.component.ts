@@ -55,6 +55,10 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   tripPlannerVisible = false;
   isMobile = false;
 
+  // Add throttling for scroll events
+  private lastScrollCheck = 0;
+  private scrollThrottleTime = 100; // ms
+
   constructor(
     private route: ActivatedRoute,
     private blogService: NewBlogService,
@@ -133,7 +137,15 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
             this.updateMetadata(blog);
             // Initialize observer after content is loaded (only in browser)
             if (!isPlatformServer(this.platformId)) {
-              setTimeout(() => this.initializeObserver(), 300);
+              // Check mobile state immediately
+              this.checkIfMobile();
+
+              // Initial setup with small delay to ensure DOM is ready
+              setTimeout(() => {
+                this.initializeObserver();
+                this.initTripPlannerObserver();
+                this.checkTripPlannerVisibility();
+              }, 100);
             }
           }
         }),
@@ -164,6 +176,19 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   @HostListener('window:resize')
   onResize() {
     this.checkIfMobile();
+  }
+
+  // Add scroll listener to check trip planner visibility
+  @HostListener('window:scroll', ['$event'])
+  onScroll() {
+    if (this.isMobile) {
+      // Throttle scroll events to improve performance
+      const now = Date.now();
+      if (now - this.lastScrollCheck > this.scrollThrottleTime) {
+        this.lastScrollCheck = now;
+        this.checkTripPlannerVisibility();
+      }
+    }
   }
 
   // Check if the device is mobile
@@ -408,9 +433,25 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     // Only execute client-side code when not on server
     if (!isPlatformServer(this.platformId) && this.contentLoaded) {
-      this.initializeObserver();
-      this.ensureHeadingsHaveIds();
-      this.initTripPlannerObserver();
+      // Use nested timeouts to ensure DOM is fully ready
+      setTimeout(() => {
+        this.initializeObserver();
+        this.ensureHeadingsHaveIds();
+
+        // Only initialize trip planner observer if it hasn't been set up yet
+        if (!this.tripPlannerObserver) {
+          this.initTripPlannerObserver();
+        }
+
+        // Do an extra visibility check a bit later when everything is settled
+        setTimeout(() => {
+          this.checkTripPlannerVisibility();
+          console.log(
+            'Final trip planner visibility check:',
+            this.tripPlannerVisible
+          );
+        }, 1000);
+      }, 300);
     }
   }
 
@@ -750,22 +791,57 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    // Cleanup any previous observer
+    if (this.tripPlannerObserver) {
+      this.tripPlannerObserver.disconnect();
+    }
+
     setTimeout(() => {
+      // Try multiple selectors to find the trip planner
       const tripPlannerElement =
-        this.document.querySelector('app-trip-planner');
+        this.document.querySelector('.right-sidebar app-trip-planner') ||
+        this.document.querySelector('app-trip-planner') ||
+        this.document.querySelector('.trip-planner');
+
       if (tripPlannerElement) {
-        const observer = new IntersectionObserver(
+        console.log('Trip planner element found, setting up observer');
+
+        this.tripPlannerObserver = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
-              this.tripPlannerVisible = entry.isIntersecting;
+              console.log(
+                `Trip planner intersection: ${
+                  entry.isIntersecting
+                }, ratio: ${entry.intersectionRatio.toFixed(2)}`
+              );
+
+              // Update visibility state if it changed
+              if (this.tripPlannerVisible !== entry.isIntersecting) {
+                this.tripPlannerVisible = entry.isIntersecting;
+              }
             });
           },
-          { threshold: 0.1 }
+          {
+            threshold: [0.1, 0.2, 0.3, 0.5],
+            rootMargin: '0px 0px 0px 0px',
+          }
         );
-        observer.observe(tripPlannerElement);
+
+        this.tripPlannerObserver.observe(tripPlannerElement);
+        console.log('Trip planner observer setup complete');
+
+        // Also do an immediate check
+        this.checkTripPlannerVisibility();
+      } else {
+        console.warn('Trip planner element not found, will retry');
+        // Retry after a bit more time
+        setTimeout(() => this.checkTripPlannerVisibility(), 500);
       }
-    }, 500);
+    }, 300);
   }
+
+  // Add property for the observer
+  private tripPlannerObserver: IntersectionObserver | null = null;
 
   scrollToTripPlanner() {
     if (isPlatformServer(this.platformId)) {
@@ -811,6 +887,11 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     if (this.observer) {
       this.observer.disconnect();
     }
+
+    if (this.tripPlannerObserver) {
+      this.tripPlannerObserver.disconnect();
+    }
+
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -863,5 +944,45 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     return (
       matchCount > 0 && matchCount >= Math.min(2, Math.floor(words2.length / 2))
     );
+  }
+
+  // Add a manual check method for trip planner visibility
+  private checkTripPlannerVisibility() {
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
+    // Try to find the trip planner element using multiple selectors
+    const tripPlannerElement =
+      this.document.querySelector('.right-sidebar app-trip-planner') ||
+      this.document.querySelector('app-trip-planner') ||
+      this.document.querySelector('.trip-planner-container');
+
+    if (tripPlannerElement) {
+      const rect = tripPlannerElement.getBoundingClientRect();
+      const windowHeight =
+        window.innerHeight || document.documentElement.clientHeight;
+
+      // Calculate how much of the element is visible
+      const visibleHeight =
+        Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+      const percentVisible =
+        visibleHeight > 0 ? visibleHeight / rect.height : 0;
+
+      // Consider it visible if at least 15% is in the viewport
+      const isVisible = percentVisible >= 0.15;
+      console.log(
+        `Trip planner visibility check: ${isVisible}, percent visible: ${(
+          percentVisible * 100
+        ).toFixed(1)}%`
+      );
+
+      // Only update if the state changes to avoid unnecessary renders
+      if (this.tripPlannerVisible !== isVisible) {
+        this.tripPlannerVisible = isVisible;
+      }
+    } else {
+      console.warn('Trip planner element not found in visibility check');
+    }
   }
 }
