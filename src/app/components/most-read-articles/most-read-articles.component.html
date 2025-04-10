@@ -34,9 +34,10 @@
         }
       </div>
       <div class="article-content">
-        <h4 
-          style="-webkit-line-clamp: 1 !important; line-clamp: 1 !important;" 
-          [title]="article.title">
+        <h4
+          style="-webkit-line-clamp: 1 !important; line-clamp: 1 !important"
+          [title]="article.title"
+        >
           {{ article.title }}
         </h4>
         <div class="date">{{ article.createdAt | date : "mediumDate" }}</div>

@@ -5,6 +5,7 @@ import {
   OnDestroy,
   Inject,
   PLATFORM_ID,
+  HostListener,
 } from '@angular/core';
 import { CommonModule, isPlatformServer, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -49,6 +50,10 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
   private observer: IntersectionObserver | null = null;
   private destroy$ = new Subject<void>();
   private contentLoaded = false;
+
+  // Track if trip planner is visible
+  tripPlannerVisible = false;
+  isMobile = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -148,6 +153,22 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
         });
       }
     }
+
+    // Check if we're on mobile
+    if (!isPlatformServer(this.platformId)) {
+      this.checkIfMobile();
+    }
+  }
+
+  // Listen for window resize to check mobile state
+  @HostListener('window:resize')
+  onResize() {
+    this.checkIfMobile();
+  }
+
+  // Check if the device is mobile
+  private checkIfMobile() {
+    this.isMobile = window.innerWidth <= 768;
   }
 
   // Convert the tableOfContents format to ContentSection format
@@ -389,6 +410,7 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
     if (!isPlatformServer(this.platformId) && this.contentLoaded) {
       this.initializeObserver();
       this.ensureHeadingsHaveIds();
+      this.initTripPlannerObserver();
     }
   }
 
@@ -720,6 +742,69 @@ export class BlogDetailComponent implements AfterViewInit, OnDestroy {
 
       console.log(`Total elements being observed: ${totalObserved}`);
     });
+  }
+
+  // Initialize observer for trip planner component
+  private initTripPlannerObserver() {
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
+    setTimeout(() => {
+      const tripPlannerElement =
+        this.document.querySelector('app-trip-planner');
+      if (tripPlannerElement) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              this.tripPlannerVisible = entry.isIntersecting;
+            });
+          },
+          { threshold: 0.1 }
+        );
+        observer.observe(tripPlannerElement);
+      }
+    }, 500);
+  }
+
+  scrollToTripPlanner() {
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
+
+    // Add animation class for smooth hiding
+    const stickyButton = this.document.querySelector(
+      '.mobile-trip-planner-button'
+    );
+    if (stickyButton) {
+      stickyButton.classList.add('slide-down');
+
+      // Wait for animation to finish before actually scrolling
+      setTimeout(() => {
+        const tripPlannerElement =
+          this.document.querySelector('app-trip-planner');
+        if (tripPlannerElement) {
+          tripPlannerElement.scrollIntoView({ behavior: 'smooth' });
+
+          // Add a visual highlight to the form
+          const tripPlannerForm =
+            tripPlannerElement.querySelector('.trip-planner');
+          if (tripPlannerForm) {
+            tripPlannerForm.classList.add('highlight-planner');
+            setTimeout(() => {
+              tripPlannerForm.classList.remove('highlight-planner');
+            }, 1500);
+          }
+        }
+      }, 300);
+    } else {
+      // If button not found, just scroll immediately
+      const tripPlannerElement =
+        this.document.querySelector('app-trip-planner');
+      if (tripPlannerElement) {
+        tripPlannerElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   }
 
   ngOnDestroy() {

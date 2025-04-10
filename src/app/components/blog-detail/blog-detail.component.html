@@ -39,4 +39,21 @@
     <p>Loading blog post...</p>
   </div>
   } }
+
+  <!-- Mobile sticky trip planner button -->
+  @if (isMobile && !tripPlannerVisible) {
+  <div
+    class="mobile-trip-planner-button text-[24px]"
+    (click)="scrollToTripPlanner()"
+    style="
+      background-color: #e9ebf5;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      box-shadow: none;
+    "
+  >
+    <span style="font-size: 24px">Need help?</span>
+    <button class="ask-us-btn">Ask us</button>
+  </div>
+  }
 </main>
