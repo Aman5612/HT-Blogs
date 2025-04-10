@@ -426,3 +426,9 @@ h3 strong {
     padding-bottom: 60px;
   }
 }
+
+@media (max-width: 480px) {
+  main {
+    padding-bottom: 12px;
+  }
+}
