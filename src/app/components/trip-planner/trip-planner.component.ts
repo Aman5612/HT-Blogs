@@ -60,7 +60,12 @@ interface DestinationSuggestion {
               name="phone"
               (focus)="onInputFocus($event)"
               (blur)="onInputBlur($event)"
+              (input)="validatePhoneInput($event)"
+              maxlength="10"
             />
+            <div *ngIf="phoneNumberError" class="error-message">
+              {{ phoneNumberError }}
+            </div>
           </div>
 
           <div class="form-group destination-group">
@@ -75,6 +80,9 @@ interface DestinationSuggestion {
               (input)="onDestinationInput($event)"
               autocomplete="off"
             />
+            <div *ngIf="destinationError" class="error-message">
+              {{ destinationError }}
+            </div>
             <div
               class="destination-suggestions"
               *ngIf="showSuggestions && destinationSuggestions.length > 0"
@@ -309,6 +317,9 @@ interface DestinationSuggestion {
         text-align: center;
         margin-top: 8px;
         font-size: 14px;
+        position: absolute;
+        width: 100%;
+        left: 0;
       }
 
       .success-message {
@@ -387,6 +398,11 @@ interface DestinationSuggestion {
           padding: 10px 24px; /* Reduced padding */
           margin-top: 4px; /* Reduced from 8px */
         }
+
+        .error-message {
+          font-size: 11px;
+          margin-top: 4px;
+        }
       }
     `,
   ],
@@ -416,6 +432,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   submitError = '';
   submitSuccess = false;
+
+  // Validation flags
+  isDestinationSelected = false;
+  phoneNumberError = '';
+  destinationError = '';
 
   constructor(private http: HttpClient, private toastService: ToastService) {}
 
@@ -501,6 +522,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     console.log('this is the destination->>>>>>>>.', input.value);
     this.destinationInput$.next(input.value);
+
+    // Reset selection flag when user types manually
+    if (this.formData.destination !== input.value) {
+      this.isDestinationSelected = false;
+    }
   }
 
   onDestinationBlur(event: FocusEvent) {
@@ -508,6 +534,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       // Only restore placeholder if needed
       this.onInputBlur(event);
+
+      // Check if a valid destination was selected
+      if (this.formData.destination && !this.isDestinationSelected) {
+        this.destinationError =
+          'Please select a destination from the suggestions';
+      }
     }, 200);
   }
 
@@ -515,6 +547,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     this.formData.city_country = `${suggestion.city}`;
     this.formData.destination = `${suggestion.city}, ${suggestion.country}`;
     this.showSuggestions = false;
+    this.isDestinationSelected = true;
+    this.destinationError = '';
   }
 
   // Get user's location data
@@ -597,8 +631,37 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Validate phone number input - only allow numbers and max 10 digits
+  validatePhoneInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+
+    // Remove non-numeric characters
+    const numericValue = value.replace(/\D/g, '');
+
+    // Limit to 10 digits
+    const truncatedValue = numericValue.substring(0, 10);
+
+    // Update input value if it was modified
+    if (value !== truncatedValue) {
+      this.formData.phone = truncatedValue;
+      input.value = truncatedValue;
+    }
+
+    // Set error message if needed
+    if (value && value !== truncatedValue) {
+      this.phoneNumberError = 'Please enter numbers only (max 10 digits)';
+    } else {
+      this.phoneNumberError = '';
+    }
+  }
+
   onSubmit(event: Event) {
     event.preventDefault();
+
+    // Reset error messages
+    this.phoneNumberError = '';
+    this.destinationError = '';
 
     // Basic validation
     if (
@@ -607,6 +670,22 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
       !this.formData.destination
     ) {
       this.toastService.error('Please fill in all required fields');
+      return;
+    }
+
+    // Phone number validation
+    if (!/^\d{1,10}$/.test(this.formData.phone)) {
+      this.phoneNumberError =
+        'Please enter a valid phone number (numbers only, max 10 digits)';
+      this.toastService.error(this.phoneNumberError);
+      return;
+    }
+
+    // Destination validation
+    if (!this.isDestinationSelected) {
+      this.destinationError =
+        'Please select a destination from the suggestions';
+      this.toastService.error(this.destinationError);
       return;
     }
 
