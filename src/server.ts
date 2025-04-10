@@ -24,10 +24,11 @@ interface BlogPostData {
 
 // Create server app
 const app = express();
-
+app.set('base', '/');
+app.set('trust proxy', 1);
 // Get paths
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-const browserDistFolder = resolve(serverDistFolder, '../browser');
+const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser');
 
 // Find JS and CSS files in the browser directory
 let mainJsFile = '';
@@ -38,14 +39,14 @@ let chunkFiles: string[] = [];
 try {
   // Read directory and find the main files
   const files = fs.readdirSync(browserDistFolder);
-  
+
   mainJsFile = files.find(file => file.startsWith('main-') && file.endsWith('.js')) || 'main.js';
   polyfillsJsFile = files.find(file => file.startsWith('polyfills-') && file.endsWith('.js')) || 'polyfills.js';
   stylesFile = files.find(file => file.startsWith('styles-') && file.endsWith('.css')) || 'styles.css';
-  
+
   // Also find any chunk files
   chunkFiles = files.filter(file => file.startsWith('chunk-') && file.endsWith('.js'));
-  
+
   console.log(`Found main JS file: ${mainJsFile}`);
   console.log(`Found polyfills JS file: ${polyfillsJsFile}`);
   console.log(`Found styles file: ${stylesFile}`);
@@ -90,7 +91,7 @@ app.get('/api/check-environment', (req, res) => {
 // Helper function to fetch blog post data from API (fallback only)
 async function fetchBlogPost(id: string): Promise<BlogPostData | null> {
   console.log(`[FALLBACK] Attempting emergency fallback for blog ID: ${id}`);
-  
+
   // Last resort fallback data
   return {
     id,
@@ -108,18 +109,18 @@ async function fetchBlogPost(id: string): Promise<BlogPostData | null> {
 const createHtmlTemplate = async (req: Request) => {
   console.log(`===== REQUEST: ${req.originalUrl} =====`);
   const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-  
+
   // Fix: Get path from originalUrl if path is not available or empty
   const urlPath = req.originalUrl || '/';
   console.log(`Request originalUrl: "${req.originalUrl}"`);
   console.log(`Request path (from req.path): "${req.path}"`);
   console.log(`Using path for processing: "${urlPath}"`);
-  
+
   // Check for blog post URLs with multiple patterns
-  const directBlogMatch = urlPath.match(/\/blog\/([^\/]+)/) || 
-                         urlPath.match(/\/blogs\/([^\/]+)/) || 
-                         urlPath.match(/\/post\/([^\/]+)/);
-  
+  const directBlogMatch = urlPath.match(/\/blog\/([^\/]+)/) ||
+    urlPath.match(/\/blogs\/([^\/]+)/) ||
+    urlPath.match(/\/post\/([^\/]+)/);
+
   // If we're at the root path, check if this might be a hash-based URL
   const isRootPath = urlPath === '/' || urlPath === '';
   console.log(`Is root path (potential hash-based URL): ${isRootPath}`);
@@ -131,25 +132,25 @@ const createHtmlTemplate = async (req: Request) => {
   let ogImage = `${req.protocol}://${req.get('host')}/assets/default-image.jpg`;
   let keywords = 'travel, luxury, lifestyle, blog, vacation, destination, experience, adventure';
   let structuredData = null;
-  
+
   // For direct blog post URLs
   if (directBlogMatch && directBlogMatch[1]) {
     const blogId = directBlogMatch[1];
     console.log(`👉 Detected direct blog post request with ID: "${blogId}"`);
     await fetchAndProcessBlogData(blogId);
-  } 
-  // At root path, we'll include meta for recent blog posts or default content
+  }
+    // At root path, we'll include meta for recent blog posts or default content
   // Hash-based routes (#/blog/ID) will need client-side handling for SEO
   else if (isRootPath) {
     console.log('Root path detected - Adding default or recent blog metadata');
-    
+
     // Option: Pre-fetch most recent blog post for the root path
     // This would give better SEO for the site's landing page
     try {
       if (environment.apiUrl) {
         console.log('Attempting to fetch recent blog post data for root path');
         const recentPostsUrl = `${environment.apiUrl}/posts?limit=1`;
-        
+
         try {
           const response = await fetch(recentPostsUrl);
           if (response.ok) {
@@ -157,7 +158,7 @@ const createHtmlTemplate = async (req: Request) => {
             if (posts && Array.isArray(posts) && posts.length > 0) {
               const recentPost = posts[0] as BlogPostData;
               console.log(`Using recent blog post for root SEO: ${recentPost.title || 'Untitled'}`);
-              
+
               // Set improved default metadata from recent post
               title = 'HTBlogs - Travel and Lifestyle Blog | Latest Articles';
               description = `Read our latest article: ${recentPost.title}. ${recentPost.metaDescription || description}`;
@@ -179,20 +180,20 @@ const createHtmlTemplate = async (req: Request) => {
   } else {
     console.log('Not a blog post URL (regular page)');
   }
-  
+
   // Helper function to fetch and process blog data
   async function fetchAndProcessBlogData(blogId: string): Promise<void> {
     try {
       // First try the real external API directly
       console.log(`Trying to fetch real blog data for ID: ${blogId}`);
       let blogData: BlogPostData | null = null;
-      
+
       if (environment.apiUrl) {
         try {
           const apiUrl = `${environment.apiUrl}/posts/${blogId}`;
           console.log(`Fetching from real API: ${apiUrl}`);
           const response = await fetch(apiUrl);
-          
+
           if (response.ok) {
             blogData = await response.json() as BlogPostData;
             console.log('Successfully fetched from real external API');
@@ -205,20 +206,20 @@ const createHtmlTemplate = async (req: Request) => {
           console.log('External API error:', apiError);
         }
       }
-      
+
       // If real API failed, fall back to mock API
       if (!blogData) {
         console.log('Real API failed or not available, falling back to mock API');
         // Try to get data from our mock API
         const mockUrl = `http://localhost:${process.env['PORT'] || 4000}/api/posts/${blogId}`;
         console.log(`Mock API URL: ${mockUrl}`);
-        
+
         try {
           const response = await fetch(mockUrl, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
           });
-          
+
           if (response.ok) {
             blogData = await response.json() as BlogPostData;
             console.log('Successfully fetched from mock API');
@@ -228,14 +229,14 @@ const createHtmlTemplate = async (req: Request) => {
         } catch (localError) {
           console.log('Mock API error:', localError);
         }
-        
+
         // If both real API and mock API failed, use emergency fallback
         if (!blogData) {
           console.log('Both real API and mock API failed, using emergency fallback');
           blogData = await fetchBlogPost(blogId);
         }
       }
-      
+
       if (blogData) {
         console.log(`👍 Using blog data for SEO: "${blogData.title || 'No title'}"`);
         // Override default values with blog-specific data
@@ -244,10 +245,10 @@ const createHtmlTemplate = async (req: Request) => {
         ogType = 'article';
         ogImage = blogData.featureImage || ogImage;
         keywords = blogData.tags ? blogData.tags.join(', ') : keywords;
-        
+
         console.log(`Title set to: "${title}"`);
         console.log(`Description set to: "${description.substring(0, 50)}..."`);
-        
+
         // Create structured data for rich results
         structuredData = {
           '@context': 'https://schema.org',
@@ -281,16 +282,16 @@ const createHtmlTemplate = async (req: Request) => {
       console.error('Error in blog data processing:', error);
     }
   }
-  
+
   // Create chunk script tags
-  const chunkScripts = chunkFiles.map(chunk => 
+  const chunkScripts = chunkFiles.map(chunk =>
     `<script src="${chunk}" type="module"></script>`
   ).join('\n    ');
-  
+
   // Create structured data script tag if data exists
-  const structuredDataScript = structuredData ? 
+  const structuredDataScript = structuredData ?
     `<script type="application/ld+json">${JSON.stringify(structuredData)}</script>` : '';
-  
+
   // Add special script for hash-based routing to update metadata dynamically on the client side
   const hashRoutingScript = `
     <script type="text/javascript">
@@ -300,38 +301,38 @@ const createHtmlTemplate = async (req: Request) => {
           // Check if the hash contains a blog route
           const hash = window.location.hash;
           const blogMatch = hash.match(/#\\/blog\\/([^/]+)/);
-          
+
           if (blogMatch && blogMatch[1]) {
             const blogId = blogMatch[1];
             console.log('Hash changed to blog post:', blogId);
-            
+
             // The SSR meta tags will be replaced by Angular when it loads
             // This is just a fallback to handle direct navigation with hash
             // For proper SEO, use non-hash routes
           }
         }
-        
+
         // Listen for hash changes
         window.addEventListener('hashchange', updateMetadataForHashRoute);
-        
+
         // Check on initial load
         window.addEventListener('DOMContentLoaded', updateMetadataForHashRoute);
       })();
     </script>
   `;
-  
+
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <title>${title}</title>
-    <base href="/">
+    <base href="/ht-blogs/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="${description}">
     <meta name="robots" content="index, follow">
     <meta name="keywords" content="${keywords}">
     <link rel="canonical" href="${url}">
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="${ogType}">
     <meta property="og:url" content="${url}">
@@ -341,19 +342,19 @@ const createHtmlTemplate = async (req: Request) => {
     <meta property="og:image:alt" content="HTBlogs image">
     <meta property="og:site_name" content="HTBlogs">
     <meta property="og:locale" content="en_US">
-    
+
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="${url}">
     <meta name="twitter:title" content="${title}">
     <meta name="twitter:description" content="${description}">
     <meta name="twitter:image" content="${ogImage}">
-    
+
     ${structuredDataScript}
-    
+
     <!-- Hash-based routing helpers -->
     ${hashRoutingScript}
-    
+
     <!-- Fix for ES modules -->
     <script type="module">
       // This helps resolve ES module imports
@@ -361,13 +362,13 @@ const createHtmlTemplate = async (req: Request) => {
       window.process = { env: { NODE_ENV: 'production' } };
       window.__dirname = '/';
     </script>
-    
+
     <!-- Load CSS -->
     <link rel="stylesheet" href="${stylesFile}">
-    
+
     <!-- Load chunk files first -->
     ${chunkScripts}
-    
+
     <!-- Load main JS files -->
     <script src="${polyfillsJsFile}" type="module"></script>
     <script src="${mainJsFile}" type="module"></script>
@@ -381,7 +382,7 @@ const createHtmlTemplate = async (req: Request) => {
 /**
  * Serve static files from /browser
  */
-app.use(
+app.use("/ht-blogs",
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
@@ -392,17 +393,15 @@ app.use(
 /**
  * Handle all other requests by serving dynamic index.html with SEO tags
  */
-app.use('/**', async (req, res) => {
-  console.log(`Serving request for ${req.originalUrl}`);
+app.get('/ht-blogs/*', async (req, res) => {
   try {
     const html = await createHtmlTemplate(req);
     res.send(html);
   } catch (error) {
-    console.error('Error generating HTML template:', error);
-    res.status(500).send('Server error');
+    console.error('Error generating HTML template for /ht-blogs:', error);
+    res.status(500).send('Something went wrong');
   }
 });
-
 /**
  * Start the server if this module is the main entry point.
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
@@ -410,7 +409,7 @@ app.use('/**', async (req, res) => {
 if (isMainModule(import.meta.url)) {
   // Find port from command line arguments
   let port = 4000; // Default port
-  
+
   // Check command line arguments for --port=XXXX
   const args = process.argv.slice(2);
   for (const arg of args) {
@@ -420,17 +419,17 @@ if (isMainModule(import.meta.url)) {
       break;
     }
   }
-  
+
   // Or use environment variable
   port = process.env['PORT'] ? parseInt(process.env['PORT'], 10) : port;
-  
+
   console.log(`Attempting to start server on port ${port}`);
-  
+
   // Create server with error handling
   const server = app.listen(port, () => {
     console.log(`Node Express server listening on http://localhost:${port}`);
   });
-  
+
   server.on('error', (error: any) => {
     if (error.code === 'EADDRINUSE') {
       console.error(`Port ${port} is already in use. Trying port ${port + 1}`);
