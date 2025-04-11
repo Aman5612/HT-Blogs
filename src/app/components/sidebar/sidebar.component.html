@@ -4,9 +4,9 @@
   #sidebarContainer
 >
   <div
-    class="title-section !p-3.5 bg-[#F8F8F8] border-none sticky top-0 z-10 rounded-[12px] mx-4"
+    class=" flex items-center justify-between !p-3.5 bg-[#F8F8F8] border-none sticky top-0 z-10 rounded-[12px] mx-4"
   >
-    <h2 class="!text-[20px] !font-normal line-clamp-2">
+    <h2 class="!text-[20px] text-center mb-0 !font-normal line-clamp-2">
       {{ blogTitle || "Blog Content" }}
     </h2>
   </div>
@@ -17,7 +17,7 @@
     (section of sections; track section.id) {
     <!-- Top level category -->
     <div
-      class="flex items-center gap-1.5 p-0 cursor-pointer transition-all mb-3"
+      class="flex items-center gap-1.5 p-0 cursor-pointer transition-all"
     >
       <div
         class="min-w-[30px] min-h-[30px] max-w-[30px] max-h-[30px] flex items-center justify-center"
@@ -95,7 +95,7 @@
     <!-- Subsections - no dots, just indented with underline -->
     @if (section.subsections && section.subsections.length > 0) {
     <div
-      class="ml-6 overflow-hidden max-h-0 transition-all duration-300 ease-in-out"
+      class="ml-6 overflow-hidden max-h-0 transition-all duration-300 ease-in-out mb-1"
       [class.max-h-[500px]]="expandedSections.includes(section.id)"
       [class.border-blue-200]="expandedSections.includes(section.id)"
       [class.pl-3]="expandedSections.includes(section.id)"
@@ -107,7 +107,7 @@
         [class.font-medium]="selectedSection === subsection.id"
       >
         <span
-          class="cursor-pointer inline-block w-full hover:underline pl-2"
+          class="cursor-pointer inline-block text-[#4D4D4D] w-full hover:underline pl-2"
           [class.underline]="selectedSection === subsection.id"
           [class.text-[#4D4D4D]]="selectedSection === subsection.id"
           (click)="onSectionClick(subsection.id)"
@@ -242,7 +242,7 @@
       }
     </div>
     } } @else {
-    <div class="text-center p-8 text-black italic text-sm">
+    <div class="text-center p-8 text-[#4D4D4D] italic text-sm">
       No sections available
     </div>
     }

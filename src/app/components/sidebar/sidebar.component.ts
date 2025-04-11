@@ -44,28 +44,6 @@ export interface ContentSection {
         max-height: 100%;
       }
 
-      .title-section {
-        padding: 1.25rem 1.5rem;
-        background: #f8f9fa;
-        border-bottom: 1px solid #eaeaea;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-
-        h2 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #1a1a1a;
-          margin: 0 0 0.5rem;
-        }
-
-        .highlights {
-          font-size: 0.875rem;
-          color: #666;
-          font-weight: 400;
-        }
-      }
-
       .cursor-pointer {
         cursor: pointer;
       }
