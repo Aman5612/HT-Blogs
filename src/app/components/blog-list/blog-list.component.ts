@@ -1,22 +1,41 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, HostListener } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NewBlogService } from '../../services/new-blog.service';
 import { Article } from '../../interface/article.interface';
-import { Observable } from 'rxjs';
+import { Observable, Subject, BehaviorSubject, debounceTime, distinctUntilChanged, switchMap, tap, of } from 'rxjs';
 import { Title, Meta } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <div class="blog-list">
       <h2>Latest Blog Posts</h2>
       
-      @if (posts$ | async; as posts) {
+      <div class="search-container">
+        <input 
+          type="text" 
+          placeholder="Search by title..." 
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          class="search-input"
+        >
+      </div>
+      
+      @if (loading && filteredPosts.length === 0) {
+        <div class="loading">
+          Loading posts...
+        </div>
+      } @else if (filteredPosts.length === 0) {
+        <div class="no-results">
+          No posts found matching your search.
+        </div>
+      } @else {
         <div class="posts-grid">
-          @for (post of posts; track post.id) {
+          @for (post of filteredPosts; track post.id) {
             <div class="post-card" [routerLink]="['/blog', post.id]" role="link" tabindex="0">
               <div class="post-image" [class.no-image]="!post.media?.[0]?.url && !post.featureImage">
                 @if (post.media?.[0]?.url || post.featureImage) {
@@ -30,7 +49,7 @@ import { Title, Meta } from '@angular/platform-browser';
                 <h3>{{ post.title }}</h3>
                 <div class="post-meta">
                   <span class="date">{{ post.createdAt | date:'mediumDate' }}</span>
-                  <span class="status" [class.draft]="post.status === 'draft'">
+                  <span class="status" [class.draft]="post.status === 'DRAFT'">
                     {{ post.status }}
                   </span>
                 </div>
@@ -38,9 +57,20 @@ import { Title, Meta } from '@angular/platform-browser';
             </div>
           }
         </div>
-      } @else {
-        <div class="loading">
-          Loading posts...
+        
+        <div class="scroll-loader">
+          @if (loading) {
+            <div class="loading-more">
+              <div class="spinner"></div>
+              <span>Loading more posts...</span>
+            </div>
+          }
+          
+          @if (!isSearching && pagination && !loading && !pagination.hasNextPage) {
+            <div class="end-of-results">
+              No more posts to load
+            </div>
+          }
         </div>
       }
     </div>
@@ -48,6 +78,7 @@ import { Title, Meta } from '@angular/platform-browser';
   styles: [`
     .blog-list {
       padding: 2rem;
+      padding-top: 5rem;
     }
 
     h2 {
@@ -56,10 +87,31 @@ import { Title, Meta } from '@angular/platform-browser';
       color: #333;
     }
 
+    .search-container {
+      margin-bottom: 2rem;
+    }
+
+    .search-input {
+      width: 100%;
+      max-width: 500px;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #6495ED;
+      box-shadow: 0 0 0 2px rgba(100, 149, 237, 0.2);
+    }
+
     .posts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 2rem;
+      margin-bottom: 2rem;
     }
 
     .post-card {
@@ -139,16 +191,52 @@ import { Title, Meta } from '@angular/platform-browser';
         }
       }
     }
+    
+    .scroll-loader {
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
 
-    .loading {
+    .loading, .no-results, .end-of-results {
       text-align: center;
       padding: 2rem;
       color: #666;
     }
 
+    .loading-more {
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: #666;
+      
+      .spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid rgba(100, 149, 237, 0.3);
+        border-radius: 50%;
+        border-top-color: #6495ED;
+        animation: spin 1s ease-in-out infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    }
+
+    .end-of-results {
+      padding: 1rem;
+      font-style: italic;
+      opacity: 0.7;
+    }
+
     @media (max-width: 768px) {
       .blog-list {
         padding: 1rem;
+        padding-top: 4rem;
       }
 
       .posts-grid {
@@ -167,23 +255,102 @@ import { Title, Meta } from '@angular/platform-browser';
           font-size: 1.1rem;
         }
       }
+      
+      .loading-more {
+        padding: 0.75rem;
+        
+        .spinner {
+          width: 20px;
+          height: 20px;
+          border-width: 2px;
+        }
+      }
     }
   `]
 })
 export class BlogListComponent implements OnInit {
-  posts$: Observable<Article[]>;
+  posts: Article[] = [];
+  filteredPosts: Article[] = [];
+  loading = false;
+  page = 1;
+  limit = 5;
+  searchTerm = '';
+  isSearching = false;
+  pagination: any = null;
+  allPostsLoaded = false;
+  private searchTerms = new Subject<string>();
 
   constructor(
     private blogService: NewBlogService,
     private titleService: Title,
     private metaService: Meta,
     @Inject(DOCUMENT) private document: Document
-  ) {
-    this.posts$ = this.blogService.getAllPosts();
-  }
+  ) {}
 
   ngOnInit() {
     this.setMetadata();
+    this.setupSearch();
+    this.loadPosts();
+  }
+  
+  private setupSearch() {
+    this.searchTerms.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      this.filterPosts();
+    });
+  }
+  
+  onSearch() {
+    this.searchTerms.next(this.searchTerm);
+  }
+  
+  filterPosts() {
+    if (!this.searchTerm.trim()) {
+      this.filteredPosts = [...this.posts];
+      this.isSearching = false;
+      return;
+    }
+    
+    this.isSearching = true;
+    const searchTermLower = this.searchTerm.toLowerCase();
+    this.filteredPosts = this.posts.filter(post => 
+      post.title.toLowerCase().includes(searchTermLower)
+    );
+  }
+  
+  loadPosts() {
+    if (this.loading || (this.pagination && !this.pagination.hasNextPage)) return;
+    
+    this.loading = true;
+    this.blogService.getPaginatedPosts(this.page, this.limit, '')
+      .subscribe(response => {
+        console.log("response", response.data);
+        this.posts = [...this.posts, ...response.data];
+        this.pagination = response.pagination;
+        this.loading = false;
+        this.page++;
+        
+        // Update filtered posts after loading
+        this.filterPosts();
+      });
+  }
+  
+  @HostListener('window:scroll', ['$event'])
+  onScroll() {
+    // Don't load more posts when searching (client-side filtering)
+    if (this.isSearching) return;
+    
+    // Check if we're near the bottom of the page
+    const scrollHeight = document.documentElement.scrollHeight;
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    const clientHeight = document.documentElement.clientHeight;
+    
+    if (scrollTop + clientHeight >= scrollHeight - 200 && !this.loading && 
+        (!this.pagination || this.pagination.hasNextPage)) {
+      this.loadPosts();
+    }
   }
 
   private setMetadata(): void {

@@ -44,6 +44,18 @@ export interface BlogPost {
   };
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    total: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -84,6 +96,31 @@ export class NewBlogService {
       catchError((err) => {
         console.error('Error fetching posts:', err);
         return of([]);
+      })
+    );
+  }
+
+  getPaginatedPosts(page: number = 1, limit: number = 5, title?: string): Observable<PaginatedResponse<Article>> {
+    let url = `${this.apiUrl}/posts?page=${page}&limit=${limit}`;
+    
+    if (title) {
+      url += `&title=${encodeURIComponent(title)}`;
+    }
+    
+    return this.http.get<PaginatedResponse<Article>>(url).pipe(
+      catchError((err) => {
+        console.error('Error fetching paginated posts:', err);
+        return of({
+          data: [],
+          pagination: {
+            total: 0,
+            totalPages: 0,
+            currentPage: page,
+            limit: limit,
+            hasNextPage: false,
+            hasPreviousPage: false
+          }
+        });
       })
     );
   }
