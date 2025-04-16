@@ -1,0 +1,59 @@
+<!-- <p>planning works!</p> -->
+<div class="modal-header plan-modal">
+    <button type="button" class="close btn" aria-label="Close" (click)="closeModal()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    <div class="login-globe">
+        <img src="assets/img/login-globe.png" alt="">
+    </div>
+</div>
+<div class="modal-body">
+    <div>
+        <div class="top">
+            <h2>Sign Up</h2>
+
+        </div>
+        <!-- <div class="profile-pic">
+            <a href="#"><i class="fa-solid fa-plus"></i></a>
+        </div>
+        <div class="social-login">
+            <p>Sign in via</p>
+            <ul>
+                <li><a href="#"><i class="fa-brands fa-twitter"></i></a></li>
+                <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
+                <li><a href="#"><i class="fa-brands fa-google"></i></a></li>
+                <li><a href="#"><i>OTP</i></a></li>
+            </ul>
+        </div> -->
+        <div *ngIf="!showOTP" class="mid-form">
+            <input type="text" class="input-mid" placeholder="First Name" [(ngModel)]="first_name">
+            <input type="text" class="input-mid" placeholder="Last Name" [(ngModel)]="last_name">
+            <input type="text" class="input-mid" placeholder="Email" [(ngModel)]="email">
+            <!-- <input type="password" class="input-mid" placeholder="Password" [(ngModel)]="password"> -->
+            <!-- <input type="password" class="input-mid" placeholder="Confirm Password" [(ngModel)]="confirm_password"> -->
+            <input type="number" class="input-mid" placeholder="Phone" [(ngModel)]="phone">
+            <p>Click “SIGN UP” to agree to our <a href="#">Terms of Service</a> and our <a href="#"> Privacy Policy</a>
+            </p>
+        </div>
+        <div *ngIf="showOTP" class="mid-form">
+            <input type="number" class="input-mid" placeholder="OTP" [(ngModel)]="otp">
+        </div>
+        <div class="row m-0 p-0">
+            <div class="col-lg-12 text-center">
+                <!-- <button *ngIf="!showOTP" class="btn submit-btn" (click)="signUp()">SIGN UP</button>
+                <button *ngIf="showOTP" class="btn submit-btn" (click)="verifyOTP()">VERIFY</button> -->
+                <div id="fx-button-hover-1-button" class="fx-button-hover-1-pan button--pan fx-button-hover">
+                    <a *ngIf="!showOTP" value="fx-button-hover" (click)="signUp()" label="" type="page">
+                       <span>SIGN UP</span> 
+                    </a> 
+                    <a *ngIf="showOTP" value="fx-button-hover" (click)="verifyOTP()" label="" type="page">
+                        <span>VERIFY</span> 
+                     </a>
+                </div>
+                <div class="sign">
+                    <p>Have an account?<a (click)="closeModal()"> SIGN IN.</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

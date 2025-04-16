@@ -3,19 +3,21 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastComponent } from './shared/components/toast/toast.component';
+import { NavbarComponent } from "./components/navbar/navbar.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastComponent, NavbarComponent],
   template: `
     <div class="app-container">
-      <header>
+      <!-- <header>
         <nav>
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
           <a routerLink="/blog" routerLinkActive="active">Blog</a>
         </nav>
-      </header>
+      </header> -->
+      <app-navbar></app-navbar>
 
       <main class="main-content">
         <router-outlet></router-outlet>
