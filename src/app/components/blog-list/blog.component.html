@@ -1,0 +1,93 @@
+<section class="blog-listing">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 !flex" *ngFor="let post of filteredPosts">
+        <div class="blog-listing-box pt-[15px]">
+          <!-- <div class="date">
+            <p>{{ post.createdAt | date }}</p>
+          </div> -->
+          <img
+            [src]="post.featureImage || post.media[0].url"
+            [alt]="post.featureImageAlt"
+            class="img-fluid"
+          />
+          <h3>{{ post.title }}</h3>
+          <p [innerHTML]="post.excerpt"></p>
+          <div class="row mary d-flex align-items-center w-full">
+            <div class="col">
+              <p style="text-wrap-mode: nowrap; margin-right: 12px">
+                <i class="fa-solid fa-user"></i>{{ post.author?.name }}
+              </p>
+            </div>
+            <div
+              id="fx-button-hover-1-button"
+              class="col-auto fx-button-hover-1-pan button--pan fx-button-hover"
+            >
+              <!-- <a>discover</a> -->
+              <a value="fx-button-hover" label="" type="page">
+                <span>discover</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="pagination-blog">
+          <!-- <p>PAGE <b>1</b> OF <b>14</b></p> -->
+          <!-- <button><img src="assets/img/arrow-left.png" alt=""></button>
+                    <button><img src="assets/img/arrow-right.png" alt=""></button> -->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="social-main">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 m-auto">
+        <div class="list-social">
+          <h3>Follow us on</h3>
+          <span></span>
+          <div class="social-icons">
+            <ul>
+              <li>
+                <a
+                  href="https://www.youtube.com/channel/UCIrUTnSSSQMQpcj86D3Z9Xg"
+                  target="_blank"
+                  ><i class="fa-brands fa-youtube"></i
+                ></a>
+              </li>
+              <li>
+                <a
+                  href="https://instagram.com/holidaytribeworld?igshid=YmMyMTA2M2Y="
+                  target="_blank"
+                  ><i class="fa-brands fa-instagram"></i
+                ></a>
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com/profile.php?id=100091659167328"
+                  target="_blank"
+                  ><i class="fa-brands fa-facebook-f"></i
+                ></a>
+              </li>
+              <li>
+                <a href="https://www.linkedin.com/company/holidaytribe/"
+                  ><i class="fab fa-linkedin"></i
+                ></a>
+              </li>
+              <li>
+                <a href="https://wa.me/+919205553340"
+                  ><i class="fa-brands fa-whatsapp"></i
+                ></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

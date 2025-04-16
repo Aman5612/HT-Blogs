@@ -1,5 +1,3 @@
-import { Meta, Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
 import { Component, OnInit, Inject, HostListener } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -15,14 +13,279 @@ import {
   tap,
   of,
 } from 'rxjs';
+import { Title, Meta } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  templateUrl: './blog.component.html',
-  styleUrls: ['./blog.component.scss'],
   imports: [CommonModule, RouterLink, FormsModule],
+  template: `
+    <div class="blog-list">
+      <h2>Latest Blog Posts</h2>
+
+      <div class="search-container">
+        <input
+          type="text"
+          placeholder="Search by title..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          class="search-input"
+        />
+      </div>
+
+      @if (loading && filteredPosts.length === 0) {
+      <div class="loading">Loading posts...</div>
+      } @else if (filteredPosts.length === 0) {
+      <div class="no-results">No posts found matching your search.</div>
+      } @else {
+      <div class="posts-grid">
+        @for (post of filteredPosts; track post.id) {
+        <div
+          class="post-card"
+          [routerLink]="['/blog', post.id]"
+          role="link"
+          tabindex="0"
+        >
+          <div
+            class="post-image"
+            [class.no-image]="!post.media?.[0]?.url && !post.featureImage"
+          >
+            @if (post.media?.[0]?.url || post.featureImage) {
+            <img
+              [src]="post.featureImage || post.media[0].url"
+              [alt]="post.featureImageAlt"
+            />
+            }
+          </div>
+          <div class="post-content">
+            <h3>{{ post.title }}</h3>
+            <div class="post-meta">
+              <span class="date">{{
+                post.createdAt | date : 'mediumDate'
+              }}</span>
+              <span class="status" [class.draft]="post.status === 'DRAFT'">
+                {{ post.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="scroll-loader">
+        @if (loading) {
+        <div class="loading-more">
+          <div class="spinner"></div>
+          <span>Loading more posts...</span>
+        </div>
+        } @if (!isSearching && pagination && !loading &&
+        !pagination.hasNextPage) {
+        <div class="end-of-results">No more posts to load</div>
+        }
+      </div>
+      }
+    </div>
+  `,
+  styles: [
+    `
+      .blog-list {
+        padding: 2rem;
+        padding-top: 5rem;
+      }
+
+      h2 {
+        margin-bottom: 2rem;
+        font-size: 2rem;
+        color: #333;
+      }
+
+      .search-container {
+        margin-bottom: 2rem;
+      }
+
+      .search-input {
+        width: 100%;
+        max-width: 500px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .search-input:focus {
+        border-color: #6495ed;
+        box-shadow: 0 0 0 2px rgba(100, 149, 237, 0.2);
+      }
+
+      .posts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .post-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+        cursor: pointer;
+        outline: none;
+
+        &:hover,
+        &:focus {
+          transform: translateY(-4px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        &:active {
+          transform: translateY(-2px);
+        }
+      }
+
+      .post-image {
+        height: 200px;
+        background: #f5f5f5;
+        position: relative;
+
+        &.no-image {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &::after {
+            content: '📷';
+            font-size: 2rem;
+            color: #ccc;
+          }
+        }
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      .post-content {
+        padding: 1.5rem;
+
+        h3 {
+          margin: 0 0 1rem;
+          font-size: 1.25rem;
+          color: #333;
+          line-height: 1.4;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      }
+
+      .post-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: #666;
+
+        .status {
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+          background: #e8f5e9;
+          color: #2e7d32;
+
+          &.draft {
+            background: #fff3e0;
+            color: #e65100;
+          }
+        }
+      }
+
+      .scroll-loader {
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+      }
+
+      .loading,
+      .no-results,
+      .end-of-results {
+        text-align: center;
+        padding: 2rem;
+        color: #666;
+      }
+
+      .loading-more {
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: #666;
+
+        .spinner {
+          width: 24px;
+          height: 24px;
+          border: 3px solid rgba(100, 149, 237, 0.3);
+          border-radius: 50%;
+          border-top-color: #6495ed;
+          animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      }
+
+      .end-of-results {
+        padding: 1rem;
+        font-style: italic;
+        opacity: 0.7;
+      }
+
+      @media (max-width: 768px) {
+        .blog-list {
+          padding: 1rem;
+          padding-top: 4rem;
+        }
+
+        .posts-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        .post-image {
+          height: 150px;
+        }
+
+        .post-content {
+          padding: 1rem;
+
+          h3 {
+            font-size: 1.1rem;
+          }
+        }
+
+        .loading-more {
+          padding: 0.75rem;
+
+          .spinner {
+            width: 20px;
+            height: 20px;
+            border-width: 2px;
+          }
+        }
+      }
+    `,
+  ],
 })
 export class BlogListComponent implements OnInit {
   posts: Article[] = [];
@@ -34,7 +297,6 @@ export class BlogListComponent implements OnInit {
   isSearching = false;
   pagination: any = null;
   allPostsLoaded = false;
-
   private searchTerms = new Subject<string>();
 
   constructor(
