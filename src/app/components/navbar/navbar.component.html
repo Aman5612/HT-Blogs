@@ -1,0 +1,292 @@
+<!-- ======= Header ======= -->
+<header [ngClass]="{headerr: router.url.includes('landing-page')}" id="header" class="fixed-top" *ngIf="tabWidth>768">
+  <div *ngIf="!router.url.includes('landing-page')" class="container d-flex  justify-content-between">
+    <a routerLink="/" class="logo"><img src="assets/img/LOGO_White.png" alt="" class="img-fluid"></a>
+    <nav [class.whiteText]=isHomePage() id="navbar" class="navbar menu" [class.menuClasse]="menuVariable">
+
+      <ul>
+        <!-- <div class="only-mobile">
+          <div class="pro-img">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="">
+          </div>
+          <div *ngIf="user_profile!=null&&user_profile!=undefined" [class.whiteText]=isHomePage() class="login">
+            <a style="position: relative; left: -12px !important; top: 3px !important;" class="getstarted scrollto"
+              (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a>
+          </div>
+        </div> -->
+        <li><a class="nav-link scrollto" routerLink="/">Home</a></li>
+        <li (click)="openMenuu()" *ngIf="tabWidth<600">
+        </li>
+        <li><a class="nav-link scrollto" routerLink="/about-us">About Us</a></li>
+        <li><a class="nav-link scrollto" routerLink="/careers">Careers</a></li>
+        <!-- <li><a class="nav-link scrollto" routerLink="/">Holidays</a></li>
+        <li><a class="nav-link scrollto " href="#portfolio">Flights</a></li>
+        <li><a class="nav-link scrollto" href="#team">Hotels</a></li> -->
+
+        <li><a class="nav-link scrollto" routerLink="/blogs">Blogs</a></li>
+
+        <li style="position: relative; cursor: pointer;" (mouseenter)="openthemes()" (mouseleave)="closeThemess()">
+          <a class="nav-link scrollto">Themes
+            <i style="margin-left: 5px; font-size: 15px;" class="fa fa-angle-down" *ngIf="!themeListHeader"></i>
+            <i style="margin-left: 5px; font-size: 15px;" class="fa fa-angle-up" *ngIf="themeListHeader"></i>
+          </a>
+        </li>
+        <div class="src-dropdownn" (mouseenter)="mouseEnterDropdown()" *ngIf="themeListHeader" (mouseleave)="mouseLeaveDropdown()">
+          <!-- <button *ngFor="let data of holidayMood;" (click)="openTheme(data.theme_id)">{{data.name}}</button> -->
+          <div class="destination-column">
+            <ng-container *ngFor="let data of holidayMood;">
+                <!-- <p>{{place.place}}</p> -->
+                <div class="selected-countries-row">
+                      <div (click)="openTheme(data.theme_id)" class="destination-item destination-itemm">
+                        <img [srcset]="utilService.getCDNMultipleResolutions(data.image)" alt="" class="destination-image">
+                        <button class="destination-name">{{data.name}}</button>
+                      </div>
+                </div>
+            </ng-container>
+            <div (click)="endThemes()"
+            style="text-align: end;
+            cursor: pointer;
+            position: relative;
+            bottom: 25px;
+            font-size: 22px;"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        </div>
+
+        <li style="position: relative; cursor: pointer;" (mouseenter)="openDestinations()" (mouseleave)="closeDestinationss()"> 
+          <a class="nav-link scrollto">Destinations
+            <i style="margin-left: 5px; font-size: 15px;" class="fa fa-angle-down" *ngIf="!destinationListHeader"></i>
+            <i style="margin-left: 5px; font-size: 15px;" class="fa fa-angle-up" *ngIf="destinationListHeader"></i>
+          </a>
+        </li>
+        <div class="src-dropdownnn" (mouseenter)="mouseEnterDestination()" *ngIf="destinationListHeader" (mouseleave)="mouseLeaveDestination()">
+          <div class="column">
+              <p [ngClass]="{'intt': international}" style="cursor: pointer; position: sticky; top: 31px; " (click)="internationall()">International
+                <i style="margin-left: 5px; font-size: 15px;" class="fa fa-angle-down" *ngIf="!international"></i>
+                <i style="margin-left: 5px; font-size: 15px;" class="fa fa-angle-up" *ngIf="international"></i>
+              </p>
+              <p [ngClass]="{'inttt': !international}" style="cursor: pointer; position: sticky; top: 90px;" (click)="domestic()">Domestic
+                <i style="margin-left: 5px; font-size: 15px;" class="fa fa-angle-down" *ngIf="international"></i>
+                <i style="margin-left: 5px; font-size: 15px;" class="fa fa-angle-up" *ngIf="!international"></i>
+              </p>
+          </div>
+          <div *ngIf="international" class="destination-column">
+            <div (click)="endDestination()"
+          style="text-align: end;
+            cursor: pointer;
+            position: relative;
+            bottom: 4px;
+            font-size: 22px;"><i class="fa-solid fa-xmark"></i></div>
+              <ng-container *ngFor="let place of transformedDestinations">
+                  <p>{{place.place}}</p>
+                  <div class="selected-countries-row">
+                      <ng-container *ngFor="let destination of place.places">
+                        <div (click)="openDestination(destination.place_id)" class="destination-item">
+                          <img [srcset]="utilService.getCDNMultipleResolutions(destination.place_image)" alt="" class="destination-image">
+                          <button class="destination-name">{{destination.place_name}}</button>
+                        </div>
+                      </ng-container>
+                  </div>
+              </ng-container>
+          </div>
+          <div *ngIf="!international" class="destination-column">
+            <div (click)="endDestination()"
+            style="text-align: end;
+              cursor: pointer;
+              position: relative;
+              bottom: 4px;
+              font-size: 22px;"><i class="fa-solid fa-xmark"></i></div>
+            <ng-container *ngFor="let place of transformedHomeData">
+                <p>{{place.direction}}</p>
+                <div class="selected-countries-row">
+                    <ng-container *ngFor="let destination of place.places">
+                      <div (click)="openDestination(destination.place_id)" class="destination-item">
+                        <img [srcset]="utilService.getCDNMultipleResolutions(destination.place_image)" alt="" class="destination-image">
+                        <button class="destination-name">{{destination.place_name}}</button>
+                      </div>
+                    </ng-container>
+                </div>
+            </ng-container>
+        </div>
+      </div>
+      
+        <!-- <li><a class="nav-link scrollto" routerLink="/flights">Flights</a></li>
+        <li><a class="nav-link scrollto" routerLink="/hotels">Hotels</a></li> -->
+
+
+      </ul>
+      <i class="bi bi-list mobile-nav-toggle"></i>
+    </nav>
+    <!-- .navbar -->
+    <div *ngIf="user_profile!=null&&user_profile!=undefined" [class.whiteText]=isHomePage() class="login mobile-none">
+      <!-- <a class="getstarted scrollto welcomee" (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a> -->
+
+      <div ngbDropdown>
+        <a class="getstarted scrollto welcomee" ngbDropdownToggle>Welcome {{user_profile.first_name}}</a>
+        <div ngbDropdownMenu>
+          <button class="dropdown-item" *ngFor="let sortOrder of 
+                     sortOrders" (click)="ChangeSortOrder(sortOrder)">
+            {{sortOrder}}</button>
+        </div>
+      </div>
+
+    </div>
+    <div *ngIf="!(user_profile!=null&&user_profile!=undefined)" [class.whiteText]=isHomePage() class="login">
+      <a class="getstarted scrollto" (click)="openlogin()"><i class="fas fa-user"></i></a>
+      <!-- <a class="getstarted scrollto" (click)="opensignup()">SIGN UP</a> -->
+    </div>
+    <div class="menu_icon" [class.menu_iconClass]="menu_icon_variable" (click)="openMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+      <!-- <img width="25" height="35" src="assets/img/menu1.png" alt=""> -->
+    </div>
+  </div>
+  <div *ngIf="router.url.includes('landing-page')" class="container d-flex  justify-content-between">
+    <a routerLink="/" class="logoLanding"><img src="assets/img/LOGO_White.png" alt="" class="img-fluid"></a>
+    <p (click)="requestCall()" class="requestBtn"><img src="assets/img/RequestCall.png">Request Callback</p>
+  </div>
+</header><!-- End Header -->
+
+
+<!-- ======= Header new mobile ======= -->
+<header id="header "  [ngClass]="{header3: router.url.includes('landing-page')}" class="fixed-top header-2" *ngIf="tabWidth<768">
+  <div *ngIf="!router.url.includes('landing-page')" class="container d-flex  justify-content-between">
+    <a routerLink="/" class="logo"><img src="assets/img/LOGO_Dark.webp" alt="" class="img-fluid"></a>
+
+    <nav [class.whiteText]=isHomePage() id="navbar" class="navbar menu" [class.menuClasse]="menuVariable">
+
+
+      <div *ngIf="user_profile!=null&&user_profile!=undefined" [class.whiteText]=isHomePage() class="login">
+        <!-- <a class="getstarted scrollto welcomee" (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a> -->
+        <!-- <div class="proo-img">
+          <img src="assets/img/profileLogoo.png" alt="">
+        </div> -->
+
+        <!-- <div ngbDropdown class="proo-img">
+          <a class=" scrollto welcomee wel" ngbDropdownToggle><img src="assets/img/profileLogoo.png" alt=""></a>
+          <div ngbDropdownMenu class="dropdownUser">
+            <button class="dropdown-item" *ngFor="let sortOrder of 
+                         sortOrders" (click)="ChangeSortOrder(sortOrder)">
+              {{sortOrder}}</button>
+          </div>
+        </div> -->
+
+        <!-- <div ngbDropdown>
+          <a class=" scrollto welcomee wel" ngbDropdownToggle> <img height="25px" width="22px" src="assets/img/profileLogoo.png" alt=""></a>
+          <div ngbDropdownMenu class="dropdownUser">
+            <button class="dropdown-item" *ngFor="let sortOrder of 
+                         sortOrders" (click)="ChangeSortOrder(sortOrder)">
+              {{sortOrder}}</button>
+          </div>
+        </div> -->
+
+        <div ngbDropdown>
+          <a class=" scrollto welcomee wel" ngbDropdownToggle><img height="25px" width="22px"
+              src="assets/img/profileLogoo.png" alt=""> <span>Welcome {{user_profile.first_name}}</span></a>
+          <div ngbDropdownMenu class="dropdownUser">
+            <button class="dropdown-item" *ngFor="let sortOrder of 
+                         sortOrders" (click)="ChangeSortOrder(sortOrder)">
+              {{sortOrder}}</button>
+          </div>
+        </div>
+      </div>
+      <ul (click)="openMenu()">
+        <div class="only-mobile">
+
+          <!-- <div class="pro-img">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="">
+          </div> -->
+          <!-- <div *ngIf="user_profile!=null&&user_profile!=undefined" [class.whiteText]=isHomePage() class="login">
+            <a style="position: relative; left: -12px !important; top: 3px !important;" class="getstarted scrollto"
+              (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a>
+          </div> -->
+        </div>
+        <li><a class="nav-link scrollto" routerLink="/">Home</a></li>
+        <li *ngIf="tabWidth<600">
+          <div ngbDropdown>
+            <a (click)="openThemeee()" class="nav-link scrollto welcomee" ngbDropdownToggle>Themes
+                <!-- <i style="margin-left: 5px; font-size: 15px;" (click)="showTheme()" class="fa fa-angle-down plus" *ngIf="!themeList"></i>
+                <i style="margin-left: 5px; font-size: 15px;" (click)="showwThemee()" class="fa fa-angle-up minus" *ngIf="themeList"></i> -->
+            </a>
+        <!-- <li ngbDropdownMenu style="max-height: 150px !important;" class="listt">
+          <a class="nav-link scrollto dropdown-item destinations" *ngFor="let data of holidayMood;"
+            (click)="openTheme(data.theme_id)">
+            {{data.name}}</a>
+        </li> -->
+  </div>
+  </li>
+  <li (click)="openMenuu()" *ngIf="tabWidth<600">
+    <div ngbDropdown>
+      <a class="nav-link scrollto welcomee" ngbDropdownToggle>Destinations
+          <i style="margin-left: 5px; font-size: 15px;" (click)="showDestination()" class="fa fa-angle-down pluss" *ngIf="!destinationList"></i>
+          <i style="margin-left: 5px; font-size: 15px;" (click)="showDestinationn()" class="fa fa-angle-up minuss" *ngIf="destinationList"></i>
+      </a>
+  <li ngbDropdownMenu style="max-height: 100px !important; overflow: hidden;" class="listtt">
+    <a class="nav-link scrollto dropdown-item destinations" *ngFor="let item of destinations"
+      (click)="openDestinationn(item.name)">
+      {{item.name}}</a>
+  </li>
+</div>
+</li>
+  <li><a class="nav-link scrollto" routerLink="/about-us">About Us</a></li>
+  <li><a class="nav-link scrollto" routerLink="/careers">Careers</a></li>
+  <!-- <li><a class="nav-link scrollto" routerLink="/">Holidays</a></li>
+        <li><a class="nav-link scrollto " href="#portfolio">Flights</a></li>
+        <li><a class="nav-link scrollto" href="#team">Hotels</a></li> -->
+
+  <li><a class="nav-link scrollto" routerLink="/blogs">Blogs</a></li>
+  <!-- <li><a class="nav-link scrollto" routerLink="/flights">Flights</a></li>
+  <li><a class="nav-link scrollto" routerLink="/hotels">Hotels</a></li> -->
+
+  </ul>
+  <i class="bi bi-list mobile-nav-toggle"></i>
+  </nav>
+  <!-- .navbar -->
+
+  <!-- <div class="iconn" *ngIf="searchIcoon && !menu_icon_variable" (click)="searchIcon()">
+    <i class="fa fa-search"></i>
+  </div> -->
+
+  <!-- <div>
+    <div class="search-container" *ngIf="!menu_icon_variable && !searchIcoon">
+      <input type="text" id="search" [(ngModel)]="search"
+      (ngModelChange)="onsearch()"  placeholder="Enter Destination...">
+      <span (click)="closeSearchIcon()" class="search-icon"><i class="fa fa-times"></i></span>
+    </div>
+    <div class="src-dropdown" *ngIf="searchData.length && search.length > 0">
+      <button *ngFor="let data of searchData" (click)="openPackage(data)">{{data.search_name}}</button>
+    </div>
+  </div> -->
+
+  <div *ngIf="!(user_profile!=null&&user_profile!=undefined)" [class.whiteText]=isHomePage() class="login loginMob">
+    <a class="getstarted scrollto" (click)="openlogin()"><i class="fas fa-user"></i></a>
+    <!-- <a class="getstarted scrollto" (click)="opensignup()">SIGN UP</a> -->
+  </div>
+  <div class="iconn" *ngIf="searchIcoon && !menu_icon_variable && !isHomeRoute()" (click)="searchIcon()">
+    <i class="fa fa-search"></i>
+  </div>
+  <div class="pro-img">
+    <img src="assets/img/profileLogoo.webp" alt="">
+  </div>
+  <div class="menu_icon" [class.menu_iconClass]="menu_icon_variable" (click)="openMenu()">
+    <span [class.menu_iconClassSpan]="menu_icon_variable"></span>
+    <span></span>
+    <span [class.menu_iconClassSpan]="menu_icon_variable"></span>
+    <!-- <img width="25" height="35" src="assets/img/menu1.png" alt=""> -->
+  </div>
+  </div>
+  <div *ngIf="!router.url.includes('landing-page')">
+    <div class="search-container" *ngIf="!menu_icon_variable && !searchIcoon">
+      <input type="text" id="search" [(ngModel)]="search" (ngModelChange)="onsearch()"
+        placeholder="Enter Destination...">
+      <span (click)="closeSearchIcon()" class="search-icon"><i class="fa fa-times"></i></span>
+    </div>
+    <div class="src-dropdown" *ngIf="searchData.length && search.length > 0">
+      <button *ngFor="let data of searchData" (click)="openPackage(data)">{{data.search_name}}</button>
+    </div>
+  </div>
+  <div *ngIf="router.url.includes('landing-page')" class="container d-flex  justify-content-between">
+    <a routerLink="/" class="logoLanding"><img src="assets/img/LOGO_White.png" alt="" class="img-fluid"></a>
+    <p (click)="requestCall()" class="requestBtn"><img src="assets/img/RequestCall.png">Request Callback</p>
+  </div>
+</header><!-- End Header -->

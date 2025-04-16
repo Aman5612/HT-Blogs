@@ -5,7 +5,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
-import { HashLocationStrategy, isPlatformBrowser, isPlatformServer, LocationStrategy, PathLocationStrategy, PlatformLocation } from '@angular/common';
+import { DatePipe, HashLocationStrategy, isPlatformBrowser, isPlatformServer, LocationStrategy, PathLocationStrategy, PlatformLocation } from '@angular/common';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(),
     provideHttpClient(withFetch()),
     provideAnimations(),
+    DatePipe,
     {
       provide: LocationStrategy, 
       useFactory: () => {
