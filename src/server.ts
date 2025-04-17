@@ -1,6 +1,4 @@
-import {
-  isMainModule
-} from '@angular/ssr/node';
+import { isMainModule } from '@angular/ssr/node';
 import express from 'express';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,8 +26,8 @@ app.set('base', '/');
 app.set('trust proxy', 1);
 // Get paths
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser');
-// const browserDistFolder = resolve(serverDistFolder, '../browser');
+// const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser');
+const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 // Find JS and CSS files in the browser directory
 let mainJsFile = '';
@@ -41,12 +39,21 @@ try {
   // Read directory and find the main files
   const files = fs.readdirSync(browserDistFolder);
 
-  mainJsFile = files.find(file => file.startsWith('main-') && file.endsWith('.js')) || 'main.js';
-  polyfillsJsFile = files.find(file => file.startsWith('polyfills-') && file.endsWith('.js')) || 'polyfills.js';
-  stylesFile = files.find(file => file.startsWith('styles-') && file.endsWith('.css')) || 'styles.css';
+  mainJsFile =
+    files.find((file) => file.startsWith('main-') && file.endsWith('.js')) ||
+    'main.js';
+  polyfillsJsFile =
+    files.find(
+      (file) => file.startsWith('polyfills-') && file.endsWith('.js')
+    ) || 'polyfills.js';
+  stylesFile =
+    files.find((file) => file.startsWith('styles-') && file.endsWith('.css')) ||
+    'styles.css';
 
   // Also find any chunk files
-  chunkFiles = files.filter(file => file.startsWith('chunk-') && file.endsWith('.js'));
+  chunkFiles = files.filter(
+    (file) => file.startsWith('chunk-') && file.endsWith('.js')
+  );
 
   console.log(`Found main JS file: ${mainJsFile}`);
   console.log(`Found polyfills JS file: ${polyfillsJsFile}`);
@@ -75,7 +82,8 @@ app.get('/api/posts/:id', (req, res) => {
     publishedDate: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     author: 'Mock System',
-    content: '<h1>Mock Content</h1><p>This is sample content from the mock API used for development.</p>'
+    content:
+      '<h1>Mock Content</h1><p>This is sample content from the mock API used for development.</p>',
   });
 });
 
@@ -85,7 +93,7 @@ app.get('/api/check-environment', (req, res) => {
     apiUrl: environment.apiUrl,
     hasApiUrl: !!environment.apiUrl,
     hasFallbackUrl: !!environment.fallbackApiUrl,
-    env: process.env['NODE_ENV']
+    env: process.env['NODE_ENV'],
   });
 });
 
@@ -98,11 +106,12 @@ async function fetchBlogPost(id: string): Promise<BlogPostData | null> {
     id,
     title: `[FALLBACK] Emergency Content`,
     metaTitle: `[FALLBACK] Emergency Content | Error Recovery`,
-    metaDescription: 'This is fallback content when all API calls fail completely',
+    metaDescription:
+      'This is fallback content when all API calls fail completely',
     tags: ['fallback', 'emergency', 'content'],
     publishedDate: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    author: 'System'
+    author: 'System',
   };
 }
 
@@ -118,9 +127,13 @@ const createHtmlTemplate = async (req: Request) => {
   console.log(`Using path for processing: "${urlPath}"`);
 
   // Check for blog post URLs with multiple patterns
-  const directBlogMatch = urlPath.match(/\/blog\/([^\/]+)/) ||
+  const directBlogMatch =
+    urlPath.match(/\/blog\/([^\/]+)/) ||
     urlPath.match(/\/blogs\/([^\/]+)/) ||
-    urlPath.match(/\/post\/([^\/]+)/);
+    urlPath.match(/\/\/([^\/]+)/) ||
+    urlPath.match(/\/ht-blogs\/([^\/]+)/);
+    
+  console.log('Direct blog match:', directBlogMatch);
 
   // If we're at the root path, check if this might be a hash-based URL
   const isRootPath = urlPath === '/' || urlPath === '';
@@ -128,10 +141,12 @@ const createHtmlTemplate = async (req: Request) => {
 
   // Set default meta values (will be overridden for blog posts)
   let title = 'HTBlogs - Travel and Lifestyle Blog';
-  let description = 'Explore our collection of travel guides, luxury experiences, and lifestyle tips from around the world. Discover new destinations and plan your next adventure.';
+  let description =
+    'Explore our collection of travel guides, luxury experiences, and lifestyle tips from around the world. Discover new destinations and plan your next adventure.';
   let ogType = 'website';
   let ogImage = `${req.protocol}://${req.get('host')}/assets/default-image.jpg`;
-  let keywords = 'travel, luxury, lifestyle, blog, vacation, destination, experience, adventure';
+  let keywords =
+    'travel, luxury, lifestyle, blog, vacation, destination, experience, adventure';
   let structuredData = null;
 
   // For direct blog post URLs
@@ -140,7 +155,7 @@ const createHtmlTemplate = async (req: Request) => {
     console.log(`👉 Detected direct blog post request with ID: "${blogId}"`);
     await fetchAndProcessBlogData(blogId);
   }
-    // At root path, we'll include meta for recent blog posts or default content
+  // At root path, we'll include meta for recent blog posts or default content
   // Hash-based routes (#/blog/ID) will need client-side handling for SEO
   else if (isRootPath) {
     console.log('Root path detected - Adding default or recent blog metadata');
@@ -155,18 +170,28 @@ const createHtmlTemplate = async (req: Request) => {
         try {
           const response = await fetch(recentPostsUrl);
           if (response.ok) {
-            const posts = await response.json() as BlogPostData[];
+            const posts = (await response.json()) as BlogPostData[];
             if (posts && Array.isArray(posts) && posts.length > 0) {
               const recentPost = posts[0] as BlogPostData;
-              console.log(`Using recent blog post for root SEO: ${recentPost.title || 'Untitled'}`);
+              console.log(
+                `Using recent blog post for root SEO: ${
+                  recentPost.title || 'Untitled'
+                }`
+              );
 
               // Set improved default metadata from recent post
               title = 'HTBlogs - Travel and Lifestyle Blog | Latest Articles';
-              description = `Read our latest article: ${recentPost.title}. ${recentPost.metaDescription || description}`;
+              description = `Read our latest article: ${recentPost.title}. ${
+                recentPost.metaDescription || description
+              }`;
               if (recentPost.featureImage) {
                 ogImage = recentPost.featureImage;
               }
-              if (recentPost.tags && Array.isArray(recentPost.tags) && recentPost.tags.length) {
+              if (
+                recentPost.tags &&
+                Array.isArray(recentPost.tags) &&
+                recentPost.tags.length
+              ) {
                 keywords = recentPost.tags.join(', ') + ', ' + keywords;
               }
             }
@@ -196,12 +221,17 @@ const createHtmlTemplate = async (req: Request) => {
           const response = await fetch(apiUrl);
 
           if (response.ok) {
-            blogData = await response.json() as BlogPostData;
+            blogData = (await response.json()) as BlogPostData;
             console.log('Successfully fetched from real external API');
             console.log('API returned data with title:', blogData.title);
-            console.log('API returned data with metaTitle:', blogData.metaTitle);
+            console.log(
+              'API returned data with metaTitle:',
+              blogData.metaTitle
+            );
           } else {
-            console.log(`External API returned ${response.status}: ${response.statusText}`);
+            console.log(
+              `External API returned ${response.status}: ${response.statusText}`
+            );
           }
         } catch (apiError) {
           console.log('External API error:', apiError);
@@ -210,22 +240,28 @@ const createHtmlTemplate = async (req: Request) => {
 
       // If real API failed, fall back to mock API
       if (!blogData) {
-        console.log('Real API failed or not available, falling back to mock API');
+        console.log(
+          'Real API failed or not available, falling back to mock API'
+        );
         // Try to get data from our mock API
-        const mockUrl = `http://localhost:${process.env['PORT'] || 4000}/api/posts/${blogId}`;
+        const mockUrl = `http://localhost:${
+          process.env['PORT'] || 4000
+        }/api/posts/${blogId}`;
         console.log(`Mock API URL: ${mockUrl}`);
 
         try {
           const response = await fetch(mockUrl, {
             method: 'GET',
-            headers: { 'Accept': 'application/json' }
+            headers: { Accept: 'application/json' },
           });
 
           if (response.ok) {
-            blogData = await response.json() as BlogPostData;
+            blogData = (await response.json()) as BlogPostData;
             console.log('Successfully fetched from mock API');
           } else {
-            console.log(`Mock API returned ${response.status}: ${response.statusText}`);
+            console.log(
+              `Mock API returned ${response.status}: ${response.statusText}`
+            );
           }
         } catch (localError) {
           console.log('Mock API error:', localError);
@@ -233,13 +269,17 @@ const createHtmlTemplate = async (req: Request) => {
 
         // If both real API and mock API failed, use emergency fallback
         if (!blogData) {
-          console.log('Both real API and mock API failed, using emergency fallback');
+          console.log(
+            'Both real API and mock API failed, using emergency fallback'
+          );
           blogData = await fetchBlogPost(blogId);
         }
       }
 
       if (blogData) {
-        console.log(`👍 Using blog data for SEO: "${blogData.title || 'No title'}"`);
+        console.log(
+          `👍 Using blog data for SEO: "${blogData.title || 'No title'}"`
+        );
         // Override default values with blog-specific data
         title = blogData.metaTitle || blogData.title || title;
         description = blogData.metaDescription || description;
@@ -254,27 +294,27 @@ const createHtmlTemplate = async (req: Request) => {
         structuredData = {
           '@context': 'https://schema.org',
           '@type': 'BlogPosting',
-          'headline': title,
-          'description': description,
-          'image': ogImage,
-          'datePublished': blogData.publishedDate || new Date().toISOString(),
-          'dateModified': blogData.updatedAt || new Date().toISOString(),
-          'author': {
+          headline: title,
+          description: description,
+          image: ogImage,
+          datePublished: blogData.publishedDate || new Date().toISOString(),
+          dateModified: blogData.updatedAt || new Date().toISOString(),
+          author: {
             '@type': 'Person',
-            'name': blogData.author || 'HTBlogs Team'
+            name: blogData.author || 'HTBlogs Team',
           },
-          'publisher': {
+          publisher: {
             '@type': 'Organization',
-            'name': 'HTBlogs',
-            'logo': {
+            name: 'HTBlogs',
+            logo: {
               '@type': 'ImageObject',
-              'url': `${req.protocol}://${req.get('host')}/assets/logo.png`
-            }
+              url: `${req.protocol}://${req.get('host')}/assets/logo.png`,
+            },
           },
-          'mainEntityOfPage': {
+          mainEntityOfPage: {
             '@type': 'WebPage',
-            '@id': url
-          }
+            '@id': url,
+          },
         };
       } else {
         console.log('❌ No blog data was returned from API');
@@ -285,13 +325,16 @@ const createHtmlTemplate = async (req: Request) => {
   }
 
   // Create chunk script tags
-  const chunkScripts = chunkFiles.map(chunk =>
-    `<script src="${chunk}" type="module"></script>`
-  ).join('\n    ');
+  const chunkScripts = chunkFiles
+    .map((chunk) => `<script src="${chunk}" type="module"></script>`)
+    .join('\n    ');
 
   // Create structured data script tag if data exists
-  const structuredDataScript = structuredData ?
-    `<script type="application/ld+json">${JSON.stringify(structuredData)}</script>` : '';
+  const structuredDataScript = structuredData
+    ? `<script type="application/ld+json">${JSON.stringify(
+        structuredData
+      )}</script>`
+    : '';
 
   // Add special script for hash-based routing to update metadata dynamically on the client side
   const hashRoutingScript = `
@@ -383,12 +426,13 @@ const createHtmlTemplate = async (req: Request) => {
 /**
  * Serve static files from /browser
  */
-app.use("/ht-blogs",
+app.use(
+  '/ht-blogs',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
     redirect: false,
-  }),
+  })
 );
 
 /**
@@ -437,7 +481,9 @@ if (isMainModule(import.meta.url)) {
       // Try next port
       server.close();
       app.listen(port + 1, () => {
-        console.log(`Node Express server listening on http://localhost:${port + 1}`);
+        console.log(
+          `Node Express server listening on http://localhost:${port + 1}`
+        );
       });
     } else {
       console.error('Server error:', error);

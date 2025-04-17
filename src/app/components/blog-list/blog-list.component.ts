@@ -5,11 +5,7 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NewBlogService } from '../../services/new-blog.service';
 import { Article } from '../../interface/article.interface';
-import {
-  Subject,
-  debounceTime,
-  distinctUntilChanged,
-} from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -37,6 +33,7 @@ export class BlogListComponent implements OnInit {
     private blogService: NewBlogService,
     private titleService: Title,
     private metaService: Meta,
+    private router: Router,
     @Inject(DOCUMENT) private document: Document
   ) {}
 
@@ -56,6 +53,13 @@ export class BlogListComponent implements OnInit {
 
   onSearch() {
     this.searchTerms.next(this.searchTerm);
+  }
+
+  onPostClick(post: any) {
+    console.log('redirecting->>', post.id);
+
+    // Navigate to the blog post detail page using the Router
+    this.router.navigateByUrl(`/${post.id}`);
   }
 
   filterPosts() {
