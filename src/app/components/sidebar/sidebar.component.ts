@@ -9,8 +9,12 @@ import {
   ViewChild,
   OnChanges,
   SimpleChanges,
+  Inject,
+  PLATFORM_ID,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface ContentSection {
   id: string;
@@ -24,537 +28,7 @@ export interface ContentSection {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './sidebar.component.html',
-  styles: [
-    `
-      :host {
-        position: fixed;
-        top: 4.5rem;
-        height: calc(100vh - 3rem);
-        display: block;
-        z-index: 10;
-        width: 22%;
-        max-width: 332px;
-      }
-
-      .sidebar {
-        background: white;
-        overflow-y: auto;
-        overflow-x: hidden;
-        width: 100%;
-        max-height: 100%;
-      }
-
-      .cursor-pointer {
-        cursor: pointer;
-      }
-
-      .category-header {
-        font-weight: 500;
-        color: #1a1a1a;
-        font-size: 1.125rem;
-        padding: 12px;
-        margin-top: 0.5rem;
-        margin: 0.5rem 1.5rem;
-        background-color: #f8f8f8;
-        border-radius: 12px;
-        font-size: 20px;
-        transition: background-color 0.2s ease;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        &:hover {
-          background-color: #eaeaea;
-        }
-
-        .category-title {
-          cursor: pointer;
-          flex: 1;
-        }
-      }
-
-      .sections-list {
-        padding: 12px 0;
-      }
-
-      .section-item {
-        padding: 6px 1.5rem;
-      }
-
-      .radio-label {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        cursor: pointer;
-        user-select: none;
-        position: relative;
-        padding: 0;
-        width: 100%;
-      }
-
-      input[type='radio'] {
-        position: absolute;
-        opacity: 0;
-        cursor: pointer;
-        height: 0;
-        width: 0;
-      }
-
-      .checkmark {
-        position: relative;
-        height: 18px;
-        width: 18px;
-        border: 2px solid #d7d7d7;
-        border-radius: 50%;
-        flex-shrink: 0;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-
-        &:after {
-          content: '';
-          position: absolute;
-          display: none;
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background: #6f6f6f;
-          transform: none;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          margin: auto;
-        }
-      }
-
-      input[type='radio']:checked ~ .checkmark {
-        border-color: #1a1a1a;
-        &:after {
-          display: block;
-        }
-      }
-
-      .section-item:hover .checkmark {
-        border-color: #1a1a1a; /* Highlight checkmark on hover */
-        &:after {
-          display: block;
-        }
-      }
-
-      .section-content {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px;
-        background-color: #f8f8f8;
-        border-radius: 12px;
-        transition: box-shadow 0.2s ease; /* Smooth shadow transition */
-      }
-
-      .section-item:hover .section-content {
-        box-shadow: inset 0 0 0 1px #cfcfcf; /* Inner shadow on hover */
-      }
-
-      input[type='radio']:checked ~ .section-content {
-        box-shadow: inset 0 0 0 1px #cfcfcf; /* Inner shadow when selected */
-      }
-
-      .section-title {
-        font-size: 20px;
-        color: #1a1a1a;
-        line-height: 1.4;
-        flex-grow: 1;
-        cursor: pointer;
-      }
-
-      .expand-icon {
-        transform: rotate(0deg);
-        transition: transform 0.3s ease;
-        color: #666;
-        display: flex;
-        align-items: center;
-        padding: 4px 8px;
-        border-radius: 4px;
-        margin-left: 5px;
-
-        &:hover {
-          background-color: #e5e5e5;
-          color: #333;
-        }
-
-        &.expanded {
-          transform: rotate(180deg);
-        }
-      }
-
-      .subsections {
-        margin-left: 2.5rem;
-        padding: 0 0 0 0.75rem;
-        overflow: hidden;
-        max-height: 0;
-        transition: max-height 0.3s ease-in-out, margin-top 0.3s ease;
-
-        &.expanded {
-          max-height: 500px; /* Increased height to accommodate deeper nesting */
-        }
-      }
-
-      .nested-subsection-item {
-        font-size: 16px;
-        color: #4d4d4d;
-        cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
-        font-weight: 400;
-        padding: 6px 0;
-
-        &:hover {
-          color: #4d4d4d;
-          text-decoration: underline;
-        }
-
-        &.selected {
-          text-decoration: underline;
-          color: #4d4d4d;
-        }
-      }
-
-      /* Deep nesting styles */
-      .deep-subsections {
-        margin-left: 15px;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease-in-out;
-
-        &.expanded {
-          max-height: 500px;
-        }
-      }
-
-      .deep-nested-item {
-        display: flex;
-        align-items: center;
-        padding: 5px 0;
-        margin-left: 10px;
-        color: #555;
-        font-size: 14px;
-
-        &:hover {
-          color: #000;
-        }
-
-        &.selected {
-          color: #000;
-          font-weight: 500;
-        }
-      }
-
-      /* Styles for list items in sidebar */
-      .list-item-entry {
-        padding: 6px 0;
-        margin-left: 10px;
-        transition: all 0.2s;
-      }
-
-      .list-item-content {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-        padding: 4px 8px;
-        border-radius: 6px;
-        position: relative;
-
-        /* Make container non-interactive */
-        cursor: default;
-
-        /* Remove hover effect from container */
-        background-color: transparent;
-        &:hover {
-          background-color: transparent;
-        }
-      }
-
-      .list-bullet,
-      .list-bullet-small {
-        color: #666;
-        display: inline-block;
-        flex-shrink: 0;
-      }
-
-      .list-bullet {
-        font-size: 1rem;
-      }
-
-      .list-bullet-small {
-        font-size: 0.85rem;
-      }
-
-      .list-item-title {
-        flex-grow: 1;
-        font-size: 0.95rem;
-        color: #333;
-        line-height: 1.4;
-        font-weight: 400;
-        cursor: pointer;
-        padding: 2px 8px;
-        border-radius: 4px;
-        transition: background-color 0.15s ease, color 0.15s ease;
-        display: inline-block;
-
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.08);
-          color: #000;
-        }
-      }
-
-      .list-item-title-small {
-        flex-grow: 1;
-        font-size: 0.85rem;
-        color: #444;
-        line-height: 1.4;
-        font-weight: 400;
-        cursor: pointer;
-        padding: 2px 8px;
-        border-radius: 3px;
-        transition: background-color 0.15s ease, color 0.15s ease;
-        display: inline-block;
-
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.08);
-          color: #000;
-        }
-      }
-
-      .nested-title {
-        flex-grow: 1;
-        font-size: 16px;
-        line-height: 1.4;
-        cursor: pointer;
-        border-radius: 4px;
-        transition: all 0.15s ease;
-        padding: 3px 8px;
-        display: inline-block;
-
-        &:hover {
-          text-decoration: none;
-          background-color: rgba(0, 0, 0, 0.08);
-          color: #000;
-        }
-      }
-
-      .deep-nested-title {
-        flex-grow: 1;
-        font-size: 14px;
-        color: #555;
-        line-height: 1.4;
-        cursor: pointer;
-        border-radius: 4px;
-        transition: all 0.15s ease;
-        padding: 3px 8px;
-        display: inline-block;
-
-        &:hover {
-          text-decoration: none;
-          background-color: rgba(0, 0, 0, 0.08);
-          color: #000;
-        }
-      }
-
-      .expand-icon-mini {
-        transform: rotate(0deg);
-        transition: transform 0.3s ease, background-color 0.15s ease;
-        color: #666;
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        z-index: 5; /* Ensure it's above other elements */
-
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.1);
-          color: #000;
-        }
-
-        &.expanded {
-          transform: translateY(-50%) rotate(180deg);
-        }
-      }
-
-      .list-item-entry.selected .list-item-title,
-      .list-item-entry.selected .list-item-title-small {
-        font-weight: 500;
-        color: #000;
-      }
-
-      .list-item-deep {
-        margin-left: 20px;
-
-        .list-item-content {
-          padding-left: 2px;
-        }
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 2rem;
-        color: #666;
-        font-style: italic;
-        font-size: 0.875rem;
-      }
-
-      
-      :host {
-        scrollbar-width: thin;
-        scrollbar-color: #ddd transparent;
-      }
-
-      .sidebar::-webkit-scrollbar {
-        width: 4px;
-      }
-
-      .sidebar::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      .sidebar::-webkit-scrollbar-thumb {
-        background-color: #ddd;
-        border-radius: 2px;
-
-        &:hover {
-          background-color: #ccc;
-        }
-      }
-
-      
-      @media (max-width: 1600px) {
-        :host {
-          width: 22%;
-        }
-      }
-
-      @media (max-width: 1400px) {
-        :host {
-          width: 22%;
-          max-width: 280px;
-        }
-      }
-
-      @media (max-width: 1200px) {
-        :host {
-          display: none;
-        }
-      }
-
-      .section-level-2 {
-        margin-left: 0.5rem;
-      }
-
-      .nested-content {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        position: relative;
-      }
-
-      .bullet,
-      .bullet-small {
-        color: #666;
-        display: inline-block;
-        margin-right: 5px;
-        flex-shrink: 0;
-      }
-
-      .bullet {
-        font-size: 14px;
-      }
-
-      .bullet-small {
-        font-size: 12px;
-      }
-
-      .nested-title {
-        flex-grow: 1;
-        font-size: 16px;
-        line-height: 1.4;
-        padding-right: 20px; /* Make room for the expand icon */
-        cursor: pointer;
-        border-radius: 4px;
-        transition: all 0.15s ease;
-        padding: 3px 6px;
-
-        &:hover {
-          text-decoration: none;
-          background-color: rgba(0, 0, 0, 0.05);
-        }
-      }
-
-      .deep-nested-title {
-        flex-grow: 1;
-        font-size: 14px;
-        color: #555;
-        line-height: 1.4;
-        padding-right: 20px;
-        cursor: pointer;
-        border-radius: 4px;
-        transition: all 0.15s ease;
-        padding: 3px 6px;
-
-        &:hover {
-          text-decoration: none;
-          background-color: rgba(0, 0, 0, 0.05);
-        }
-      }
-
-      .expand-icon-mini {
-        transform: rotate(0deg);
-        transition: transform 0.3s ease;
-        color: #666;
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 3px;
-
-        &:hover {
-          background-color: #e5e5e5;
-          color: #333;
-        }
-
-        &.expanded {
-          transform: translateY(-50%) rotate(180deg);
-        }
-      }
-
-      .list-item-entry.selected .list-item-title,
-      .list-item-entry.selected .list-item-title-small {
-        font-weight: 500;
-        color: #000;
-      }
-
-      .list-item-deep {
-        margin-left: 20px;
-
-        .list-item-content {
-          padding-left: 2px;
-        }
-      }
-    `,
-  ],
+  styleUrls: ['./sidebar.component.scss'],
 })
 export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   @Input() sections: any = [];
@@ -565,6 +39,10 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   selectedSection: string | null = null;
   expandedSections: string[] = [];
   arrowIconPath = '/assets/icons/Arrow_icon_gray.svg';
+  isFooterVisible = false;
+  private footerObserver: IntersectionObserver | null = null;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   // For tracking sections in ngFor
   trackById(index: number, item: any): string {
@@ -687,6 +165,43 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         console.warn('Sidebar - No sections available for auto-expand');
       }
     }, 200);
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.initFooterObserver();
+    }
+  }
+
+  private initFooterObserver() {
+    const footer = document.querySelector('app-footer');
+    if (!footer) return;
+
+    this.footerObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          this.isFooterVisible = entry.isIntersecting;
+
+          // If the footer is visible, adjust the sidebar to prevent overlap
+          if (entry.isIntersecting && this.sidebarContainer) {
+            const footerTop = entry.boundingClientRect.top;
+            const viewportHeight = window.innerHeight;
+            const offset = Math.max(0, viewportHeight - footerTop);
+
+            if (offset > 0) {
+              this.sidebarContainer.nativeElement.style.maxHeight = `calc(100vh - 3rem - ${offset}px)`;
+            }
+          } else if (this.sidebarContainer) {
+            // Reset max height when footer is not visible
+            this.sidebarContainer.nativeElement.style.maxHeight = '';
+          }
+        });
+      },
+      {
+        threshold: [0.1],
+        rootMargin: '200px 0px 0px 0px', // Start detecting 200px before the footer enters viewport
+      }
+    );
+
+    this.footerObserver.observe(footer);
   }
 
   ngOnDestroy() {
@@ -694,6 +209,10 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       'section-visible',
       this.sectionVisibilityHandler
     );
+
+    if (this.footerObserver) {
+      this.footerObserver.disconnect();
+    }
   }
 
   processTitle(title: string): string {

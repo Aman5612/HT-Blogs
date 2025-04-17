@@ -1,0 +1,26 @@
+:host {
+  display: block;
+}
+
+.sidebar {
+  transition: position 0.3s ease, height 0.3s ease;
+}
+
+.sidebar-fixed {
+  position: fixed !important;
+  top: 4.5rem;
+  height: calc(100vh - 3rem);
+}
+
+.sidebar-relative {
+  position: absolute;
+  height: auto !important;
+  max-height: none !important;
+  bottom: auto;
+}
+
+@media (max-width: 1200px) {
+  .sidebar {
+    display: none;
+  }
+}

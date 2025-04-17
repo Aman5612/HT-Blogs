@@ -1,6 +1,8 @@
 <div
   style="font-family: 'DM Sans'"
-  class="sidebar border-r border-[#CACACA] !mt-6 bg-white overflow-y-auto overflow-x-hidden fixed top-[4.5rem] left-0 h-[calc(100vh-3rem)] z-10 w-[22%] max-w-[332px]"
+  class="sidebar border-r border-[#CACACA] !mt-6 bg-white overflow-y-auto overflow-x-hidden absolute top-[4.5rem] left-0 h-[calc(100vh-3rem)] z-10 w-[22%] max-w-[332px]"
+  [class.sidebar-fixed]="!isFooterVisible"
+  [class.sidebar-relative]="isFooterVisible"
   #sidebarContainer
 >
   <div
