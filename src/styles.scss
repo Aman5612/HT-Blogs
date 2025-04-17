@@ -227,3 +227,1603 @@ img {
 .m-8 {
   margin: 2rem;
 }
+
+@media (min-width: 1500px) {
+  .continer {
+    max-width: 1440px !important;
+  }
+}
+
+/*--------------------------------------------------------------
+# Back to top button
+--------------------------------------------------------------*/
+.back-to-top {
+  position: fixed;
+  visibility: hidden;
+  opacity: 0;
+  right: 15px;
+  bottom: 15px;
+  z-index: 996;
+  background: #5846f9;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  transition: all 0.4s;
+  z-index: 1030;
+}
+
+@media (min-width: 1200px) and (max-width: 1440px) {
+  .slick-dots {
+    position: absolute !important;
+    bottom: -51px !important;
+    list-style: none;
+    display: block;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1400px) {
+  .slick-dots {
+    position: absolute !important;
+    bottom: -51px !important;
+    list-style: none;
+    display: block;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+}
+
+.slick-dots {
+  position: absolute;
+  bottom: -51px;
+  list-style: none;
+  display: block;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.slick-dots li {
+  width: 31px !important;
+  height: 2px !important;
+  margin: 0 !important;
+}
+
+.slick-dots li.slick-active button:before {
+  color: black !important;
+  opacity: 1.25 !important;
+}
+
+.slick-dots li button:before {
+  width: 31px !important;
+  height: 2px !important;
+  content: " " !important;
+  background-color: #000 !important;
+}
+
+.back-to-top i {
+  font-size: 28px;
+  color: #fff;
+  line-height: 0;
+}
+
+.back-to-top:hover {
+  background: #7b27d8;
+  color: #fff;
+}
+
+.back-to-top.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+/*--------------------------------------------------------------
+# Preloader
+--------------------------------------------------------------*/
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  overflow: hidden;
+  background: #fff;
+}
+
+#preloader:before {
+  content: "";
+  position: fixed;
+  top: calc(50% - 30px);
+  left: calc(50% - 30px);
+  border: 6px solid #5846f9;
+  border-top-color: #e7e4fe;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  -webkit-animation: animate-preloader 1s linear infinite;
+  animation: animate-preloader 1s linear infinite;
+}
+
+@-webkit-keyframes animate-preloader {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes animate-preloader {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/*--------------------------------------------------------------
+# Disable aos animation delay on mobile devices
+--------------------------------------------------------------*/
+@media screen and (max-width: 768px) {
+  [data-aos-delay] {
+    transition-delay: 0 !important;
+  }
+}
+
+.owl-theme .owl-nav [class*="owl-"]:hover {
+  color: #fff;
+  box-shadow: none;
+  background: none;
+}
+
+//  css for holidaymood page but this not working on that component css  so i put here
+
+.nav-btn {
+  position: absolute;
+  z-index: 999;
+  bottom: -38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
+}
+
+// about us page arrow
+.team-sec .nav-btn {
+  display: none !important;
+}
+
+.thumb-1 .nav-btn {
+  position: absolute;
+  z-index: 999;
+  top: -50px;
+  right: 0;
+
+  cursor: pointer;
+}
+
+.thumb-1 .slick-arrow {
+  top: 0;
+  position: absolute;
+}
+
+.thumb-1 .slick-next:before {
+  display: none;
+}
+
+.thumb-1 .slick-prev:before {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .thumb-1 .slick-prev {
+    position: absolute;
+    right: 23%;
+  }
+
+  .testi-main {
+    padding-top: 0px;
+    overflow: hidden;
+  }
+
+  .thumb-1 .slick-next {
+    position: absolute;
+    right: 0;
+  }
+}
+
+// ******* testimonials
+
+.testi-img {
+  position: relative;
+}
+
+.testi-img img {
+  width: 100%;
+}
+
+.testi-main .nav-btn {
+  position: relative;
+  z-index: 999;
+  bottom: -50px;
+  left: 0;
+
+  cursor: pointer;
+}
+
+.testi-main .slick-arrow {
+  bottom: 0;
+  position: absolute;
+}
+
+.testi-main .slick-next:before {
+  display: none;
+}
+
+.testi-main .slick-prev:before {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .testi-main .slick-prev {
+    position: absolute;
+    right: 50%;
+    top: 115vw;
+  }
+
+  .testi-main .slick-next {
+    position: absolute;
+    left: 45% !important;
+    top: 115vw;
+  }
+
+  // .testi-img img{
+  //   max-height: 355px;
+  // }
+}
+
+// *********
+.mood-bg-slider {
+  position: relative;
+
+  .nav-btn {
+    position: absolute;
+    left: 8%;
+    bottom: 42%;
+  }
+}
+
+@media (max-width: 990px) {
+  .mood-bg-slider {
+    .nav-btn {
+      position: absolute;
+      left: 14%;
+      bottom: 33%;
+    }
+  }
+  .mood-slider-boox .custom-box .slick-slide {
+    margin: 4px 5px 4px 18px !important;
+  }
+  .mood-slider-boox .slick-list {
+    padding: 0 10% 0 0 !important;
+  }
+  .happiestTraveller .slick-list {
+    padding: 0 15% 0 0 !important;
+  }
+}
+
+@media (min-width: 1000px) and (max-width: 1394px) {
+  .mood-bg-slider .nav-btn {
+    bottom: 32%;
+  }
+}
+
+// *****Holiday slick
+.mood-slider-box .slick-list {
+  padding: 0 10% 0 0 !important;
+}
+
+// ******* internation arrow
+
+.arrow-top {
+  position: relative;
+}
+
+.arrow-top .nav-btn {
+  position: absolute;
+  z-index: 999;
+  top: -0;
+  right: 0;
+
+  cursor: pointer;
+}
+
+.arrow-top .slick-arrow {
+  top: 0;
+  position: absolute;
+}
+
+.arrow-top .slick-next:before {
+  display: none;
+}
+
+.arrow-top .slick-prev:before {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .arrow-top .slick-prev {
+    position: absolute;
+    left: 50%;
+    top: 22px;
+  }
+
+  .arrow-top .slick-next {
+    position: absolute;
+    left: 70%;
+    top: 22px;
+  }
+
+  .c-ar.arrow-top .slick-next {
+    position: absolute;
+    // right: 28px !important;
+    top: 22px;
+  }
+}
+
+// ********
+
+// trending_INT
+.arrow-top {
+  position: relative;
+}
+
+.arrow-top2 .nav-btn {
+  position: absolute;
+  z-index: 999;
+  top: -0;
+  right: 0;
+
+  cursor: pointer;
+}
+
+.arrow-top2 .slick-arrow {
+  top: 0;
+  position: absolute;
+  display: none !important;
+}
+
+.arrow-top2 .slick-next:before {
+  display: none;
+}
+
+.arrow-top2 .slick-prev:before {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .arrow-top2 .nav-btn {
+    position: absolute;
+    z-index: 999;
+    top: -0;
+    right: 0;
+
+    cursor: pointer;
+  }
+
+  .arrow-top2 .slick-arrow {
+    top: 0;
+    position: absolute;
+  }
+
+  .arrow-top2 .slick-next:before {
+    display: none;
+  }
+
+  .arrow-top2 .slick-prev:before {
+    display: none;
+  }
+
+  .arrow-top2 {
+    position: relative;
+    display: block;
+  }
+
+  .arrow-top2 .slick-prev {
+    position: absolute;
+    right: 22%;
+  }
+
+  .arrow-top2 .slick-next {
+    position: absolute;
+    right: 0;
+  }
+
+  .arrow-top2 {
+    padding-top: 20px !important;
+  }
+}
+
+.modal-holder-close {
+  animation: slideOutToBottomRight;
+  animation-duration: 2s;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideOutToBottomRight {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(270%, 80%) scale(0);
+    opacity: 0;
+  }
+}
+
+.modal-holder {
+  animation-name: slideInFromBottomRightAndGrow;
+  animation-duration: 2s;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideInFromBottomRightAndGrow {
+  0% {
+    transform: translate(100%, 100%) scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(0%, 0%) scale(1);
+    opacity: 1;
+  }
+}
+
+// .custom-modal-right .modal-dialog {
+//   margin-right: 0;
+//   margin-left: auto;
+// }
+
+// .custom-modal-right .modal-content {
+//   border-radius: 0;
+// }
+
+@media (min-width: 1150px) and (max-width: 1440px) {
+  testi-img {
+    position: relative;
+  }
+
+  .testi-main .nav-btn {
+    position: relative;
+    z-index: 999;
+    bottom: -50px;
+    left: 0;
+
+    cursor: pointer;
+  }
+
+  .testi-main .slick-arrow {
+    bottom: 0;
+    position: absolute;
+  }
+
+  .testi-main .slick-next:before {
+    display: none;
+  }
+
+  .arrow-top .slick-prev {
+    right: 10%;
+  }
+}
+
+// *************
+// testimonials
+// *************
+
+/**************/
+.testi-img img {
+  // margin-top: -20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 300px;
+}
+
+.testi-img img {
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 300px;
+  // height: 700px;
+}
+
+.testi-heading {
+  margin-bottom: -22%;
+}
+
+.testi-heading .h4 {
+  font-size: 65px;
+  color: #4a4a4a;
+  text-align: right;
+  position: relative;
+  right: 50px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.testi-heading .h3 {
+  font-size: 100.476px;
+  line-height: 59px;
+  color: #4a4a4a;
+  text-align: right;
+  margin: 40px 0;
+  display: block;
+  margin-top: 25px;
+}
+
+.testimonials-slider {
+  margin-top: -200px;
+}
+
+.testimonials-slider .owl-nav {
+  display: block !important;
+  position: absolute;
+  left: 0px;
+  bottom: 70px;
+}
+
+.star {
+  margin-top: 60px;
+}
+
+.star i {
+  display: inline-block;
+  margin: 0 1px;
+  color: #972119;
+}
+
+.testi-content {
+  margin-top: 60px !important;
+  width: 90%;
+  margin-right: auto;
+}
+
+.testi-content h3 {
+  margin: 20px 0 30px 0;
+  font-size: 25.119px;
+  color: #4a4a4a;
+  font-family: "Pangram-Light";
+  font-weight: 600;
+}
+
+.testi-content h4 {
+  font-size: 25.119px !important;
+}
+
+.testi-content p {
+  font-size: 15.0714px;
+  line-height: 23px;
+  color: #4a4a4a;
+  letter-spacing: 0.02em;
+  text-align: justify;
+}
+
+.custom-modal {
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+.customm-modal .modal-dialog {
+  position: absolute;
+  bottom: 70px; /* Adjust this value to position the tooltip-like modal above the button */
+  right: 0;
+  margin: 0;
+}
+.modal.fade .modal-dialog {
+  transition: transform 0.3s ease-out;
+  transform: translate(0, -25%);
+}
+
+.modal.show .modal-dialog {
+  transform: translate(0, 0);
+}
+// .modal-content{
+//   border-radius: 25px !important;
+// }
+
+@media (max-width: 900px) {
+  .slick-dots {
+    position: absolute !important;
+    bottom: -25px !important;
+    list-style: none !important;
+    display: block !important;
+    text-align: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    right: 3px !important;
+    // overflow: hidden !important;
+    // overflow: hidden !important;
+    // max-width: fit-content !important;
+  }
+
+  .testi-content {
+    margin-top: 60px !important;
+  }
+
+  .heading-form span {
+    font-size: 24px;
+    color: #4a4a4a;
+    margin-bottom: 0 I !important;
+  }
+
+  .testi-heading {
+    margin-bottom: 0px !important;
+  }
+
+  .testi-img img {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 300px;
+    height: 409px;
+  }
+
+  .simple-form {
+    padding-top: 0px;
+  }
+
+  .testi-main {
+    padding-top: 0px;
+  }
+
+  .testi-heading .h4 {
+    font-size: 35px;
+    line-height: 45px;
+    text-align: left;
+    right: 0;
+  }
+
+  .testi-heading .h3 {
+    line-height: 59px;
+    text-align: left;
+    margin: 0;
+    padding-left: 13%;
+    font-size: 40px;
+  }
+
+  .testimonials-slider {
+    margin-top: 0px;
+  }
+
+  .heading-form h3 {
+    font-size: 33px;
+  }
+
+  .ss {
+    text-align: right;
+    font-size: 30px;
+    margin-right: 15%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .testi-content p {
+    font-size: 15.0714px;
+    line-height: 23px;
+    color: #4a4a4a;
+    letter-spacing: 0.02em;
+    font-weight: 0;
+    width: 80%;
+    text-align: justify;
+  }
+}
+
+.testi-content h4 {
+  margin: 20px 0 30px 0;
+  font-size: 16.119px;
+  color: #4a4a4a;
+  font-family: "Pangram-Light";
+  font-weight: 400;
+
+  display: inline-block;
+  line-height: 20px;
+  text-transform: uppercase;
+}
+
+@media (min-width: 1150px) and (max-width: 1440px) {
+  .testi-img img {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 300px;
+    height: 560px;
+  }
+
+  .testi-main {
+    .container {
+      max-width: 1100px !important;
+      padding: 0 6%;
+    }
+  }
+
+  .testi-heading {
+    .h3 {
+      font-size: 90.476px;
+      line-height: 18px;
+    }
+  }
+
+  .testi-img img {
+    // height: 456px;
+    margin-bottom: 56px;
+  }
+}
+
+// ***
+.moody .nav-btn {
+  position: absolute;
+  z-index: 999;
+  bottom: -38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .moody .nav-btn {
+    position: absolute;
+    z-index: 999;
+    bottom: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 20px;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-sm,
+  .container {
+    max-width: 100%;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// ************  Flights search page
+
+.accord .accordion-button {
+  box-shadow: none;
+  border: none;
+  background: transparent !important;
+  padding: 10px 0;
+  font-weight: 400;
+  font-size: 18px;
+  color: #808080 !important;
+  font-family: "Pangram-Light";
+}
+
+.accord .accordion-item {
+  border: none;
+  padding: 0;
+}
+
+.accord .accordion-body {
+  padding: 0px;
+}
+
+.accord .accordion-button::after {
+  margin-left: 15px;
+}
+
+// ************* FLight Date
+
+.flight-date .mat-datepicker-toggle {
+  display: none;
+}
+
+.flight-src .mat-datepicker-toggle {
+  display: none;
+}
+
+// THE LOADING EFFECT
+
+.skeleton {
+  background-color: #e2e5e7;
+  // The shine that's going to move across the skeleton:
+  background-image: linear-gradient(
+    90deg,
+    rgba(#fff, 0),
+    rgba(#fff, 0.5),
+    rgba(#fff, 0)
+  );
+  background-size: 40px 100%; // width of the shine
+  background-repeat: no-repeat; // No need to repeat the shine effect
+  background-position: left -40px top 0; // Place shine on the left side, with offset on the left based on the width of the shine - see background-size
+  animation: shine 1s ease infinite; // increase animation time to see effect in 'slow-mo'
+}
+
+@keyframes shine {
+  to {
+    // Move shine from left to right, with offset on the right based on the width of the shine - see background-size
+    background-position: right -40px top 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .arrow-top2 .slick-prev {
+    position: absolute;
+    right: 19%;
+  }
+
+  .thumb-1 .slick-prev {
+    position: absolute;
+    right: 19%;
+  }
+
+  .arrow-top .slick-prev {
+    position: absolute;
+    right: 19%;
+    top: 22px;
+  }
+
+  .arrow-top .slick-next {
+    position: absolute;
+    left: 73%;
+    top: 22px;
+  }
+
+  .trend .custom-heading h2 span {
+    font-style: normal !important;
+    font-weight: 100 !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .modal-custom {
+    max-width: 700px !important;
+  }
+}
+
+.testi-heading .h4.cari {
+  text-align: center;
+
+  .h3 {
+    white-space: nowrap;
+  }
+}
+
+.testi-heading .h4.cari .hear1 {
+  display: block;
+  position: relative;
+
+  padding-left: 1.8em;
+}
+
+// ******************************************** quotation
+
+.trip-summary {
+  background: #ffffff;
+  border: 1px solid #e1e1e1;
+  border-radius: 55px;
+  padding: 30px;
+  min-height: 360px;
+
+  .accordion {
+    // display: flex;
+    // flex-wrap: wrap;
+  }
+
+  .accordion-item {
+    // width: 50%;
+    border: none;
+  }
+
+  .accordion-item .accordion-button {
+    border: none;
+    box-shadow: none;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 28px;
+    letter-spacing: 0.02em;
+    color: #404040;
+    pointer-events: none;
+  }
+
+  .accordion-button::after {
+    // margin-left: 20px;
+    display: none;
+  }
+
+  .accordion-button:not(.collapsed) {
+    background-color: transparent;
+    color: inherit;
+  }
+
+  .accordion-body {
+    padding-top: 0px;
+  }
+
+  .accordion-body p {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 30px;
+    letter-spacing: 0.02em;
+    color: #878787;
+    padding-left: 35px;
+  }
+}
+
+// *****************************
+
+.madrid-faq {
+  padding: 30px 0 30px;
+  position: relative;
+  overflow: hidden;
+
+  .aside-line {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+  }
+
+  .trip-ul {
+    margin-bottom: 10px;
+    position: relative;
+    bottom: 30px;
+
+    .tripStart {
+      display: inline;
+      font-family: "LC Sac Trial" !important;
+    }
+
+    h2 {
+      font-weight: 400;
+      font-size: 55px;
+      line-height: 50px;
+      color: #4a4a4a;
+    }
+
+    ul {
+      margin: 0px;
+      padding: 0px;
+      display: flex;
+      flex-wrap: wrap;
+      list-style: none;
+
+      li {
+        margin: 15px 15px 0 15px;
+
+        a {
+          text-decoration: none;
+          font-weight: 400;
+          font-size: 25px;
+          line-height: 16px;
+          letter-spacing: 0.02em;
+          color: #000000;
+          font-family: "LC Sac Trial" !important;
+
+          span {
+            font-weight: 400;
+            font-size: 20px;
+            line-height: 16px;
+            letter-spacing: 0.02em;
+            color: #000000;
+          }
+        }
+      }
+    }
+  }
+
+  .hotel-aside {
+    text-align: center;
+
+    h3 {
+      font-weight: 400;
+      font-size: 40px;
+      line-height: 50px;
+      color: #4a4a4a;
+      margin-bottom: 20px;
+    }
+
+    .aside-thumb {
+      display: flex;
+      justify-content: space-between;
+
+      img {
+        height: 100px;
+        margin-top: 20px;
+      }
+    }
+  }
+
+  .trip-accor {
+    .hotel-aside {
+      padding-left: 3em;
+    }
+
+    .accordion-header {
+      padding: 10px;
+    }
+
+    .accordion {
+      // display: flex;
+      // flex-wrap: wrap;
+    }
+
+    .accordion-item {
+      // width: 50%;
+      border: none;
+      border: 1px solid #e1e1e1;
+      border-radius: 20px;
+      background-color: transparent;
+      margin-bottom: 30px;
+      margin-top: -20px;
+    }
+
+    .accordion-item .accordion-button {
+      background: #ffffff;
+      padding: 0px 20px;
+
+      &:focus {
+        box-shadow: none;
+        border: none;
+      }
+
+      h3 {
+        font-weight: 400;
+        font-size: 40px;
+        color: #4a4a4a;
+        margin-bottom: 0px;
+      }
+
+      span {
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 28px;
+        letter-spacing: 0.02em;
+        color: #5ea4d3;
+        display: inline-block;
+        margin-left: 20px;
+      }
+    }
+
+    .accordion-button::after {
+      // margin-left: 20px;
+    }
+
+    .accordion-button:not(.collapsed) {
+      background-color: transparent;
+      color: inherit;
+    }
+
+    .accordion-body {
+      padding-top: 20px;
+      border-top: 0.837302px solid #bababa;
+      margin: 0px 10px;
+      // min-height:450px;
+    }
+
+    .accordion-body p {
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 30px;
+      letter-spacing: 0.02em;
+      color: #878787;
+      padding-left: 35px;
+    }
+  }
+
+  .accordion-button::after {
+    margin-left: auto;
+    content: "";
+    border: 1px solid #000;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    background-position: center;
+    border-radius: 50%;
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1398px) {
+  .madrid-faq {
+    .trip-accor {
+      .hotel-aside {
+        padding-left: 4em;
+      }
+    }
+  }
+}
+
+@media (min-width: 1399px) and (max-width: 1920px) {
+  .madrid-faq {
+    .trip-accor {
+      .hotel-aside {
+        padding-left: 4em;
+        padding-right: 3em;
+      }
+    }
+  }
+}
+
+.cdk-overlay-container {
+  z-index: 1200 !important;
+}
+
+@media (max-width: 900px) {
+  .trip-summary {
+    min-height: inherit;
+  }
+
+  .trip-summary .accordion-item .accordion-button {
+    font-size: 16px;
+    width: 50%;
+    float: left;
+    padding-left: 0;
+  }
+
+  // *************************
+
+  .madrid-faq {
+    padding: 80px 0 0;
+    position: relative;
+
+    .aside-line {
+      position: absolute;
+      top: 30px;
+      right: 0px;
+    }
+
+    .trip-ul {
+      margin-bottom: 10px;
+
+      .tripStart {
+        display: block;
+        margin-top: 20px;
+      }
+
+      h2 {
+        font-weight: 400;
+        font-size: 35px;
+      }
+
+      ul {
+        margin: 0px;
+        padding: 0px;
+        display: flex;
+        flex-wrap: wrap;
+        list-style: none;
+        margin-top: -21px;
+        margin-left: -10px;
+
+        li {
+          margin: 0;
+          line-height: 9px;
+          margin: 15px 0;
+          margin-left: 10px;
+
+          a {
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 25px;
+            line-height: 16px;
+            letter-spacing: 0.02em;
+            color: #000000;
+            font-family: "LC Sac Trial" !important;
+
+            span {
+              font-weight: 400;
+              font-size: 20px;
+              line-height: 16px;
+              letter-spacing: 0.02em;
+              color: #000000;
+            }
+          }
+        }
+      }
+    }
+
+    .hotel-aside {
+      text-align: center;
+
+      h3 {
+        font-weight: 400;
+        font-size: 40px;
+        line-height: 50px;
+        color: #4a4a4a;
+        margin-bottom: 20px;
+      }
+
+      .aside-thumb {
+        display: flex;
+        justify-content: space-between;
+
+        img {
+          height: 100px;
+          margin-top: 20px;
+        }
+      }
+    }
+
+    .trip-accor {
+      .hotel-aside {
+        padding-left: 0;
+      }
+
+      .accordion-header {
+        padding: 10px;
+      }
+
+      .accordion {
+        // display: flex;
+        // flex-wrap: wrap;
+      }
+
+      .accordion-item {
+        // width: 50%;
+        border: none;
+        border: 1px solid #e1e1e1;
+        border-radius: 20px;
+        background-color: transparent;
+        margin-bottom: 30px;
+      }
+
+      .accordion-item .accordion-button {
+        background: #ffffff;
+        padding: 0px 5px;
+
+        &:focus {
+          box-shadow: none;
+          border: none;
+        }
+
+        h3 {
+          font-weight: 400;
+          font-size: 25px;
+          color: #4a4a4a;
+          margin-bottom: 0px;
+        }
+
+        span {
+          font-weight: 500;
+          font-size: 15px;
+          line-height: 28px;
+          letter-spacing: 0.02em;
+          color: #5ea4d3;
+          display: inline-block;
+          margin-left: 20px;
+        }
+      }
+
+      .accordion-button::after {
+        // margin-left: 20px;
+      }
+
+      .accordion-button:not(.collapsed) {
+        background-color: transparent;
+        color: inherit;
+      }
+
+      .accordion-body {
+        padding-top: 0;
+        border-top: 0.837302px solid #bababa;
+        margin: 0px 20px;
+        min-height: inherit;
+        padding: 0px;
+      }
+
+      .accordion-body p {
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 30px;
+        letter-spacing: 0.02em;
+        color: #878787;
+        padding-left: 35px;
+      }
+    }
+
+    .accordion-button::after {
+      margin-left: auto;
+      content: "";
+      border: 1px solid #000;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      background-position: center;
+      border-radius: 50%;
+    }
+  }
+}
+
+.accordion-button:not(.collapsed) {
+  box-shadow: none;
+}
+
+.holiday-pack .slick-slide {
+  margin: 0 4px !important;
+}
+
+.holiday-pack .slide {
+  margin-bottom: 10px !important;
+}
+
+.trip-track .buttonsss {
+  display: flex;
+  justify-content: end;
+  position: relative;
+  bottom: 30px;
+  left: 100px !important;
+}
+
+@media (max-width: 900px) {
+  .trip-track .buttonsss {
+    left: 77px !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .mood-slider-boox .custom-box .slick-slide {
+    margin: 4px 50px !important;
+  }
+  .buttonsss {
+    bottom: -1.7em;
+  }
+}
+
+.slide-dis .slick-arrow::before {
+  display: none;
+}
+
+.testi-main .buttonssss {
+  bottom: 10em !important;
+  top: inherit !important;
+}
+
+.edit-icon {
+  margin-left: 10px;
+  color: #333;
+}
+
+.amm span:nth-child(2) {
+  color: #717070;
+}
+
+@media (max-width: 900px) {
+  .star {
+    text-align: center;
+  }
+
+  .testi-content {
+    text-align: center;
+  }
+}
+
+.btn-test {
+  background-color: #0e3958;
+  color: #fff !important;
+  border-radius: 35px;
+  padding: 10px 30px;
+}
+
+@media (max-width: 900px) {
+  .testi-content .limitText {
+    margin-bottom: 60px;
+  }
+
+  .testi-content {
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .testi-content a {
+    bottom: 80px !important;
+  }
+
+  // .testi-content .readLess{
+  //   left: 520px !important;
+  // }
+}
+
+.pass .slick-dots {
+  display: none;
+}
+
+// css for loader
+
+.hide-footer #footer {
+  display: none !important;
+}
+
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  // background: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+  z-index: 9999; /* Ensure the overlay is on top of all other content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cssload-container {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  // background-color: rgba(255, 255, 255, 0.7);
+  z-index: 9999;
+}
+
+.cssload-speeding-wheel {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 48%;
+  top: 40%;
+  width: 63px;
+  height: 63px;
+  margin: 0 auto;
+  border: 4px solid rgb(0, 0, 0);
+  border-radius: 50%;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  animation: cssload-spin 500ms infinite linear;
+  -o-animation: cssload-spin 500ms infinite linear;
+  -ms-animation: cssload-spin 500ms infinite linear;
+  -webkit-animation: cssload-spin 500ms infinite linear;
+  -moz-animation: cssload-spin 500ms infinite linear;
+}
+
+@keyframes cssload-spin {
+  100% {
+    transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@-o-keyframes cssload-spin {
+  100% {
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@-ms-keyframes cssload-spin {
+  100% {
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes cssload-spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@-moz-keyframes cssload-spin {
+  100% {
+    -moz-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+.moody .slick-list {
+  overflow: hidden;
+}
+
+.onscrollanimation.onscrollanimation-active .mat-button-wrapper {
+  display: block;
+  align-items: center;
+  padding: 16px 15px;
+}
+
+.onscrollanimation .mat-button-wrapper {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px !important;
+}
+
+.onscrollanimation .mat-button-wrapper i {
+  margin-right: 10px;
+}
+
+.onscrollanimation.onscrollanimation-active .mat-button-wrapper i {
+  margin-right: 0 !important;
+}
+
+.banner-new .slick-list {
+  padding: 0 20% 0 0 !important;
+}
+
+.arrow-top2.mobile-arrow .slick-arrow {
+  top: unset;
+  bottom: -20px;
+  position: absolute;
+  display: block !important;
+}
+
+.arrow-top2.mobile-arrow.more-bottom .slick-arrow {
+  top: unset;
+  bottom: -80px;
+  position: absolute;
+  display: block !important;
+}
+
+.arrow-top2.mobile-arrow .slick-dots {
+  display: none !important;
+}
+
+.arrow-top2.mobile-arrow .slick-next {
+  position: absolute;
+  right: 28%;
+}
+
+.arrow-top2.mobile-arrow .slick-prev {
+  position: absolute;
+  right: 53%;
+}
+
+.no-arrow {
+  .buttonss {
+    display: none !important;
+    opacity: 0;
+  }
+}
+
+.inti .slick-slide {
+  margin: 0 5px;
+}
+
+/* the parent */
+.inti .slick-list {
+  margin: 0 -5px;
+}
+
+.inti .item {
+  margin-bottom: 20px;
+}
+
+.inti .slick-slide img {
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 70px;
+  height: 240px;
+  object-fit: cover;
+}
+
+.arrow-top2.lop {
+  padding-top: 6px !important;
+}
+
+.flex-center {
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
