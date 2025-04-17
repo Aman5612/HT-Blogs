@@ -6,7 +6,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'sans-serif'], // Add DM Sans
+        sans: ['DM Sans', 'sans-serif'],
+        sans: ['Roboto', 'Helvetica Neue', 'sans-serif'],
       },
     },
   },

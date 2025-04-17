@@ -2,14 +2,14 @@
 <header
   [ngClass]="{ headerr: router.url.includes('landing-page') }"
   id="header"
-  class="fixed-top"
+  class="fixed-top !font-serif"
 >
   <div
     *ngIf="!router.url.includes('landing-page')"
-    class="container d-flex justify-content-between"
+    class="flex justify-between py-[10px]  container d-flex justify-content-between"
   >
     <a routerLink="/" class="logo"
-      ><img src="assets/img/LOGO_White.png" alt="" class="img-fluid"
+      ><img src="https://dsge8950r7q4v.cloudfront.net/assets/img/LOGO_White.png" alt="" class="img-fluid"
     /></a>
     <nav
       [class.whiteText]="isHomePage()"
