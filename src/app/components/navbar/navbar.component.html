@@ -2,14 +2,37 @@
 <header
   [ngClass]="{ headerr: router.url.includes('landing-page') }"
   id="header"
-  class="fixed-top !font-serif"
+  class="fixed-top !font-sans"
+  *ngIf="
+    tabWidth > 768 &&
+    !router.url.includes('/landing-page/orlando') &&
+    !router.url.includes('/landing-page/san-francisco') &&
+    !router.url.includes('/landing-page/new-york') &&
+    !router.url.includes('/landing-page/chicago') &&
+    !router.url.includes('/landing-page/washington') &&
+    !router.url.includes('/landing-page/los-angeles') &&
+    !router.url.includes('/landing-page/las-vegas') &&
+    !router.url.includes('/landing-page/miami') &&
+    !router.url.includes('/landing-page/atlanta') &&
+    !router.url.includes('/landing-page/philadelphia') &&
+    !router.url.includes('/landing-page/seattle') &&
+    !router.url.includes('/landing-page/boston') &&
+    !router.url.includes('/usa/luxury-experiences') &&
+    !router.url.includes('/usa/outdoors-adventure') &&
+    !router.url.includes('/usa/city-breaks') &&
+    !router.url.includes('/usa/road-trips') &&
+    !router.url.includes('/package-internal')
+  "
 >
   <div
     *ngIf="!router.url.includes('landing-page')"
-    class="flex justify-between py-[10px]  container d-flex justify-content-between"
+    class="container d-flex justify-content-between"
   >
     <a routerLink="/" class="logo"
-      ><img src="https://dsge8950r7q4v.cloudfront.net/assets/img/LOGO_White.png" alt="" class="img-fluid"
+      ><img
+        [src]="apiService.CDN_BASE_URL + 'assets/img/LOGO_White.png'"
+        alt=""
+        class="img-fluid"
     /></a>
     <nav
       [class.whiteText]="isHomePage()"
@@ -19,23 +42,23 @@
     >
       <ul>
         <!-- <div class="only-mobile">
-          <div class="pro-img">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="">
-          </div>
-          <div *ngIf="user_profile!=null&&user_profile!=undefined" [class.whiteText]=isHomePage() class="login">
-            <a style="position: relative; left: -12px !important; top: 3px !important;" class="getstarted scrollto"
-              (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a>
-          </div>
-        </div> -->
+                  <div class="pro-img">
+                    <img [src]="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="">
+                  </div>
+                  <div *ngIf="user_profile!=null&&user_profile!=undefined" [class.whiteText]=isHomePage() class="login">
+                    <a style="position: relative; left: -12px !important; top: 3px !important;" class="getstarted scrollto"
+                      (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a>
+                  </div>
+                </div> -->
         <li><a class="nav-link scrollto" routerLink="/">Home</a></li>
-        <li (click)="openMenuu()"></li>
+        <li (click)="openMenuu()" *ngIf="tabWidth < 600"></li>
         <li>
           <a class="nav-link scrollto" routerLink="/about-us">About Us</a>
         </li>
         <li><a class="nav-link scrollto" routerLink="/careers">Careers</a></li>
         <!-- <li><a class="nav-link scrollto" routerLink="/">Holidays</a></li>
-        <li><a class="nav-link scrollto " href="#portfolio">Flights</a></li>
-        <li><a class="nav-link scrollto" href="#team">Hotels</a></li> -->
+                <li><a class="nav-link scrollto " href="#portfolio">Flights</a></li>
+                <li><a class="nav-link scrollto" href="#team">Hotels</a></li> -->
 
         <li><a class="nav-link scrollto" routerLink="/blogs">Blogs</a></li>
 
@@ -58,6 +81,7 @@
             ></i>
           </a>
         </li>
+        <!--                {{ holidayMood|json }}-->
         <div
           class="src-dropdownn"
           (mouseenter)="mouseEnterDropdown()"
@@ -236,8 +260,17 @@
           </div>
         </div>
 
+        <li>
+          <a
+            class="nav-link scrollto"
+            target="_blank"
+            href="https://visa.holidaytribe.com"
+            >Visa</a
+          >
+        </li>
+
         <!-- <li><a class="nav-link scrollto" routerLink="/flights">Flights</a></li>
-        <li><a class="nav-link scrollto" routerLink="/hotels">Hotels</a></li> -->
+                <li><a class="nav-link scrollto" routerLink="/hotels">Hotels</a></li> -->
       </ul>
       <i class="bi bi-list mobile-nav-toggle"></i>
     </nav>
@@ -282,7 +315,7 @@
       <span></span>
       <span></span>
       <span></span>
-      <!-- <img width="25" height="35" src="assets/img/menu1.png" alt=""> -->
+      <!-- <img width="25" height="35" [src]="apiService.api_image_url +menu1.png" alt=""> -->
     </div>
   </div>
   <div
@@ -290,10 +323,15 @@
     class="container d-flex justify-content-between"
   >
     <a routerLink="/" class="logoLanding"
-      ><img src="assets/img/LOGO_White.png" alt="" class="img-fluid"
+      ><img
+        [src]="apiService.CDN_BASE_URL + 'assets/img/LOGO_White.png'"
+        alt=""
+        class="img-fluid"
     /></a>
-    <p (click)="requestCall()" class="requestBtn">
-      <img src="assets/img/RequestCall.png" />Request Callback
+    <p class="requestBtn">
+      <img
+        [src]="apiService.CDN_BASE_URL + 'assets/img/RequestCall.png'"
+      />Request Callback
     </p>
   </div>
 </header>
@@ -304,13 +342,39 @@
   id="header "
   [ngClass]="{ header3: router.url.includes('landing-page') }"
   class="fixed-top header-2"
+  *ngIf="
+    tabWidth < 768 &&
+    !router.url.includes('/landing-page/orlando') &&
+    !router.url.includes('/landing-page/san-francisco') &&
+    !router.url.includes('/landing-page/new-york') &&
+    !router.url.includes('/landing-page/chicago') &&
+    !router.url.includes('/landing-page/washington') &&
+    !router.url.includes('/landing-page/los-angeles') &&
+    !router.url.includes('/landing-page/las-vegas') &&
+    !router.url.includes('/landing-page/miami') &&
+    !router.url.includes('/landing-page/atlanta') &&
+    !router.url.includes('/landing-page/philadelphia') &&
+    !router.url.includes('/landing-page/seattle') &&
+    !router.url.includes('/landing-page/boston') &&
+    !router.url.includes('/usa/luxury-experiences') &&
+    !router.url.includes('/usa/outdoors-adventure') &&
+    !router.url.includes('/usa/city-breaks') &&
+    !router.url.includes('/usa/road-trips') &&
+    !router.url.includes('/package-internal')
+  "
 >
   <div
-    *ngIf="!router.url.includes('landing-page')"
+    *ngIf="!this.eventUrl.toLowerCase().includes('/landing-page/')"
     class="container d-flex justify-content-between"
   >
     <a routerLink="/" class="logo"
-      ><img src="assets/img/LOGO_Dark.webp" alt="" class="img-fluid"
+      ><img
+        alt="Logo"
+        width="100"
+        height="50"
+        [src]="apiService.CDN_BASE_URL + 'assets/img/LOGO_Dark.webp'"
+        alt=""
+        class="img-fluid"
     /></a>
 
     <nav
@@ -326,33 +390,33 @@
       >
         <!-- <a class="getstarted scrollto welcomee" (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a> -->
         <!-- <div class="proo-img">
-          <img src="assets/img/profileLogoo.png" alt="">
-        </div> -->
+                  <img [src]="apiService.api_image_url +profileLogoo.png" alt="">
+                </div> -->
 
         <!-- <div ngbDropdown class="proo-img">
-          <a class=" scrollto welcomee wel" ngbDropdownToggle><img src="assets/img/profileLogoo.png" alt=""></a>
-          <div ngbDropdownMenu class="dropdownUser">
-            <button class="dropdown-item" *ngFor="let sortOrder of 
-                         sortOrders" (click)="ChangeSortOrder(sortOrder)">
-              {{sortOrder}}</button>
-          </div>
-        </div> -->
+                  <a class=" scrollto welcomee wel" ngbDropdownToggle><img [src]="apiService.api_image_url +profileLogoo.png" alt=""></a>
+                  <div ngbDropdownMenu class="dropdownUser">
+                    <button class="dropdown-item" *ngFor="let sortOrder of
+                                 sortOrders" (click)="ChangeSortOrder(sortOrder)">
+                      {{sortOrder}}</button>
+                  </div>
+                </div> -->
 
         <!-- <div ngbDropdown>
-          <a class=" scrollto welcomee wel" ngbDropdownToggle> <img height="25px" width="22px" src="assets/img/profileLogoo.png" alt=""></a>
-          <div ngbDropdownMenu class="dropdownUser">
-            <button class="dropdown-item" *ngFor="let sortOrder of 
-                         sortOrders" (click)="ChangeSortOrder(sortOrder)">
-              {{sortOrder}}</button>
-          </div>
-        </div> -->
+                  <a class=" scrollto welcomee wel" ngbDropdownToggle> <img height="25px" width="22px" [src]="apiService.api_image_url +profileLogoo.png" alt=""></a>
+                  <div ngbDropdownMenu class="dropdownUser">
+                    <button class="dropdown-item" *ngFor="let sortOrder of
+                                 sortOrders" (click)="ChangeSortOrder(sortOrder)">
+                      {{sortOrder}}</button>
+                  </div>
+                </div> -->
 
         <div ngbDropdown>
           <a class="scrollto welcomee wel" ngbDropdownToggle
             ><img
               height="25px"
               width="22px"
-              src="assets/img/profileLogoo.png"
+              [src]="apiService.CDN_BASE_URL + 'assets/img/profileLogoo.png'"
               alt=""
             />
             <span>Welcome {{ user_profile.first_name }}</span></a
@@ -371,15 +435,15 @@
       <ul (click)="openMenu()">
         <div class="only-mobile">
           <!-- <div class="pro-img">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="">
-          </div> -->
+                      <img [src]="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="">
+                    </div> -->
           <!-- <div *ngIf="user_profile!=null&&user_profile!=undefined" [class.whiteText]=isHomePage() class="login">
-            <a style="position: relative; left: -12px !important; top: 3px !important;" class="getstarted scrollto"
-              (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a>
-          </div> -->
+                      <a style="position: relative; left: -12px !important; top: 3px !important;" class="getstarted scrollto"
+                        (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a>
+                    </div> -->
         </div>
         <li><a class="nav-link scrollto" routerLink="/">Home</a></li>
-        <li>
+        <li *ngIf="tabWidth < 600">
           <div ngbDropdown>
             <a
               (click)="openThemeee()"
@@ -387,16 +451,16 @@
               ngbDropdownToggle
               >Themes
               <!-- <i style="margin-left: 5px; font-size: 15px;" (click)="showTheme()" class="fa fa-angle-down plus" *ngIf="!themeList"></i>
-                <i style="margin-left: 5px; font-size: 15px;" (click)="showwThemee()" class="fa fa-angle-up minus" *ngIf="themeList"></i> -->
+                            <i style="margin-left: 5px; font-size: 15px;" (click)="showwThemee()" class="fa fa-angle-up minus" *ngIf="themeList"></i> -->
             </a>
             <!-- <li ngbDropdownMenu style="max-height: 150px !important;" class="listt">
-          <a class="nav-link scrollto dropdown-item destinations" *ngFor="let data of holidayMood;"
-            (click)="openTheme(data.theme_id)">
-            {{data.name}}</a>
-        </li> -->
+                          <a class="nav-link scrollto dropdown-item destinations" *ngFor="let data of holidayMood;"
+                            (click)="openTheme(data.theme_id)">
+                            {{data.name}}</a>
+                        </li> -->
           </div>
         </li>
-        <li (click)="openMenuu()">
+        <li (click)="openMenuu()" *ngIf="tabWidth < 600">
           <div ngbDropdown>
             <a class="nav-link scrollto welcomee" ngbDropdownToggle
               >Destinations
@@ -433,31 +497,39 @@
         </li>
         <li><a class="nav-link scrollto" routerLink="/careers">Careers</a></li>
         <!-- <li><a class="nav-link scrollto" routerLink="/">Holidays</a></li>
-        <li><a class="nav-link scrollto " href="#portfolio">Flights</a></li>
-        <li><a class="nav-link scrollto" href="#team">Hotels</a></li> -->
+                      <li><a class="nav-link scrollto " href="#portfolio">Flights</a></li>
+                      <li><a class="nav-link scrollto" href="#team">Hotels</a></li> -->
 
         <li><a class="nav-link scrollto" routerLink="/blogs">Blogs</a></li>
+        <li>
+          <a
+            class="nav-link scrollto"
+            target="_blank"
+            href="https://visa.holidaytribe.com"
+            >Visa</a
+          >
+        </li>
         <!-- <li><a class="nav-link scrollto" routerLink="/flights">Flights</a></li>
-  <li><a class="nav-link scrollto" routerLink="/hotels">Hotels</a></li> -->
+                <li><a class="nav-link scrollto" routerLink="/hotels">Hotels</a></li> -->
       </ul>
       <i class="bi bi-list mobile-nav-toggle"></i>
     </nav>
     <!-- .navbar -->
 
     <!-- <div class="iconn" *ngIf="searchIcoon && !menu_icon_variable" (click)="searchIcon()">
-    <i class="fa fa-search"></i>
-  </div> -->
+          <i class="fa fa-search"></i>
+        </div> -->
 
     <!-- <div>
-    <div class="search-container" *ngIf="!menu_icon_variable && !searchIcoon">
-      <input type="text" id="search" [(ngModel)]="search"
-      (ngModelChange)="onsearch()"  placeholder="Enter Destination...">
-      <span (click)="closeSearchIcon()" class="search-icon"><i class="fa fa-times"></i></span>
-    </div>
-    <div class="src-dropdown" *ngIf="searchData.length && search.length > 0">
-      <button *ngFor="let data of searchData" (click)="openPackage(data)">{{data.search_name}}</button>
-    </div>
-  </div> -->
+          <div class="search-container" *ngIf="!menu_icon_variable && !searchIcoon">
+            <input type="text" id="search" [(ngModel)]="search"
+            (ngModelChange)="onsearch()"  placeholder="Enter Destination...">
+            <span (click)="closeSearchIcon()" class="search-icon"><i class="fa fa-times"></i></span>
+          </div>
+          <div class="[src]-dropdown" *ngIf="searchData.length && search.length > 0">
+            <button *ngFor="let data of searchData" (click)="openPackage(data)">{{data.search_name}}</button>
+          </div>
+        </div> -->
 
     <div
       *ngIf="!(user_profile != null && user_profile != undefined)"
@@ -477,7 +549,10 @@
       <i class="fa fa-search"></i>
     </div>
     <div class="pro-img">
-      <img src="assets/img/profileLogoo.webp" alt="" />
+      <img
+        [src]="apiService.CDN_BASE_URL + 'assets/img/profileLogoo.webp'"
+        alt=""
+      />
     </div>
     <div
       class="menu_icon"
@@ -487,10 +562,10 @@
       <span [class.menu_iconClassSpan]="menu_icon_variable"></span>
       <span></span>
       <span [class.menu_iconClassSpan]="menu_icon_variable"></span>
-      <!-- <img width="25" height="35" src="assets/img/menu1.png" alt=""> -->
+      <!-- <img width="25" height="35" [src]="apiService.api_image_url +menu1.png" alt=""> -->
     </div>
   </div>
-  <div *ngIf="!router.url.includes('landing-page')">
+  <div *ngIf="!this.eventUrl.toLowerCase().includes('/landing-page/')">
     <div class="search-container" *ngIf="!menu_icon_variable && !searchIcoon">
       <input
         type="text"
@@ -510,15 +585,141 @@
     </div>
   </div>
   <div
-    *ngIf="router.url.includes('landing-page')"
+    *ngIf="this.eventUrl.toLowerCase().includes('/landing-page/')"
     class="container d-flex justify-content-between"
   >
     <a routerLink="/" class="logoLanding"
-      ><img src="assets/img/LOGO_White.png" alt="" class="img-fluid"
+      ><img
+        [src]="apiService.CDN_BASE_URL + 'assets/img/LOGO_White.png'"
+        alt=""
+        class="img-fluid"
     /></a>
-    <p (click)="requestCall()" class="requestBtn">
-      <img src="assets/img/RequestCall.png" />Request Callback
+    <p class="requestBtn">
+      <img
+        [src]="apiService.CDN_BASE_URL + 'assets/img/RequestCall.png'"
+      />Request Callback
     </p>
   </div>
 </header>
 <!-- End Header -->
+
+<div class="custom-header">
+  <header
+    id="header2"
+    class="fixed-top"
+    *ngIf="
+      router.url.includes('/landing-page/orlando') ||
+      router.url.includes('/landing-page/san-francisco') ||
+      router.url.includes('/landing-page/new-york') ||
+      router.url.includes('/landing-page/chicago') ||
+      router.url.includes('/landing-page/washington') ||
+      router.url.includes('/landing-page/los-angeles') ||
+      router.url.includes('/landing-page/las-vegas') ||
+      router.url.includes('/landing-page/miami') ||
+      router.url.includes('/landing-page/atlanta') ||
+      router.url.includes('/landing-page/philadelphia') ||
+      router.url.includes('/landing-page/seattle') ||
+      router.url.includes('/landing-page/boston') ||
+      router.url.includes('/usa/luxury-experiences') ||
+      router.url.includes('/usa/outdoors-adventure') ||
+      router.url.includes('/usa/city-breaks') ||
+      router.url.includes('/usa/road-trips') ||
+      router.url.includes('/package-internal')
+    "
+  >
+    <div class="container style-container">
+      <div
+        class="navbar-main d-flex align-items-center justify-content-between"
+      >
+        <div class="logo d-flex align-items-center">
+          <div>
+            <a href="index.html" class="logo me-auto"
+              ><img
+                src="https://dsge8950r7q4v.cloudfront.net/USA/assets/image/logo-white.png"
+                alt=""
+                class="img-fluid"
+            /></a>
+          </div>
+          <div class="search-top only-desktop">
+            <input
+              type="text"
+              [(ngModel)]="search"
+              (ngModelChange)="onsearch()"
+              placeholder="Write here..."
+            />
+            <i
+              ><img
+                src="https://dsge8950r7q4v.cloudfront.net/USA/assets/image/outdoors/search-icon.png"
+                alt=""
+            /></i>
+          </div>
+          <div
+            class="src-dropdownn"
+            *ngIf="searchData.length && search.length > 0"
+          >
+            <button *ngFor="let data of searchData" (click)="openPackage(data)">
+              {{ data.search_name }}
+            </button>
+          </div>
+        </div>
+
+        <nav
+          id="navbar"
+          class="navbar order-last order-lg-0"
+          [ngClass]="{ active: isNavbarActive }"
+        >
+          <ul>
+            <i class="fa-solid fa-x toggle-close" (click)="toggleNavbar()"></i>
+            <li><a class="nav-link scrollto active" routerLink="/">Home</a></li>
+            <li>
+              <a class="nav-link scrollto" routerLink="/about-us">About</a>
+            </li>
+
+            <li>
+              <a class="nav-link scrollto" routerLink="/careers">Careers</a>
+            </li>
+            <li><a class="nav-link scrollto" routerLink="/blogs">Blog</a></li>
+
+            <li
+              class="dropdown"
+              style="position: relative; cursor: pointer"
+              (mouseenter)="openthemes()"
+              (mouseleave)="closeThemess()"
+              (click)="toggleDropdown()"
+            >
+              <a class="nav-link scrollto"
+                >Themes
+                <i
+                  style="margin-left: 5px; font-size: 15px"
+                  class="fa fa-angle-down"
+                  *ngIf="!themeListHeader"
+                ></i>
+                <i
+                  style="margin-left: 5px; font-size: 15px"
+                  class="fa fa-angle-up"
+                  *ngIf="themeListHeader"
+                ></i>
+              </a>
+              <ul [ngClass]="{ dropdownopen: dropdownOpen }">
+                <li><a (click)="luxuryDirection('luxury')">Luxury</a></li>
+                <li><a (click)="luxuryDirection('outdoors')">Outdoors</a></li>
+                <li>
+                  <a (click)="luxuryDirection('cityBreaks')">City Breaks</a>
+                </li>
+                <li>
+                  <a (click)="luxuryDirection('roadTrips')">Road Trips</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <!-- <div class="search-top only-mobile">
+                      <i><img [src]="assets/image/outdoors/search-icon.png" alt=""></i>
+                     </div> -->
+
+          <i (click)="toggleNavbar()" class="fa-solid fa-bars menu-toggle"></i>
+        </nav>
+        <!-- .navbar -->
+      </div>
+    </div>
+  </header>
+</div>

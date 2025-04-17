@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { DatePipe } from '@angular/common';
@@ -8,9 +8,7 @@ import moment, { Moment } from 'moment';
   providedIn: 'root',
 })
 export class UtilService {
-  private datePipe = inject(DatePipe);
-
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private datePipe: DatePipe) {}
 
   USER_PROFILE = 'USER_PROFILE';
   USER_LOGIN = 'USER_LOGIN';
@@ -25,24 +23,24 @@ export class UtilService {
   private filterThreeValue = new BehaviorSubject<string>('');
   filterThreeValueUpdate = this.filterThreeValue.asObservable();
 
-  fetchIndexValue(updatedIndex: string) {
+  fetchIndexValue(updatedIndex: any) {
     this.indexValue.next(updatedIndex);
   }
-  fetchFilterValue(updatedValue: string) {
+  fetchFilterValue(updatedValue: any) {
     this.filterValue.next(updatedValue);
   }
-  fetchFilterTwoValue(updatedValue: string) {
+  fetchFilterTwoValue(updatedValue: any) {
     this.filterTwoValue.next(updatedValue);
   }
-  fetchFilterThreeValue(updatedValue: string) {
+  fetchFilterThreeValue(updatedValue: any) {
     this.filterThreeValue.next(updatedValue);
   }
-  setItem(key: string, value: number | string) {
+  setItem(key: any, value: any) {
     // window.localStorage.setItem("GS11ADMIN_" + key, value);
-    window.localStorage.setItem('THC_' + key, value.toString());
+    window.localStorage.setItem('THC_' + key, value);
   }
 
-  getItem(key: string) {
+  getItem(key: any) {
     // return window.localStorage.getItem("GS11ADMIN_" + key);
     return window.localStorage.getItem('THC_' + key);
   }
@@ -52,11 +50,11 @@ export class UtilService {
     return window.localStorage.clear();
   }
 
-  setSessionItem(key: string, value: string) {
+  setSessionItem(key: any, value: any) {
     window.sessionStorage.setItem('THC_' + key, value);
   }
 
-  getSessionItem(key: string) {
+  getSessionItem(key: any) {
     return window.sessionStorage.getItem('THC_' + key);
   }
 
@@ -66,7 +64,7 @@ export class UtilService {
       this.getItem(this.USER_PROFILE) != undefined &&
       this.getItem(this.USER_PROFILE) != ''
     ) {
-      return JSON.parse(this.getItem(this.USER_PROFILE) as string);
+      return JSON.parse(this.getItem(this.USER_PROFILE) as any);
     } else {
       return null;
     }
@@ -78,7 +76,7 @@ export class UtilService {
       this.getItem(this.USER_PROFILE) != undefined &&
       this.getItem(this.USER_PROFILE) != ''
     ) {
-      return JSON.parse(this.getItem(this.USER_PROFILE) as string).id;
+      return JSON.parse(this.getItem(this.USER_PROFILE) as any).id;
     } else {
       return null;
     }
@@ -92,7 +90,7 @@ export class UtilService {
     }
   }
 
-  convertMinutesToHM(mins: number) {
+  convertMinutesToHM(mins: any) {
     let hour = mins / 60;
     if (hour > 0) {
       return (
@@ -116,14 +114,14 @@ export class UtilService {
     return numString;
   }
 
-  validateEmail(email: string) {
+  validateEmail(email: any) {
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
       return true;
     }
     return false;
   }
 
-  getCDNMultipleResolutions(imageId: string) {
+  getCDNMultipleResolutions(imageId: any) {
     let str =
       'https://imagedelivery.net/eXm2rwRzRA14esFntmlbXw/' +
       imageId +
@@ -146,20 +144,20 @@ export class UtilService {
     return str;
   }
 
-  getBannerCDNImage(imageId: string) {
+  getBannerCDNImage(imageId: any) {
     // return 'https://imagedelivery.net/eXm2rwRzRA14esFntmlbXw/' + imageId + '/public';
     return (
       'https://imagedelivery.net/eXm2rwRzRA14esFntmlbXw/' + imageId + '/xl'
     );
   }
 
-  getCDNImage(imageId: string) {
+  getCDNImage(imageId: any) {
     return (
       'https://imagedelivery.net/eXm2rwRzRA14esFntmlbXw/' + imageId + '/public'
     );
   }
 
-  calculate_age(dateString: string) {
+  calculate_age(dateString: any) {
     let today = new Date();
     let birthDate = new Date(dateString);
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -180,7 +178,7 @@ export class UtilService {
     return this.subject.asObservable();
   }
 
-  getDifferenceBetweenTwoDatesInDays(dateStr2: string, dateStr1: string) {
+  getDifferenceBetweenTwoDatesInDays(dateStr2: any, dateStr1: any) {
     const date1 = new Date(dateStr2);
     const date2 = new Date(dateStr1);
     const diffTime = Math.abs(date2.getTime() - date1.getTime());
@@ -189,7 +187,7 @@ export class UtilService {
     return diffDays;
   }
 
-  getDayDiff(dateStr2: string, dateStr1: string) {
+  getDayDiff(dateStr2: any, dateStr1: any) {
     const date1 = new Date(dateStr2);
     const date2 = new Date(dateStr1);
     const diffTime = date2.getTime() - date1.getTime();
@@ -198,7 +196,7 @@ export class UtilService {
     return diffDays;
   }
 
-  getAirlineLogo(airline: string) {
+  getAirlineLogo(airline: any) {
     switch (airline) {
       case 'SpiceJet':
         return 'assets/flightlogo/spicejet.png';
@@ -215,7 +213,7 @@ export class UtilService {
     }
   }
 
-  getAge(dateString: string) {
+  getAge(dateString: any) {
     var today = new Date();
     var birthDate = new Date(dateString);
     var age = today.getFullYear() - birthDate.getFullYear();
@@ -226,7 +224,7 @@ export class UtilService {
     return age;
   }
 
-  getDayIncreament(dayStr: string, count: number) {
+  getDayIncreament(dayStr: any, count: any) {
     let date = new Date(dayStr);
     date.setDate(date.getDate() + count);
     // console.log("day before:",date);
@@ -243,7 +241,7 @@ export class UtilService {
     return this.datePipe.transform(date, 'yyyy-MM-dd');
   }
 
-  cleanJSON(s: string) {
+  cleanJSON(s: any) {
     s = s
       .replace(/\\n/g, '\\n')
       .replace(/\\'/g, "\\'")
@@ -357,17 +355,17 @@ export class UtilService {
     ],
   };
 
-  convertDT(dtstr: string) {
+  convertDT(dtstr: any) {
     return (
       dtstr.split('/')[2] +
       '-' +
-      this.properFormatNumber(parseInt(dtstr.split('/')[1])) +
+      this.properFormatNumber(dtstr.split('/')[1]) +
       '-' +
-      this.properFormatNumber(parseInt(dtstr.split('/')[0]))
+      this.properFormatNumber(dtstr.split('/')[0])
     );
   }
 
-  parseDT(dt: string) {
+  parseDT(dt: any) {
     let date = new Date(dt);
     return this.datePipe.transform('');
   }
@@ -407,7 +405,7 @@ export class UtilService {
     return dtFormat;
   };
 
-  getDiffInSecs(dateStr1: string, dateStr2: string) {
+  getDiffInSecs(dateStr1: any, dateStr2: any) {
     const date1 = new Date(dateStr1);
     const date2 = new Date(dateStr2);
     const differenceInMilliseconds = Math.abs(
@@ -418,7 +416,7 @@ export class UtilService {
     return differenceInSeconds;
   }
 
-  getDifferenceInMins(dateStr1: string, dateStr2: string) {
+  getDifferenceInMins(dateStr1: any, dateStr2: any) {
     const date1 = new Date(dateStr1);
     const date2 = new Date(dateStr2);
     const differenceInMilliseconds = Math.abs(

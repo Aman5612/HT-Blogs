@@ -5,29 +5,46 @@ import {
   Renderer2,
   ElementRef,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-// import { CallBackComponent } from 'src/app/modals/call-back/call-back.component';
+import {
+  ActivatedRoute,
+  Router,
+  NavigationStart,
+  Event as NavigationEvent,
+} from '@angular/router';
+import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+import { debounceTime } from 'rxjs/operators';
+import { ApiService } from '../../services/api.service';
+import { UtilService } from '../../services/util.service';
+import { Events, EventService } from '../../services/event.service';
 import { SigninComponent } from '../../modals/signin/signin.component';
 import { SignupComponent } from '../../modals/signup/signup.component';
-import { ApiService } from '../../services/api.service';
-import { EventService, Events } from '../../services/event.service';
-import { UtilService } from '../../services/util.service';
-import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss'],
-  standalone: true,
-  imports: [CommonModule, FormsModule, NgbDropdownModule, RouterModule],
-  providers: [DatePipe],
+  imports: [FormsModule, CommonModule, NgbModalModule],
 })
 export class NavbarComponent implements OnInit {
+  isNavbarActive: boolean = false;
+  dropdownOpen = false;
+  event$;
+  eventUrl: string = '';
+
+  toggleNavbar(): void {
+    this.isNavbarActive = !this.isNavbarActive;
+  }
+
+  toggleDropdown() {
+    if (window.innerWidth <= 768) {
+      this.dropdownOpen = !this.dropdownOpen;
+    }
+  }
+
   menu_icon_variable: boolean = false;
+
   menuVariable: boolean = false;
   menuListVariablee: boolean = false;
   isSideMenuOpen: boolean = false;
@@ -37,11 +54,10 @@ export class NavbarComponent implements OnInit {
   searchIcoon = true;
   trending_dest: any;
   trending_INT: any;
-  selectedRegionsNames: string = '';
   destinations = [{ name: 'International' }, { name: 'Domestic' }];
   placesArray: any = [];
   placesInArray: any = [];
-  // selectedRegionsNames: string;
+  selectedRegionsNames: string = '';
   asiaObjects: any;
   selectedObjects: any;
   selectedCountries: any;
@@ -51,12 +67,15 @@ export class NavbarComponent implements OnInit {
   international = true;
   transformedHomeData: any;
   destination: string = '';
+
   openMenu() {
     this.menuVariable = !this.menuVariable;
+
     this.menu_icon_variable = !this.menu_icon_variable;
     this.isSideMenuOpen = !this.isSideMenuOpen;
     this.preventBodyScroll(this.isSideMenuOpen);
   }
+
   preventBodyScroll(prevent: boolean) {
     const body = document.body;
 
@@ -66,6 +85,22 @@ export class NavbarComponent implements OnInit {
       this.renderer.removeStyle(body, 'overflow-y');
     }
   }
+
+  luxuryDirection(value: any) {
+    if (value == 'luxury') {
+      this.router.navigateByUrl('/usa/luxury-experiences');
+    }
+    if (value == 'outdoors') {
+      this.router.navigateByUrl('/usa/outdoors-adventure');
+    }
+    if (value == 'cityBreaks') {
+      this.router.navigateByUrl('/usa/city-breaks');
+    }
+    if (value == 'roadTrips') {
+      this.router.navigateByUrl('/usa/road-trips');
+    }
+  }
+
   openPackage(value: any) {
     if (value.type == 'place') {
       this.openPlace(value.id);
@@ -73,14 +108,20 @@ export class NavbarComponent implements OnInit {
       this.openTheme(value.id);
     }
   }
+
   openPlace(place_id: number) {
     // this.router.navigateByUrl("/destination/place/" + place_id);
     this.getPlaceDetail(place_id);
   }
-  getPlaceDetail(place_id: number) {
+
+  getPlaceDetail(place_id: any) {
+    if (place_id == 54) {
+      this.router.navigateByUrl('/usa/luxury-experiences');
+      return;
+    }
     this.apiService
       .getAPI(this.apiService.API_BASE_URL + 'places/getPlaceById/' + place_id)
-      .then((result) => {
+      .then((result: any) => {
         if (result.status) {
           if (result.result.status == 1) {
             this.router
@@ -94,12 +135,13 @@ export class NavbarComponent implements OnInit {
         }
       });
   }
+
   onsearch() {
     this.apiService
       .getAPI(
         this.apiService.API_BASE_URL + 'package/searchPackage/' + this.search
       )
-      .then((result) => {
+      .then((result: any) => {
         try {
           console.log(result.result);
           this.searchData = result.result;
@@ -108,11 +150,13 @@ export class NavbarComponent implements OnInit {
         }
       });
   }
+
   themeList = false;
   themeListHeader = false;
   destinationList = false;
   destinationListMobHeader = false;
   dropDown = false;
+
   openthemes() {
     this.themeListHeader = !this.themeListHeader;
   }
@@ -145,23 +189,34 @@ export class NavbarComponent implements OnInit {
 
   destinationListHeader = false;
   dropDownDes = false;
-  openDestination(place_id: number) {
+
+  openDestination(place_id: any) {
+    if (place_id == 54) {
+      this.router.navigateByUrl('/usa/luxury-experiences');
+      return;
+    }
     this.apiService
       .getAPI(this.apiService.API_BASE_URL + 'places/getPlaceById/' + place_id)
       .then((result: any) => {
         if (result.status) {
           if (result.result.status == 1) {
-            this.router
-              .navigateByUrl('/destination/' + result.result.uuid)
-              .then(() => {
-                window.location.reload();
-              });
+            if (this.router.url.includes('destination')) {
+              this.router
+                .navigateByUrl('/destination/' + result.result.uuid)
+                .then(() => {
+                  window.location.reload();
+                });
+            } else {
+              this.router.navigateByUrl('/destination/' + result.result.uuid);
+              this.destinationListHeader = false;
+            }
           }
         } else {
           alert('Place not found');
         }
       });
   }
+
   openDestinations() {
     this.destinationListHeader = !this.destinationListHeader;
   }
@@ -185,6 +240,7 @@ export class NavbarComponent implements OnInit {
   domestic() {
     this.international = !this.international;
   }
+
   internationall() {
     this.international = !this.international;
   }
@@ -198,24 +254,46 @@ export class NavbarComponent implements OnInit {
     this.dropDownDes = false;
     this.closeDestinations();
   }
+
   showTheme() {
     this.themeList = true;
   }
+
   showwThemee() {
     this.themeList = false;
   }
+
   showDestination() {
     this.destinationList = true;
   }
+
   showDestinationn() {
     this.destinationList = false;
   }
+
   openMenuu() {
     this.menuListVariablee = this.menuListVariablee;
     this.menu_icon_variable = this.menu_icon_variable;
     this.menu_icon_variable = false;
     this.menuVariable = false;
   }
+
+  tabWidth = 1280;
+  landingPages = [
+    '/landing-page/singapore',
+    '/landing-page/bali',
+    '/landing-page/europe',
+    '/landing-page/dubai-tour-packages',
+    '/landing-page/australia',
+    '/landing-page/south-africa',
+    '/landing-page/japan',
+    '/landing-page/united-kingdom',
+    '/landing-page/switzerland',
+    '/landing-page/kashmir',
+    '/landing-page/rajasthan',
+    '/landing-page/thailand',
+  ];
+
   constructor(
     public router: Router,
     public apiService: ApiService,
@@ -227,9 +305,35 @@ export class NavbarComponent implements OnInit {
     private el: ElementRef
   ) {
     this.activatedRoute.paramMap.subscribe((paramMap) => {
-      this.destination = paramMap.get('place') || '';
+      this.destination = paramMap.get('place') as any;
+    });
+    this.event$ = this.router.events.subscribe((event: NavigationEvent) => {
+      if (event instanceof NavigationStart) {
+        console.log('url event', event.url);
+        this.eventUrl = event.url;
+      }
+      if (
+        !this.eventUrl.toLowerCase().includes('/landing-page/singapore') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/bali') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/europe') &&
+        !this.eventUrl
+          .toLowerCase()
+          .includes('/landing-page/dubai-tour-packages') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/australia') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/south-africa') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/japan') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/united-kingdom') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/switzerland') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/kashmir') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/rajasthan') &&
+        !this.eventUrl.toLowerCase().includes('/landing-page/thailand')
+      ) {
+        this.getCMS();
+        this.event$.unsubscribe();
+      }
     });
   }
+
   isHomePage() {
     if (
       this.router.url == '/holyday-mood' ||
@@ -240,6 +344,7 @@ export class NavbarComponent implements OnInit {
       return false;
     }
   }
+
   // isMobile: boolean;
   // @HostListener('document:mouseenter', ['$event'])
   // onMouseEnter(event: MouseEvent) {
@@ -278,17 +383,19 @@ export class NavbarComponent implements OnInit {
   //   }
   // }
   showSearch = false;
+
   ngOnInit(): void {
-    this.getCMS();
     this.checkUserProfile();
 
     this.eventService.on(Events.SIGNIN_SIGNUP, (data: any) => {
       this.checkUserProfile();
     });
   }
+
   isHomeRoute(): boolean {
     return this.router.url === '/';
   }
+
   getCMS() {
     this.apiService
       .getAPI(this.apiService.API_BASE_URL + 'common/getCMS/HOME_CMS')
@@ -296,6 +403,7 @@ export class NavbarComponent implements OnInit {
         // this.homeCMS = result.data.attributes;
         try {
           let data = JSON.parse(atob(result.result.data));
+          console.log('navbar data:', data);
           this.holidayMood = data.holiday_mood;
           if (
             this.utilService.checkValue(this.holidayMood) &&
@@ -382,6 +490,37 @@ export class NavbarComponent implements OnInit {
               };
             }
           );
+          const americaIndex = this.transformedDestinations.findIndex(
+            (obj: any) => obj.place === 'America'
+          );
+          if (americaIndex !== -1) {
+            const [americaObject] = this.transformedDestinations.splice(
+              americaIndex,
+              1
+            );
+            this.transformedDestinations.unshift(americaObject);
+          }
+          const usaIndex = this.transformedDestinations[0].places.findIndex(
+            (obj: any) => obj.place_name === 'USA'
+          );
+          console.log(usaIndex);
+          if (usaIndex !== -1) {
+            const [americaObject] =
+              this.transformedDestinations[0].places.splice(usaIndex, 1);
+            this.transformedDestinations[0].places.unshift(americaObject);
+          }
+
+          // this.transformedDestinations = this.transformedDestinations.reverse()
+          this.transformedDestinations = this.transformedDestinations.map(
+            (item: any) => {
+              return {
+                ...item,
+                places: item.places.filter(
+                  (place: any) => place.place_name !== ''
+                ),
+              };
+            }
+          );
 
           console.log(this.transformedDestinations);
 
@@ -420,24 +559,29 @@ export class NavbarComponent implements OnInit {
         }
       });
   }
+
   endDestination() {
     this.destinationListHeader = false;
   }
+
   endThemes() {
     this.themeListHeader = false;
   }
+
   tabChangeI(value: any) {
     this.selectedRegionsNames = value;
     this.selectedCountries = this.placesArray.filter(
       (obj: any) => obj.region === this.selectedRegionsNames
     );
   }
+
   tabChange(value: any) {
     this.selectedRegionsDomestic = value;
     this.selectedDomesticDest = this.placesInArray.filter(
       (obj: any) => obj.direction === this.selectedRegionsDomestic
     );
   }
+
   sortOrders: string[] = ['My Profile', 'My Trips'];
   selectedSortOrder: any = '';
 
@@ -463,6 +607,7 @@ export class NavbarComponent implements OnInit {
   openTheme(theme_id: number) {
     this.getThemeDetail(theme_id);
   }
+
   openDestinationn(item: any) {
     this.destinationList = false;
     console.log(item.place);
@@ -472,20 +617,23 @@ export class NavbarComponent implements OnInit {
       }, 300);
     });
   }
+
   openThemeee() {
     this.router.navigateByUrl('/destination-detail/' + 'themes').then(() => {
       window.location.reload();
     });
   }
-  //  requestCall(){
-  //     let modal_ref = this.modalService.open(CallBackComponent, {
-  //       backdrop: 'static',
-  //       size: '',
-  //       keyboard: false,
-  //       centered: true
-  //     });
-  //  }
-  getThemeDetail(theme_id: number) {
+
+  // requestCall() {
+  //   let modal_ref = this.modalService.open(CallBackComponent, {
+  //     backdrop: 'static',
+  //     size: '',
+  //     keyboard: false,
+  //     centered: true,
+  //   });
+  // }
+
+  getThemeDetail(theme_id: any) {
     this.apiService
       .getAPI(this.apiService.API_BASE_URL + 'package/getThemeById/' + theme_id)
       .then((result) => {
@@ -502,6 +650,7 @@ export class NavbarComponent implements OnInit {
         }
       });
   }
+
   checkUserProfile() {
     if (this.utilService.checkValue(this.utilService.getUserProfile())) {
       this.user_profile = this.utilService.getUserProfile();
@@ -513,11 +662,13 @@ export class NavbarComponent implements OnInit {
   searchIcon() {
     this.searchIcoon = false;
   }
+
   closeSearchIcon() {
     this.searchIcoon = true;
     this.searchData.length = 0;
     this.search = '';
   }
+
   openlogin() {
     const modalRef = this.modalService.open(SigninComponent, {
       backdrop: 'static',
@@ -544,16 +695,5 @@ export class NavbarComponent implements OnInit {
 
   openMyProfile() {
     this.router.navigateByUrl('/myprofile');
-  }
-
-  requestCall() {
-    // Implement callback functionality
-    // const modalRef = this.modalService.open(CallBackComponent, {
-    //   backdrop: 'static',
-    //   size: '',
-    //   keyboard: false,
-    //   centered: true
-    // });
-    console.log('Request call clicked');
   }
 }

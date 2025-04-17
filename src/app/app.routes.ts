@@ -7,26 +7,21 @@ import { BlogListComponent } from './components/blog-list/blog-list.component';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/blog',
-    pathMatch: 'full'
+    component: BlogListComponent,
   },
   {
-    path: 'blog',
-    component: BlogListComponent
-  },
-  {
-    path: 'blog/:id',
+    path: ':id',
     component: BlogDetailComponent,
-  }
+  },
 ];
 
 export const serverRoutes: ServerRoute[] = [
   {
-    path: 'blog/:id',
-    renderMode: RenderMode.Server
+    path: ':id',
+    renderMode: RenderMode.Server,
   },
   {
     path: '**',
-    renderMode: RenderMode.Prerender
+    renderMode: RenderMode.Prerender,
   },
-]
+];

@@ -2,10 +2,7 @@
   <div class="container">
     <div class="row">
       <div class="col-lg-4 !flex" *ngFor="let post of filteredPosts">
-        <div
-          class="blog-listing-box pt-[15px]"
-          [routerLink]="['/blog', post.id]"
-        >
+        <div class="blog-listing-box pt-[15px]" [routerLink]="['/', post.id]">
           <!-- <div class="date">
             <p>{{ post.createdAt | date }}</p>
           </div> -->

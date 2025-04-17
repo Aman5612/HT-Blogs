@@ -39,7 +39,10 @@
                 "output": "/"
               }
             ],
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "src/styles.scss",
+              "node_modules/bootstrap/dist/css/bootstrap.min.css"
+            ],
             "scripts": [],
             "server": "src/main.server.ts",
             "ssr": {
@@ -133,7 +136,10 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "src/styles.scss",
+              "nodemodules/bootstrap/dist/css/bootstrap.min.css"
+            ],
             "scripts": []
           }
         }

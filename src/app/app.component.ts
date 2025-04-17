@@ -20,8 +20,10 @@ import { FooterComponent } from './components/footer/footer.component';
   ],
   template: `
     <div class="app-container">
-      <app-navbar></app-navbar>
-      
+      <app-navbar
+        style="position: fixed; width: 100vw; top: 0px; left: 0px; z-index: 1030"
+      ></app-navbar>
+
       <main class="main-content bg-white">
         <router-outlet></router-outlet>
       </main>

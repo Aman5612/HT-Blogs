@@ -6,12 +6,13 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { UtilService } from '../../services/util.service';
 import { ApiService } from '../../services/api.service';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   standalone: true,
   selector: 'app-footer',
   templateUrl: './footer.component.html',
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   styleUrls: ['./footer.component.scss'],
 })
 export class FooterComponent implements OnInit {
