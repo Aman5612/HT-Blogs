@@ -71,9 +71,10 @@ interface TableOfContents {
   styles: [
     `
       .main-content {
-        background: white;
+        background: #ffffff;
         border-radius: 12px;
         padding: 2rem;
+        padding-top: 0px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         width: 100%;
         min-width: 0;

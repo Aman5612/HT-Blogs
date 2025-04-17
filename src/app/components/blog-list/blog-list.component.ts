@@ -6,23 +6,19 @@ import { RouterLink } from '@angular/router';
 import { NewBlogService } from '../../services/new-blog.service';
 import { Article } from '../../interface/article.interface';
 import {
-  Observable,
   Subject,
-  BehaviorSubject,
   debounceTime,
   distinctUntilChanged,
-  switchMap,
-  tap,
-  of,
 } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { FooterComponent } from '../footer/footer.component';
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  templateUrl: './blog.component.html',
-  styleUrls: ['./blog.component.scss'],
-  imports: [CommonModule, RouterLink, FormsModule],
+  templateUrl: './blog-list.component.html',
+  styleUrls: ['./blog-list.component.scss'],
+  imports: [CommonModule, RouterLink, FormsModule, FooterComponent],
 })
 export class BlogListComponent implements OnInit {
   posts: Article[] = [];

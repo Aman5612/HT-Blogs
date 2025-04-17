@@ -1,10 +1,10 @@
 <div
   style="font-family: 'DM Sans'"
-  class="sidebar border-r border-[#CACACA] !mt-6 bg-white overflow-y-auto overflow-x-hidden fixed top-[4.5rem] h-[calc(100vh-3rem)] z-10 w-[22%] max-w-[332px]"
+  class="sidebar border-r border-[#CACACA] !mt-6 bg-white overflow-y-auto overflow-x-hidden fixed top-[4.5rem] left-0 h-[calc(100vh-3rem)] z-10 w-[22%] max-w-[332px]"
   #sidebarContainer
 >
   <div
-    class=" flex items-center justify-between !p-3.5 bg-[#F8F8F8] border-none sticky top-0 z-10 rounded-[12px] mx-4"
+    class="flex items-center justify-between !p-3.5 bg-[#F8F8F8] border-none sticky top-0 z-10 rounded-[12px] mx-4"
   >
     <h2 class="!text-[20px] text-center mb-0 !font-normal line-clamp-2">
       {{ blogTitle || "Blog Content" }}
@@ -16,9 +16,7 @@
     @if (sections && typeof sections === 'object' && sections.length > 0) { @for
     (section of sections; track section.id) {
     <!-- Top level category -->
-    <div
-      class="flex items-center gap-1.5 p-0 cursor-pointer transition-all"
-    >
+    <div class="flex items-center gap-1.5 p-0 cursor-pointer transition-all">
       <div
         class="min-w-[30px] min-h-[30px] max-w-[30px] max-h-[30px] flex items-center justify-center"
       >

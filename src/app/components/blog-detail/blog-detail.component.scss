@@ -12,7 +12,6 @@ main {
   grid-template-columns: 22% 50% 28%;
   position: relative;
   background-color: #ffffff;
-  padding-right: 16px !important;
 }
 
 .sidebar-container {
@@ -26,16 +25,13 @@ main {
   margin-left: 0;
   min-width: 0;
   overflow-x: hidden;
-  margin-top: 56px !important;
   position: relative;
 }
 
 .right-sidebar {
   position: sticky;
-  top: 5.5rem;
+  left: 0;
   height: fit-content;
-
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
