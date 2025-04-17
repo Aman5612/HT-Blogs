@@ -861,6 +861,24 @@ a:hover {
 }
 
 @media (max-width: 900px) {
+  .row {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+  .author {
+    display: flex;
+    flex-direction: row !important;
+    justify-content: space-between;
+  }
+  .container {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+  .col-lg-4 {
+    flex: 0 0 auto;
+    width: 100%;
+  }
   .blog-hero .blog-hero-right .border_bottom .fa {
     font-size: 30px;
     margin: 15px 0px 0px 40px;

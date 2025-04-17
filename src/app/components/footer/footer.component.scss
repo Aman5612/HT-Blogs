@@ -138,6 +138,11 @@
   text-transform: uppercase;
 }
 
+.over-hide {
+  position: relative;
+  z-index: 10000000000000002000000000000 !important;
+}
+
 .fx-button-hover {
   display: block;
   text-align: center;
@@ -468,6 +473,20 @@
     li a {
       color: #fff !important;
     }
+  }
+  .container {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+  .col-lg-6 {
+    width: 100% !important;
+  }
+  .col-lg-4 {
+    width: 100% !important;
+  }
+  .row {
+    display: flex !important;
+    flex-direction: column;
   }
   .themeMenu {
     display: flex;
