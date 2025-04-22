@@ -909,21 +909,22 @@ a:hover {
           margin: 10px 20px;
           transition: all ease 0.5s;
 
-          i {
+          svg {
             height: 100%;
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
-            font-size: 24px;
+            fill: #fff; /* Default icon color */
+            padding: 10px; /* Adjust padding to fit SVG nicely */
+            box-sizing: border-box;
           }
 
           &:hover {
             background-color: #fff;
 
-            i {
-              color: #000;
+            svg {
+              fill: #000; /* Icon color on hover */
             }
           }
         }

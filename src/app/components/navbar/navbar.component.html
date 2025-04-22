@@ -28,7 +28,7 @@
     *ngIf="!router.url.includes('landing-page')"
     class="container d-flex justify-content-between"
   >
-    <a routerLink="/" class="logo"
+    <a href="https://www.holidaytribe.com/" class="logo cursor-pointer"
       ><img
         [src]="apiService.CDN_BASE_URL + 'assets/img/LOGO_White.png'"
         alt=""
@@ -37,7 +37,7 @@
     <nav
       [class.whiteText]="isHomePage()"
       id="navbar"
-      class="navbar menu"
+      class="navbar menu !font-sans"
       [class.menuClasse]="menuVariable"
     >
       <ul>
@@ -50,17 +50,37 @@
                       (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a>
                   </div>
                 </div> -->
-        <li><a class="nav-link scrollto" routerLink="/">Home</a></li>
+        <li>
+          <a
+            class="nav-link cursor-pointer scrollto"
+            href="https://www.holidaytribe.com"
+            >Home</a
+          >
+        </li>
         <li (click)="openMenuu()" *ngIf="tabWidth < 600"></li>
         <li>
-          <a class="nav-link scrollto" routerLink="/about-us">About Us</a>
+          <a
+            class="nav-link cursor-pointer scrollto"
+            href="https://www.holidaytribe.com/about-us"
+            >About Us</a
+          >
         </li>
-        <li><a class="nav-link scrollto" routerLink="/careers">Careers</a></li>
+        <li>
+          <a
+            class="nav-link cursor-pointer scrollto"
+            href="https://www.holidaytribe.com/careers"
+            >Careers</a
+          >
+        </li>
         <!-- <li><a class="nav-link scrollto" routerLink="/">Holidays</a></li>
                 <li><a class="nav-link scrollto " href="#portfolio">Flights</a></li>
                 <li><a class="nav-link scrollto" href="#team">Hotels</a></li> -->
 
-        <li><a class="nav-link scrollto" routerLink="/blogs">Blogs</a></li>
+        <li>
+          <a class="nav-link cursor-pointer scrollto" routerLink="/blogs"
+            >Blogs</a
+          >
+        </li>
 
         <li
           style="position: relative; cursor: pointer"
@@ -442,7 +462,11 @@
                         (click)="openMyProfile()">Welcome {{user_profile.first_name}}</a>
                     </div> -->
         </div>
-        <li><a class="nav-link scrollto" routerLink="/">Home</a></li>
+        <li>
+          <a class="nav-link scrollto" href="https://www.holidaytribe.com/"
+            >Home</a
+          >
+        </li>
         <li *ngIf="tabWidth < 600">
           <div ngbDropdown>
             <a
@@ -493,14 +517,28 @@
           </div>
         </li>
         <li>
-          <a class="nav-link scrollto" routerLink="/about-us">About Us</a>
+          <a
+            class="nav-link scrollto"
+            href="https://www.holidaytribe.com/about-us"
+            >About Us</a
+          >
         </li>
-        <li><a class="nav-link scrollto" routerLink="/careers">Careers</a></li>
+        <li>
+          <a
+            class="nav-link scrollto"
+            href="https://www.holidaytribe.com/careers"
+            >Careers</a
+          >
+        </li>
         <!-- <li><a class="nav-link scrollto" routerLink="/">Holidays</a></li>
                       <li><a class="nav-link scrollto " href="#portfolio">Flights</a></li>
                       <li><a class="nav-link scrollto" href="#team">Hotels</a></li> -->
 
-        <li><a class="nav-link scrollto" routerLink="/blogs">Blogs</a></li>
+        <li>
+          <a class="nav-link !cursor-pointer scrollto" routerLink="/blogs"
+            >Blogs</a
+          >
+        </li>
         <li>
           <a
             class="nav-link scrollto"
