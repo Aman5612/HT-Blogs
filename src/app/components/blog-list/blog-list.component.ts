@@ -1,6 +1,6 @@
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { Component, OnInit, Inject, HostListener } from '@angular/core';
+import { Component, OnInit, Inject, HostListener, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NewBlogService } from '../../services/new-blog.service';
@@ -16,7 +16,9 @@ import { FooterComponent } from '../footer/footer.component';
   styleUrls: ['./blog-list.component.scss'],
   imports: [CommonModule, RouterLink, FormsModule, FooterComponent],
 })
-export class BlogListComponent implements OnInit {
+export class BlogListComponent implements OnInit, AfterViewInit {
+  @ViewChildren('blogPost') blogPosts!: QueryList<ElementRef>;
+  
   posts: Article[] = [];
   filteredPosts: Article[] = [];
   loading = false;
@@ -26,6 +28,7 @@ export class BlogListComponent implements OnInit {
   isSearching = false;
   pagination: any = null;
   allPostsLoaded = false;
+  observer: IntersectionObserver | null = null;
 
   private searchTerms = new Subject<string>();
 
@@ -41,6 +44,49 @@ export class BlogListComponent implements OnInit {
     this.setMetadata();
     this.setupSearch();
     this.loadPosts();
+    this.setupSmoothScrolling();
+  }
+  
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
+    this.blogPosts.changes.subscribe(() => {
+      this.setupIntersectionObserver();
+    });
+  }
+  
+  private setupSmoothScrolling() {
+    // Add smooth scrolling behavior to the document
+    this.document.documentElement.style.scrollBehavior = 'smooth';
+  }
+  
+  private setupIntersectionObserver() {
+    // Disconnect previous observer if it exists
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+    
+    // Create a new IntersectionObserver
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // If the last blog post is intersecting (visible)
+        if (entry.isIntersecting && !this.loading && !this.isSearching && 
+            (!this.pagination || this.pagination.hasNextPage)) {
+          this.loadPosts();
+        }
+      });
+    }, {
+      root: null, // Use the viewport
+      rootMargin: '0px 0px 100px 0px', // Start loading 100px before the last post comes into view
+      threshold: 0.1 // Trigger when at least 10% of the target is visible
+    });
+    
+    // Get the last post element and observe it
+    if (this.blogPosts && this.blogPosts.length > 0) {
+      const lastPost = this.blogPosts.last;
+      if (lastPost) {
+        this.observer.observe(lastPost.nativeElement);
+      }
+    }
   }
 
   private setupSearch() {
@@ -95,24 +141,11 @@ export class BlogListComponent implements OnInit {
       });
   }
 
+  // Keeping the window scroll listener as a fallback
   @HostListener('window:scroll', ['$event'])
   onScroll() {
-    // Don't load more posts when searching (client-side filtering)
-    if (this.isSearching) return;
-
-    // Check if we're near the bottom of the page
-    const scrollHeight = document.documentElement.scrollHeight;
-    const scrollTop =
-      document.documentElement.scrollTop || document.body.scrollTop;
-    const clientHeight = document.documentElement.clientHeight;
-
-    if (
-      scrollTop + clientHeight >= scrollHeight - 200 &&
-      !this.loading &&
-      (!this.pagination || this.pagination.hasNextPage)
-    ) {
-      this.loadPosts();
-    }
+    // We're now primarily using IntersectionObserver for triggering loads
+    // This is kept as a fallback mechanism
   }
 
   private setMetadata(): void {

@@ -1,8 +1,8 @@
 <section class="blog-listing">
   <div class="container">
     <div class="row">
-      <div class="col-lg-4 !flex" *ngFor="let post of filteredPosts">
-        <div class="blog-listing-box pt-[15px]" (click)="onPostClick(post)">
+      <div class="col-lg-4 !flex" *ngFor="let post of filteredPosts; let last = last">
+        <div class="blog-listing-box pt-[15px]" (click)="onPostClick(post)" #blogPost>
           <!-- <div class="date">
             <p>{{ post.createdAt | date }}</p>
           </div> -->
@@ -32,6 +32,14 @@
               </a>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <!-- Loading indicator -->
+    <div class="row" *ngIf="loading">
+      <div class="col-12 text-center my-4">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
         </div>
       </div>
     </div>
