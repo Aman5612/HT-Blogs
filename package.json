@@ -10,7 +10,7 @@
     "prerender": "ng run ht-blogs:prerender",
     "serve:ssr": "node dist/server/server.mjs",
     "dev:ssr": "ng build && node dist/server/server.mjs",
-    "build:ssr": "ng build",
+  "build:ssr": "ng build",
     "build:ssr:prod": "ng build --configuration production"
   },
   "private": true,

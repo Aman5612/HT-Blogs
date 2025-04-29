@@ -5,8 +5,17 @@
   transition: all 0.5s;
   z-index: 1012;
   padding: 5px 0;
+  font-weight: 400 !important;
   background-color: black !important;
 }
+
+header{
+  font-weight: 400 !important;
+}
+a{
+  font-weight: 400 !important;
+}
+
 .headerr{
   padding: 10px 0 !important;
 }
