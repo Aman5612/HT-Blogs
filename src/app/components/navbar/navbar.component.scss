@@ -4,16 +4,16 @@
 #header {
   transition: all 0.5s;
   z-index: 1012;
-  padding: 5px 0;
-  font-weight: 400 !important;
+  padding: 7px 0;
+  font-weight: 600 !important;
   background-color: black !important;
 }
 
 header{
-  font-weight: 400 !important;
+  font-weight: 600 !important;
 }
 a{
-  font-weight: 400 !important;
+  font-weight: 600 !important;
 }
 
 .headerr{
@@ -97,6 +97,7 @@ a{
         top: -2px;
         margin-bottom: 7px !important;
         cursor: pointer;
+        font-family: "LC Sac Trial";
         
       }
       // button:hover{
@@ -172,7 +173,7 @@ a{
     display: block;
     margin-bottom: 7px !important;
     cursor: pointer;
-    
+    font-family: "LC Sac Trial";
     position: relative;
     left: 42px;
     top: 15px;
@@ -204,6 +205,7 @@ a{
       top: -2px;
       margin-bottom: 7px !important;
       cursor: pointer;
+      font-family: "LC Sac Trial";
       
   }
   
@@ -229,7 +231,7 @@ a{
   all: unset;
   display: block;
   cursor: pointer;
-  
+  font-family: "LC Sac Trial";
   text-align: center;
   margin-top: 5px; /* Space between image and name */
 }
@@ -302,10 +304,10 @@ a{
 
 #header .logo {
   font-size: 32px;
-  margin: 5px 0%;
+  margin: 7px  0%;
   padding: 0;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
@@ -314,7 +316,7 @@ a{
   margin: 2px 0%;
   padding: 0;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
@@ -383,7 +385,7 @@ a{
   align-items: center;
   justify-content: space-between;
   padding: 0 -22px;
-  
+  font-family: "Pangram-Light";
   color: #4A4A4A;
   color: white;
   white-space: nowrap;
@@ -783,7 +785,7 @@ i{
   display: block;
   margin-bottom: 7px !important;
   cursor: pointer;
-  
+  font-family: "LC Sac Trial";
   position: relative;
   left: 42px;
   top: 15px;
@@ -794,7 +796,7 @@ i{
   display: block;
   margin-bottom: 7px !important;
   cursor: pointer;
-  
+  font-family: "LC Sac Trial";
   position: relative;
   left: 7px;
   top: 15px;
@@ -1163,7 +1165,7 @@ i{
   align-items: center;
   justify-content: space-between;
   padding: 0 3px;
-  
+  font-family: 'Pangram-Light';
   color: #4A4A4A;
   color: white  ;
   white-space: nowrap;
@@ -1389,7 +1391,7 @@ right: 41px;
     line-height: 1;
     font-weight: 700;
     letter-spacing: 0.5px;
-    
+    font-family: "Poppins", sans-serif;
   }
   
   #header2 .logo a {
@@ -1480,7 +1482,7 @@ right: 41px;
   /*  border-bottom: 2px solid #fff;*/
     padding: 5px 2px;
     font-weight: 300;
-      
+    font-family: "Inter", sans-serif;
   }
   
   .navbar a i,

@@ -38,6 +38,32 @@ body {
   position: relative;
 }
 
+@font-face {
+  font-family: 'LC Sac Trial';
+  font-style: normal;
+  font-weight: 400;
+  src: local('LC Sac Trial'), url('assets/fonts/LCSac-Trial-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pangram-Regular';
+  src: local('Pangram-Regular'), url('assets/fonts/Pangram-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pangram-Light';
+  src: local('Pangram-Light'), url('assets/fonts/Pangram-Light.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pangram-Medium';
+  src: local('Pangram-Medium'), url('assets/fonts/Pangram-Medium.woff') format('woff');
+  font-display: swap;
+}
+
 /* Ensure app takes full width */
 app-root {
   display: block;

@@ -2,8 +2,7 @@
 <header
   [ngClass]="{ headerr: router.url.includes('landing-page') }"
   id="header"
-  class="fixed-top !font-sans"
-  style="font-weight: normal !important;"
+  class="fixed-top"
   *ngIf="
     tabWidth > 768 &&
     !router.url.includes('/landing-page/orlando') &&
@@ -647,7 +646,6 @@
   <header
     id="header2"
     class="fixed-top"
-    style="font-weight: normal !important;"
     *ngIf="
       router.url.includes('/landing-page/orlando') ||
       router.url.includes('/landing-page/san-francisco') ||
