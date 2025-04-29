@@ -26,8 +26,8 @@ app.set('base', '/');
 app.set('trust proxy', 1);
 // Get paths
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-// const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser');
-const browserDistFolder = resolve(serverDistFolder, '../browser');
+const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser');
+// const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 // Find JS and CSS files in the browser directory
 let mainJsFile = '';
@@ -130,6 +130,7 @@ const createHtmlTemplate = async (req: Request) => {
   const directBlogMatch =
     urlPath.match(/\/blog\/([^\/]+)/) ||
     urlPath.match(/\/blogs\/([^\/]+)/) ||
+    urlPath.match(/\/ht-blogs\/([^\/]+)/) ||
     urlPath.match(/\/\/([^\/]+)/);
     
   console.log('Direct blog match:', directBlogMatch);
@@ -369,7 +370,7 @@ const createHtmlTemplate = async (req: Request) => {
   <head>
     <meta charset="utf-8">
     <title>${title}</title>
-    <base href="/blogs/">
+    <base href="/ht-blogs/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="${description}">
     <meta name="robots" content="index, follow">
@@ -426,7 +427,7 @@ const createHtmlTemplate = async (req: Request) => {
  * Serve static files from /browser
  */
 app.use(
-  '/blogs',
+  '/ht-blogs',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
@@ -437,7 +438,7 @@ app.use(
 /**
  * Handle all other requests by serving dynamic index.html with SEO tags
  */
-app.get('/blogs/*', async (req, res) => {
+app.get('/ht-blogs/*', async (req, res) => {
   try {
     const html = await createHtmlTemplate(req);
     res.send(html);
