@@ -107,7 +107,7 @@ export class MostReadArticlesComponent implements OnInit, OnChanges {
 
   onArticleClick(event: Event, article: Article) {
     event.preventDefault();
-    window.location.href = `/ht-blogs/blog/${article.id}`;
+    window.location.href = `/blogs/blog/${article.id}`;
   }
 
   onKeyPress(event: KeyboardEvent, article: Article) {
