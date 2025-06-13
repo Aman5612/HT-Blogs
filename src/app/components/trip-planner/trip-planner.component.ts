@@ -769,6 +769,9 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
               city_country: '',
             };
 
+            // Redirect to thank you page
+            window.location.href = 'https://www.holidaytribe.com/thankyou';
+
             // Restore placeholders after form reset
             setTimeout(() => {
               const inputs = document.querySelectorAll(

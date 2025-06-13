@@ -26,8 +26,8 @@ app.set('base', '/');
 app.set('trust proxy', 1);
 // Get paths
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser');
-// const browserDistFolder = resolve(serverDistFolder, '../browser');
+// const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser'); //for server
+const browserDistFolder = resolve(serverDistFolder, '../browser'); //for local
 
 // Find JS and CSS files in the browser directory
 let mainJsFile = '';
@@ -370,7 +370,7 @@ const createHtmlTemplate = async (req: Request) => {
   <head>
     <meta charset="utf-8">
     <title>${title}</title>
-    <base href="/ht-blogs/">
+    <base href="/blog/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="${description}">
     <meta name="robots" content="index, follow">
@@ -427,7 +427,7 @@ const createHtmlTemplate = async (req: Request) => {
  * Serve static files from /browser
  */
 app.use(
-  '/ht-blogs',
+  '/blog',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
@@ -436,17 +436,31 @@ app.use(
 );
 
 /**
- * Handle all other requests by serving dynamic index.html with SEO tags
+ * Handle the root /blog path without trailing slash
  */
-app.get('/ht-blogs/*', async (req, res) => {
+app.get('/blog', async (req, res) => {
   try {
     const html = await createHtmlTemplate(req);
     res.send(html);
   } catch (error) {
-    console.error('Error generating HTML template for /blogs:', error);
+    console.error('Error generating HTML template for /blog:', error);
     res.status(500).send('Something went wrong');
   }
 });
+
+/**
+ * Handle all other requests by serving dynamic index.html with SEO tags
+ */
+app.get('/blog/*', async (req, res) => {
+  try {
+    const html = await createHtmlTemplate(req);
+    res.send(html);
+  } catch (error) {
+    console.error('Error generating HTML template for /blog:', error);
+    res.status(500).send('Something went wrong');
+  }
+});
+
 /**
  * Start the server if this module is the main entry point.
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.

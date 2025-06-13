@@ -14,7 +14,7 @@
             <p>{{ post.createdAt | date }}</p>
           </div> -->
           <img
-            [src]="post.featureImage || post.media[0].url"
+            [src]="post.featureImage || (post.media && post.media.length > 0 ? post.media[0]?.url : '')"
             [alt]="post.featureImageAlt"
             class="img-fluid"
           />

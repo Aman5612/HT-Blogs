@@ -192,7 +192,7 @@ export class NavbarComponent implements OnInit {
 
   openDestination(place_id: any) {
     if (place_id == 54) {
-      this.router.navigateByUrl('/usa/luxury-experiences');
+      window.location.href = 'https://holidaytribe.com/usa/luxury-experiences';
       return;
     }
     this.apiService
@@ -207,7 +207,7 @@ export class NavbarComponent implements OnInit {
                   window.location.reload();
                 });
             } else {
-              this.router.navigateByUrl('/destination/' + result.result.uuid);
+              window.location.href = 'https://holidaytribe.com/destination/' + result.result.uuid;
               this.destinationListHeader = false;
             }
           }
@@ -639,11 +639,7 @@ export class NavbarComponent implements OnInit {
       .then((result) => {
         if (result.status) {
           if (result.result.status == 1) {
-            this.router
-              .navigateByUrl('/theme/' + result.result.uuid)
-              .then(() => {
-                window.location.reload();
-              });
+            window.location.href = 'https://holidaytribe.com/theme/' + result.result.uuid;
           }
         } else {
           alert('Theme not found');

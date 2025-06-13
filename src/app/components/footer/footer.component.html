@@ -23,6 +23,8 @@
               _ngcontent-serverapp-c111=""
               type="text"
               placeholder="Name"
+              [(ngModel)]="name"
+              name="name"
               class="ng-untouched ng-pristine ng-valid"
             />
           </div>
@@ -33,22 +35,67 @@
           >
             <input
               _ngcontent-serverapp-c111=""
-              type="number"
+              type="tel"
               placeholder="Phone Number"
+              [(ngModel)]="phone"
+              name="phone"
+              (input)="validatePhoneInput($event)"
+              maxlength="10"
               class="ng-untouched ng-pristine ng-valid"
             />
+            <div *ngIf="phoneNumberError" class="error-message">
+              {{ phoneNumberError }}
+            </div>
           </div>
           <div
             _ngcontent-serverapp-c111=""
-            class="form-row"
+            class="form-row destination-group"
             style="min-height: 40px"
           >
             <input
               _ngcontent-serverapp-c111=""
               type="text"
               placeholder="Destination"
+              [(ngModel)]="destination"
+              name="destination"
+              (focus)="onInputFocus($event)"
+              (blur)="onDestinationBlur($event)"
+              (input)="onDestinationInput($event)"
+              autocomplete="off"
               class="ng-untouched ng-pristine ng-valid"
             />
+            <div *ngIf="destinationError" class="error-message">
+              {{ destinationError }}
+            </div>
+            <div
+              class="destination-suggestions"
+              *ngIf="showSuggestions && destinationSuggestions.length > 0"
+            >
+              <div
+                *ngFor="let suggestion of destinationSuggestions"
+                class="suggestion-item"
+                (click)="selectSuggestion(suggestion)"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-map-pin mr-2 h-4 w-4 text-gray-500"
+                >
+                  <path
+                    d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"
+                  ></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                {{ suggestion.city }}, {{ suggestion.country }}
+              </div>
+            </div>
           </div>
           <!---->
           <div
@@ -62,6 +109,7 @@
               value="fx-button-hover"
               label=""
               type="page"
+              (click)="submitNewsLetter()"
               ><span _ngcontent-serverapp-c111="">Contact Us</span></a
             ><!----><!---->
           </div>
