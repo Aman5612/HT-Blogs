@@ -15,6 +15,7 @@ import {
 } from 'rxjs/operators';
 import { of, Subject, Subscription } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
+import { AESService } from '../../services/aes.services';
 
 interface DestinationSuggestion {
   city: string;
@@ -438,7 +439,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
   phoneNumberError = '';
   destinationError = '';
 
-  constructor(private http: HttpClient, private toastService: ToastService) {}
+  constructor(private http: HttpClient, private toastService: ToastService, private aesService: AESService) {}
 
   ngOnInit() {
     // Check if we're in a browser environment
@@ -711,10 +712,22 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
       },
     };
 
-    // Add email separately if needed for your backend
+    // Log the original params
+    console.log('Original params:', params);
+
+    // Encrypt the payload
+    const ENCRYPTION_KEY = '+1HT2024!t&5u*Z520241102';
+    const encryptedPayload = this.aesService.encrypt(JSON.stringify(params), ENCRYPTION_KEY);
+
+    // Log the encrypted payload
+    console.log('Encrypted payload:', encryptedPayload);
+
     const payload = {
-      ...params,
+      payload_data: encryptedPayload,
     };
+
+    // Log the final payload object
+    console.log('Final payload object to be sent:', payload);
 
     // Set proper headers
     const headers = new HttpHeaders({
@@ -724,7 +737,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
     // Use relative path that will be handled by the proxy
     const apiUrl =
-      'https://stagingleads.holidaytribe.com/common/publishleadsToZoho';
+      'https://prodleads.holidaytribe.com/common/publishLeadToSqs';
 
     // Send data to API with proper error handling
     this.http

@@ -26,8 +26,8 @@ app.set('base', '/');
 app.set('trust proxy', 1);
 // Get paths
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser'); //for server
-// const browserDistFolder = resolve(serverDistFolder, '../browser'); //for local
+// const browserDistFolder = resolve(serverDistFolder, '/var/www/html/ht-blogs/dist/browser'); //for server
+const browserDistFolder = resolve(serverDistFolder, '../browser'); //for local
 
 // Find JS and CSS files in the browser directory
 let mainJsFile = '';
