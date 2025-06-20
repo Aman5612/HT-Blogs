@@ -64,8 +64,14 @@ export class FooterComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.tabWidth = window.innerWidth;
     console.log(this.tabWidth);
     console.log('urllll', this.router.url);
+
+    // Add window resize listener to update tabWidth
+    window.addEventListener('resize', () => {
+      this.tabWidth = window.innerWidth;
+    });
 
     // Setup subscription for destination input with debouncing
     this.setupDestinationAutocomplete();

@@ -230,59 +230,75 @@
     </div>
   </div>
   <!----><!---->
-  <div _ngcontent-serverapp-c111="" class="container">
-    <div _ngcontent-serverapp-c111="" class="copyright-wrapp">
-      <div _ngcontent-serverapp-c111="" class="text-center w-100">
-        <div _ngcontent-serverapp-c111="" class="copyright">
-          Holiday Tribe formerly known as OOO Forever HOLIDAY TRIBE PRIVATE
-          LIMITED. All rights reserved © 2023
+  <!-- Mobile: Show all columns stacked -->
+  <div *ngIf="tabWidth <= 998" class="footer-links-mobile-group">
+    <div class="footer-links">
+      <ul>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('womenspecial')">Women Special</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('bnbs')">BnBs</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('short-break')">Short Break</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('mountains')">Mountains</a></li>
+      </ul>
+    </div>
+    <div class="footer-links">
+      <ul>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('family')">Family</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('romantic')">Romantic</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('wildlife')">Wildlife</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('cruise')">Cruise</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('beach')">Beach</a></li>
+      </ul>
+    </div>
+    <div class="footer-links">
+      <ul>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigatee('about-us')">About us</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="scrollToElement()">Holidays</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigatee('/')">Our Partners</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a (click)="navigatee('blog/')">Blogs</a></li>
+      </ul>
+    </div>
+    <div class="footer-links p4-mobile">
+      <ul>
+        <li><i class="bx bx-chevron-right"></i> <a href="https://www.holidaytribe.com/terms-and-conditions">Terms and conditions</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a href="https://www.holidaytribe.com/privacy-policy">Privacy policy</a></li>
+        <li><i class="bx bx-chevron-right"></i> <a href="https://www.holidaytribe.com/cookie-policy">Cookies policy </a></li>
+        <li><a href="tel:+917838350359">+91-7838350359</a></li>
+        <li><a href="mailto:contact&#64;holidaytribe.com">contact&#64;holidaytribe.com</a></li>
+      </ul>
+    </div>
+    
+    <!-- Copyright section for mobile - moved to bottom -->
+    <div class="container mobile-copyright">
+      <div class="copyright-wrapp">
+        <div class="text-center w-100">
+          <div class="copyright">
+            Holiday Tribe formerly known as OOO Forever HOLIDAY TRIBE PRIVATE LIMITED. All rights reserved © 2023
+          </div>
+          <div class="copyright">
+            329, 2nd Floor, Corporate Office, Phase IV, Udyog Vihar, Sector 19, Gurugram, Haryana 122016
+          </div>
         </div>
-        <!----><!---->
-        <div _ngcontent-serverapp-c111="" class="copyright">
-          329, 2nd Floor, Corporate Office, Phase IV, Udyog Vihar, Sector 19,
-          Gurugram, Haryana 122016
-        </div>
-      </div>
-      <div
-        _ngcontent-serverapp-c111=""
-        class="social-links text-center text-md-right pt-3 pt-md-0"
-      >
-        <a _ngcontent-serverapp-c111="" href="#" class="twitter"
-          ><i _ngcontent-serverapp-c111="" class="bx bxl-twitter"></i></a
-        ><a _ngcontent-serverapp-c111="" href="#" class="facebook"
-          ><i _ngcontent-serverapp-c111="" class="bx bxl-facebook"></i></a
-        ><a _ngcontent-serverapp-c111="" href="#" class="instagram"
-          ><i _ngcontent-serverapp-c111="" class="bx bxl-instagram"></i></a
-        ><a _ngcontent-serverapp-c111="" href="#" class="google-plus"
-          ><i _ngcontent-serverapp-c111="" class="bx bxl-skype"></i></a
-        ><a _ngcontent-serverapp-c111="" href="#" class="linkedin"
-          ><i _ngcontent-serverapp-c111="" class="bx bxl-linkedin"></i
-        ></a>
       </div>
     </div>
   </div>
-  <!---->
-  <!-- Mobile Links (visible when tabWidth <= 998) -->
-  <div *ngIf="tabWidth <= 998" class="footer-links-mobile">
-    <ul>
-      <li><a (click)="navigateee('womenspecial')">Women Special</a></li>
-      <li><a (click)="navigateee('bnbs')">BnBs</a></li>
-      <li><a (click)="navigateee('short-break')">Short Break</a></li>
-      <li><a (click)="navigateee('mountains')">Mountains</a></li>
-      <li><a (click)="navigateee('family')">Family</a></li>
-      <li><a (click)="navigateee('romantic')">Romantic</a></li>
-      <li><a (click)="navigateee('wildlife')">Wildlife</a></li>
-      <li><a (click)="navigateee('cruise')">Cruise</a></li>
-      <li><a (click)="navigateee('beach')">Beach</a></li>
-      <li><a (click)="navigatee('about-us')">About us</a></li>
-      <li><a (click)="scrollToElement()">Holidays</a></li>
-      <li><a (click)="navigatee('/')">Our Partners</a></li>
-      <li><a (click)="navigatee('blogs')">Blogs</a></li>
-      <li><a routerLink="/terms-and-conditions">Terms and conditions</a></li>
-      <li><a routerLink="/privacy-policy">Privacy policy</a></li>
-      <li><a routerLink="/cookie-policy">Cookies policy</a></li>
-      <li><a href="tel:+917838350359">+91-7838350359</a></li>
-      <li><a href="mailto:contact&#64;holidaytribe.com">contact&#64;holidaytribe.com</a></li>
-    </ul>
+  <!-- Hide copyright section on mobile since it's now in mobile group -->
+  <div *ngIf="tabWidth > 998" class="container">
+    <div class="copyright-wrapp">
+      <div class="text-center w-100">
+        <div class="copyright">
+          Holiday Tribe formerly known as OOO Forever HOLIDAY TRIBE PRIVATE LIMITED. All rights reserved © 2023
+        </div>
+        <div class="copyright">
+          329, 2nd Floor, Corporate Office, Phase IV, Udyog Vihar, Sector 19, Gurugram, Haryana 122016
+        </div>
+      </div>
+      <div class="social-links text-center text-md-right pt-3 pt-md-0">
+        <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
+        <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
+        <a href="#" class="instagram"><i class="bx bxl-instagram"></i></a>
+        <a href="#" class="google-plus"><i class="bx bxl-skype"></i></a>
+        <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
+      </div>
+    </div>
   </div>
 </footer>
