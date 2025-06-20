@@ -189,115 +189,39 @@
         <span
           class="max-sm:flex max-sm:flex-row max-sm:gap-4 flex flex-row justify-between sm:w-[50%]"
         >
-          <div _ngcontent-serverapp-c111="" class="col-lg-2 col-2 footer-links">
-            <ul _ngcontent-serverapp-c111="">
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Women Special</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">BnBs</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Short Break</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Mountains</a>
-              </li>
+          <!-- Desktop Links (visible when tabWidth > 998) -->
+          <div *ngIf="tabWidth>998" class="col-lg-2 col-2 footer-links">
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('womenspecial')">Women Special</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('bnbs')">BnBs</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('short-break')">Short Break</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('mountains')">Mountains</a></li>
             </ul>
           </div>
-          <!---->
-          <div _ngcontent-serverapp-c111="" class="col-lg-2 col-2 footer-links">
-            <ul _ngcontent-serverapp-c111="">
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Family</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Romantic</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Wildlife</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Cruise</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Beach</a>
-              </li>
+          <div *ngIf="tabWidth>998" class="col-lg-2 col-2 footer-links">
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('family')">Family</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('romantic')">Romantic</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('wildlife')">Wildlife</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('cruise')">Cruise</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigateee('beach')">Beach</a></li>
             </ul>
           </div>
-          <!---->
-          <div _ngcontent-serverapp-c111="" class="col-lg-2 col-2 footer-links">
-            <ul _ngcontent-serverapp-c111="">
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">About us</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Holidays</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Our Partners</a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a _ngcontent-serverapp-c111="">Blogs</a>
-              </li>
+          <div *ngIf="tabWidth>998" class="col-lg-2 col-2 footer-links">
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigatee('about-us')">About us</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="scrollToElement()">Holidays</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigatee('/')">Our Partners</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a (click)="navigatee('blog/')">Blogs</a></li>
             </ul>
           </div>
-
-          <div
-            _ngcontent-serverapp-c111=""
-            class="col-lg-2 col-2 p4-mobile footer-links"
-          >
-            <ul _ngcontent-serverapp-c111="">
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a
-                  _ngcontent-serverapp-c111=""
-                  routerlink="/terms-and-conditions"
-                  href="/terms-and-conditions"
-                  >Terms and conditions</a
-                >
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a
-                  _ngcontent-serverapp-c111=""
-                  routerlink="/privacy-policy"
-                  href="/privacy-policy"
-                  >Privacy policy</a
-                >
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <i _ngcontent-serverapp-c111="" class="bx bx-chevron-right"></i
-                ><a
-                  _ngcontent-serverapp-c111=""
-                  routerlink="/cookie-policy"
-                  href="/cookie-policy"
-                  >Cookies policy
-                </a>
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <a _ngcontent-serverapp-c111="" href="tel:+917838350359"
-                  >+91-7838350359</a
-                >
-              </li>
-              <li _ngcontent-serverapp-c111="">
-                <a _ngcontent-serverapp-c111="" href=""
-                  >contact&#64;holidaytribe.com</a
-                >
-              </li>
+          <div *ngIf="tabWidth>998" class="col-lg-2 col-2 p4-mobile footer-links">
+            <ul>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.holidaytribe.com/terms-and-conditions">Terms and conditions</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.holidaytribe.com/privacy-policy">Privacy policy</a></li>
+              <li><i class="bx bx-chevron-right"></i> <a href="https://www.holidaytribe.com/cookie-policy">Cookies policy </a></li>
+              <li><a href="tel:+917838350359">+91-7838350359</a></li>
+              <li><a href="mailto:contact&#64;holidaytribe.com">contact&#64;holidaytribe.com</a></li>
             </ul>
           </div>
         </span>
@@ -338,4 +262,27 @@
     </div>
   </div>
   <!---->
+  <!-- Mobile Links (visible when tabWidth <= 998) -->
+  <div *ngIf="tabWidth <= 998" class="footer-links-mobile">
+    <ul>
+      <li><a (click)="navigateee('womenspecial')">Women Special</a></li>
+      <li><a (click)="navigateee('bnbs')">BnBs</a></li>
+      <li><a (click)="navigateee('short-break')">Short Break</a></li>
+      <li><a (click)="navigateee('mountains')">Mountains</a></li>
+      <li><a (click)="navigateee('family')">Family</a></li>
+      <li><a (click)="navigateee('romantic')">Romantic</a></li>
+      <li><a (click)="navigateee('wildlife')">Wildlife</a></li>
+      <li><a (click)="navigateee('cruise')">Cruise</a></li>
+      <li><a (click)="navigateee('beach')">Beach</a></li>
+      <li><a (click)="navigatee('about-us')">About us</a></li>
+      <li><a (click)="scrollToElement()">Holidays</a></li>
+      <li><a (click)="navigatee('/')">Our Partners</a></li>
+      <li><a (click)="navigatee('blogs')">Blogs</a></li>
+      <li><a routerLink="/terms-and-conditions">Terms and conditions</a></li>
+      <li><a routerLink="/privacy-policy">Privacy policy</a></li>
+      <li><a routerLink="/cookie-policy">Cookies policy</a></li>
+      <li><a href="tel:+917838350359">+91-7838350359</a></li>
+      <li><a href="mailto:contact&#64;holidaytribe.com">contact&#64;holidaytribe.com</a></li>
+    </ul>
+  </div>
 </footer>

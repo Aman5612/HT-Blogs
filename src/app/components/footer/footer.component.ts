@@ -360,12 +360,10 @@ export class FooterComponent implements OnInit, OnDestroy {
     this.themeListtt = false;
   }
   navigatee(valuee: any) {
-    this.router.navigate(['/', valuee]);
+    window.location.href = 'https://www.holidaytribe.com/'+valuee;
   }
   navigateee(valuee: any) {
-    this.router.navigate(['/theme', valuee]).then(() => {
-      window.location.reload();
-    });
+    window.location.href = 'https://www.holidaytribe.com/theme/'+valuee;
   }
   scrollToElement() {
     this.utilService.sendClickEvent();
